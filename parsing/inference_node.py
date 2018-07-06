@@ -1,3 +1,6 @@
+"""A data object for inferences"""
+
+
 class InferenceNode:
     __slots__ = 'number', 'clause', 'inference_rule', 'parents', 'children'
 
@@ -9,8 +12,5 @@ class InferenceNode:
         self.children = set()
 
     def __repr__(self):
-        return 'Node #{} | {} | {}\n'.format(str(self.number).ljust(3),
-                                             (str(self.parents) if self.parents
-                                              else '-').ljust(10),
-                                             self.children if self.children
-                                             else '-')
+        return '#{} {}\n' \
+            .format(self.number, self.parents if self.parents else '-')
