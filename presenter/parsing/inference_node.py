@@ -1,5 +1,7 @@
 """A data object for inferences"""
 
+from util import set_repr
+
 
 class InferenceNode:
     __slots__ = 'number', 'clause', 'inference_rule', 'parents', 'children'
@@ -12,6 +14,4 @@ class InferenceNode:
         self.children = set()
 
     def __repr__(self):
-        # TODO
-        return '#{} {}\n' \
-            .format(self.number, self.parents if self.parents else '-')
+        return '{: >5}: {}'.format(self.number, set_repr(self.parents))
