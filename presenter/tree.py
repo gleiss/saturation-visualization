@@ -29,10 +29,10 @@ class Tree:
             count_repr(self.leaves, "leaf", "leaves")
         )
 
-        return "\n".join([
+        return "\n".join((
             title_repr(title),
             "\n".join(repr(node) for node in self),
             separator(),
             "\n".join(repr(node) for node in self.leaves),
             last_line()
-        ])
+        ))

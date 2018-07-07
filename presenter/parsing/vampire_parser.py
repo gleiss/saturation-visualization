@@ -1,6 +1,6 @@
 """A Vampire output parser"""
 
-__all__ = ['parse', 'parse_line']
+__all__ = 'parse', 'parse_line'
 
 import logging
 import re

@@ -1,6 +1,6 @@
 """TODO"""
 
-__all__ = ['align_vertically']
+__all__ = 'align_vertically'
 
 
 def align_vertically(tree):
