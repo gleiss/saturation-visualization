@@ -6,6 +6,7 @@ import logging
 import re
 
 from inference_node import InferenceNode
+from tree import Tree
 
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN = re.compile('^([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
@@ -15,10 +16,8 @@ def parse(vampire_output):
     """Build a tree from vampire output.
 
     :param str vampire_output: vampire proof output
-    :return: all tree nodes (by id),
-             all leaves
-    :rtype: dict(int: InferenceNode),
-            set(int)
+    :return: the created tree
+    :rtype: Tree
     """
 
     def add_as_child(node):
@@ -36,7 +35,7 @@ def parse(vampire_output):
             LOG.error("Line '%s' is invalid and cannot be parsed", line)
 
     leaves = {node for node in nodes.values() if not node.children}
-    return nodes, leaves
+    return Tree(nodes, leaves)
 
 
 def parse_line(line):

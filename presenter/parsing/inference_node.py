@@ -12,5 +12,6 @@ class InferenceNode:
         self.children = set()
 
     def __repr__(self):
+        # TODO
         return '#{} {}\n' \
             .format(self.number, self.parents if self.parents else '-')
