@@ -26,4 +26,4 @@ def separator():
 
 
 def last_line():
-    return BORDER * LINE_LENGTH
+    return BORDER * LINE_LENGTH + "\n"

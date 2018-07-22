@@ -1,8 +1,9 @@
 """The application entry point"""
 
-import vampire_parser
+from presenter.parsing import vampire_parser
+from presenter import positioning
 
 if __name__ == '__main__':
     with open('example.proof') as proof_file:
-        proof_nodes = vampire_parser.parse(proof_file.read())
-        print(proof_nodes)
+        proof = vampire_parser.parse(proof_file.read())
+        positioning.position_nodes(proof)

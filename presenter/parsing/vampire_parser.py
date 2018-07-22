@@ -5,11 +5,11 @@ __all__ = 'parse', 'parse_line'
 import logging
 import re
 
-from inference_node import InferenceNode
-from tree import Tree
+from presenter.parsing.inference_node import InferenceNode
+from presenter.tree import Tree
 
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN = re.compile('^([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN = re.compile(r'^([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
 
 
 def parse(vampire_output):
@@ -40,9 +40,6 @@ def parse(vampire_output):
 
 def parse_line(line):
     """Parse a line of vampire output.
-
-    CAUTION: This method is very slow!
-    TODO: Improve performance if necessary.
 
     :param str line: a line of vampire output
     :return: the line converted into a node

@@ -1,6 +1,6 @@
 """A data object for inferences"""
 
-from util import set_repr
+from presenter.util import set_repr
 
 
 class InferenceNode:
@@ -14,4 +14,4 @@ class InferenceNode:
         self.children = set()
 
     def __repr__(self):
-        return '{: >5}: {}'.format(self.number, set_repr(self.parents))
+        return "{: >5}: {}".format(self.number, set_repr(self.parents))

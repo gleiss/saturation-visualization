@@ -105,3 +105,8 @@ venv.bak/
 
 # pycharm
 .idea/
+
+# vs code
+.vscode/
+
+*.svg
