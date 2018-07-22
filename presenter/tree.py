@@ -20,11 +20,8 @@ class Tree:
 
         :return:
         """
-        stack = deque(self.leaves)
-        while stack:
-            next_node = stack.pop()
-            stack.extend(self.nodes[parent] for parent in next_node.parents)
-            yield next_node
+        for node in self.nodes.values():
+            yield node
 
     def __repr__(self):
         title = "Tree with {} and {}".format(

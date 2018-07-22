@@ -9,7 +9,7 @@ from presenter.parsing.inference_node import InferenceNode
 from presenter.tree import Tree
 
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN = re.compile(r'^([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN = re.compile(r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
 
 
 def parse(vampire_output):
@@ -22,13 +22,18 @@ def parse(vampire_output):
 
     def add_as_child(node):
         for parent in node.parents:
-            nodes[parent].children.add(node.number)
+            try:
+                nodes[parent].children.add(node.number)
+            except KeyError:
+                orphan_nodes.setdefault(parent, set()).add(node.number)
 
     nodes = {}
+    orphan_nodes = {}
     lines = vampire_output.split('\n')
     for line in reversed(lines):
         try:
             current_node = parse_line(line)
+            current_node.children |= orphan_nodes.pop(current_node.number, set())
             nodes[current_node.number] = current_node
             add_as_child(current_node)
         except AttributeError:
