@@ -16,6 +16,10 @@
             height: calc(100% - 100px);
             border: 1px solid lightgray;
         }
+
+        input[type="range"] {
+            width: 90%;
+        }
     </style>
 </head>
 
@@ -24,13 +28,45 @@
     <div id="graph">
         <canvas></canvas>
     </div>
+    <div id="slidecontainer"></div>
 
     <script type="text/javascript">
         const container = document.getElementById('graph');
         const options = {
             physics: false
         };
-        const network = new vis.Network(container, data.graph, options);
+        const nodes = new vis.DataSet(data.graph.nodes);
+        const edges = new vis.DataSet(data.graph.edges);
+        const network = new vis.Network(container, {'nodes': nodes, 'edges': edges}, options);
+
+        const slidecontainer = document.getElementById('slidecontainer');
+        const slide = document.createElement('input');
+        slide.type = 'range';
+        slide.min = 1;
+        slide.max = data.order.length;
+        slide.value = data.order.length;
+        slidecontainer.appendChild(slide);
+        slide.onchange = () => {
+            const updatedNodes = [];
+            const updatedNodeIds = [];
+            const updatedEdges = [];
+            data.order.slice(slide.value).forEach((nodeId) => {
+                const node = nodes.get(nodeId);
+                node.color = 'rgba(255, 255, 255, 0)';
+                updatedNodes.push(node);
+                updatedNodeIds.push(nodeId);
+            });
+            data.graph.edges.forEach((edge) => {
+                if (updatedNodeIds.includes(edge.from) || updatedNodeIds.includes(edge.to)) {
+                    edge.color = {
+                        'color': 'rgba(255,255,255,0)'
+                    };
+                    updatedEdges.push(edge);
+                }
+            });
+            nodes.update(updatedNodes);
+            edges.update(updatedEdges);
+        }
     </script>
 
 </body>
