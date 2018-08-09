@@ -19,4 +19,4 @@ def position_nodes(tree):
             graph.add_node(node)
 
     graph.layout(prog='dot')
-    graph.draw('graph.svg')
+    graph.draw('graph.plain')

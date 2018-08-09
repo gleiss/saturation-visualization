@@ -2,14 +2,18 @@
 
 __all__ = 'parse', 'parse_line'
 
+import coloredlogs
 import logging
 import re
 
 from presenter.parsing.inference_node import InferenceNode
 from presenter.tree import Tree
 
+coloredlogs.install(
+    level='DEBUG', fmt='%(name)s [%(levelname).1s] %(message)s')
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN = re.compile(r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN = re.compile(
+    r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
 
 
 def parse(vampire_output):
@@ -20,24 +24,28 @@ def parse(vampire_output):
     :rtype: Tree
     """
 
+    nodes = {}
+
     def add_as_child(node):
         for parent in node.parents:
             try:
                 nodes[parent].children.add(node.number)
             except KeyError:
-                orphan_nodes.setdefault(parent, set()).add(node.number)
+                LOG.info(
+                    "Clause %d is derived from preprocessing clause %d", node.number, parent)
+                parent_node = InferenceNode(parent, None, None, None)
+                parent_node.children.add(node.number)
+                nodes[parent] = parent_node
 
-    nodes = {}
-    orphan_nodes = {}
     lines = vampire_output.split('\n')
-    for line in reversed(lines):
+    for line in lines:
         try:
             current_node = parse_line(line)
-            current_node.children |= orphan_nodes.pop(current_node.number, set())
             nodes[current_node.number] = current_node
             add_as_child(current_node)
         except AttributeError:
-            LOG.error("Line '%s' is invalid and cannot be parsed", line)
+            LOG.warning(
+                "'%s' does not match the pattern and will be skipped", line)
 
     leaves = {node for node in nodes.values() if not node.children}
     return Tree(nodes, leaves)

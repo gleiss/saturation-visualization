@@ -110,3 +110,6 @@ venv.bak/
 .vscode/
 
 *.svg
+
+#npm
+node_modules/
