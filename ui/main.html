@@ -1,74 +1,31 @@
+<!DOCTYPE html>
 <html>
 
 <head>
     <title>Vampire Proof</title>
-    <script type="text/javascript" src="../node_modules/vis/dist/vis.js"></script>
-    <script type="text/javascript" src="../tree.js"></script>
-    <link href="../node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css">
 
-    <style type="text/css">
-        body {
-            height: 100%;
-        }
+    <meta charset="UTF-8">
+    <meta name="description" content="TODO">
+    <meta name="author" content="Lena Schnedlitz">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        #graph {
-            width: 100%;
-            height: calc(100% - 100px);
-            border: 1px solid lightgray;
-        }
+    <!-- vis.js -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
 
-        input[type="range"] {
-            width: 90%;
-        }
+    <!-- imports -->
+    <script type="text/javascript" src="../gen/dag.js"></script>
+    <link type="text/css" rel="stylesheet" href="style.css">
     </style>
 </head>
 
 <body>
-
     <div id="graph">
         <canvas></canvas>
     </div>
     <div id="slidecontainer"></div>
 
-    <script type="text/javascript">
-        const container = document.getElementById('graph');
-        const options = {
-            physics: false
-        };
-        const nodes = new vis.DataSet(data.graph.nodes);
-        const edges = new vis.DataSet(data.graph.edges);
-        const network = new vis.Network(container, {'nodes': nodes, 'edges': edges}, options);
-
-        const slidecontainer = document.getElementById('slidecontainer');
-        const slide = document.createElement('input');
-        slide.type = 'range';
-        slide.min = 1;
-        slide.max = data.order.length;
-        slide.value = data.order.length;
-        slidecontainer.appendChild(slide);
-        slide.onchange = () => {
-            const updatedNodes = [];
-            const updatedNodeIds = [];
-            const updatedEdges = [];
-            data.order.slice(slide.value).forEach((nodeId) => {
-                const node = nodes.get(nodeId);
-                node.color = 'rgba(255, 255, 255, 0)';
-                updatedNodes.push(node);
-                updatedNodeIds.push(nodeId);
-            });
-            data.graph.edges.forEach((edge) => {
-                if (updatedNodeIds.includes(edge.from) || updatedNodeIds.includes(edge.to)) {
-                    edge.color = {
-                        'color': 'rgba(255,255,255,0)'
-                    };
-                    updatedEdges.push(edge);
-                }
-            });
-            nodes.update(updatedNodes);
-            edges.update(updatedEdges);
-        }
-    </script>
-
+    <script type="text/javascript" src="graph.js"></script>
 </body>
 
 </html>

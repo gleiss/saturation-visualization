@@ -1,0 +1,13 @@
+html, body {
+    height: 100%;
+}
+
+#graph {
+    width: 100%;
+    height: calc(100% - 100px);
+    border: 1px solid lightgray;
+}
+
+input[type="range"] {
+    width: 90%;
+}

@@ -13,5 +13,8 @@ class InferenceNode:
         self.parents = parents
         self.children = set()
 
-    def __repr__(self):
+    def __str__(self):
         return "{: >5}: {}".format(self.number, set_repr(self.parents))
+
+    def __repr__(self):
+        return self.clause.replace("'", "") if self.clause else ""

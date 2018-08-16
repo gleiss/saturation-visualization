@@ -111,5 +111,8 @@ venv.bak/
 
 *.svg
 
-#npm
+# npm
 node_modules/
+
+# generated files
+gen/

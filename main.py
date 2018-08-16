@@ -1,6 +1,7 @@
 """The application entry point"""
 
 import json
+import os
 import re
 
 from presenter.parsing import vampire_parser
@@ -27,9 +28,14 @@ if __name__ == '__main__':
                 id_, x_coord, y_coord = match.groups()
 
                 node = proof.get(int(id_))
+                color = {
+                    None: '#dddddd',
+                    'theory axiom': '#77aadd'
+                }.get(node.inference_rule, '#99ddff')
+
                 nodes.append({
                     'id': node.number,
-                    'label': repr(node),
+                    'label': str(node),
                     'x': int(float(x_coord) * -100),
                     'y': int(float(y_coord) * -1000),
                     'shape': 'box' if node.clause else 'ellipse',
@@ -37,9 +43,9 @@ if __name__ == '__main__':
                         'borderRadius': 0
                     },
                     'color': {
-                        None: 'lightgray',
-                        'theory axiom': 'red'
-                    }.get(node.inference_rule, 'lightskyblue')
+                        'border': color,
+                        'background': color
+                    }
                 })
                 for child in node.children:
                     edges.append({
@@ -56,5 +62,5 @@ if __name__ == '__main__':
             'order': list(proof.nodes.keys())
         })
 
-        with open('tree.js', 'w') as json_file:
-            json_file.write("const data = {}".format(data))
+        with open(os.path.join('gen', 'dag.js'), 'w') as json_file:
+            json_file.write("const dagJson = '{}'".format(data))
