@@ -6,8 +6,8 @@ import coloredlogs
 import logging
 import re
 
-from presenter.parsing.inference_node import InferenceNode
-from presenter.tree import Tree
+from visualizer.parsing.inference_node import InferenceNode
+from visualizer.tree import Tree
 
 coloredlogs.install(
     level='DEBUG', fmt='%(name)s [%(levelname).1s] %(message)s')

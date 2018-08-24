@@ -1,6 +1,6 @@
 """A data object for inferences"""
 
-from presenter.util import set_repr
+import visualizer.util as util
 
 
 class InferenceNode:
@@ -14,7 +14,7 @@ class InferenceNode:
         self.children = set()
 
     def __str__(self):
-        return "{: >5}: {}".format(self.number, set_repr(self.parents))
+        return "{: >5}: {}".format(self.number, util.set_repr(self.parents))
 
     def __repr__(self):
         return self.clause.replace("'", "") if self.clause else ""

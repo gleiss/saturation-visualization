@@ -1,4 +1,4 @@
-"""TODO"""
+"""Utility functions, mostly for string representations."""
 
 __all__ = 'count_repr', 'title_repr', 'set_repr', 'separator', 'last_line'
 
