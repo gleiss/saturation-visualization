@@ -1,8 +1,8 @@
 """The application entry point"""
 
-import visualizer.controller.positioning as positioning
-
 from flask import Flask, render_template
+
+import visualizer.controller.positioning as positioning
 
 app = Flask(__name__)
 

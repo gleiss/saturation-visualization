@@ -1,4 +1,4 @@
-"""A Vampire output parser"""
+"""A parser for vampire output."""
 
 __all__ = 'parse', 'parse_line'
 
@@ -10,18 +10,18 @@ from visualizer.parsing.inference_node import InferenceNode
 from visualizer.tree import Tree
 
 coloredlogs.install(
-    level='DEBUG', fmt='%(name)s [%(levelname).1s] %(message)s')
+    level='DEBUG', fmt='%(name)s [%(levelname).1s] %(message)s'
+)
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN = re.compile(
-    r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
+    r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$'
+)
 
 
 def parse(vampire_output):
-    """Build a tree from vampire output.
+    """Parse vampire output.
 
-    :param str vampire_output: vampire proof output
-    :return: the created tree
-    :rtype: Tree
+    Currently, only active clauses can be handled.
     """
 
     nodes = {}
@@ -54,9 +54,7 @@ def parse(vampire_output):
 def parse_line(line):
     """Parse a line of vampire output.
 
-    :param str line: a line of vampire output
-    :return: the line converted into a node
-    :rtype: InferenceNode
+    Attempt to extract clause information from the given line. Throw an AttributeError if the line cannot be matched.
     """
     number, clause, rule, parents = re.match(OUTPUT_PATTERN, line).groups()
     number = int(number)

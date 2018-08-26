@@ -12,16 +12,14 @@ import re
 import visualizer.parsing.vampire_parser as parser
 
 
-def position_nodes(tree):
+def get_node_positions(proof_tree):
     """TODO
-
-    :param Tree tree: a tree of InferenceNodes
     """
     graph=pgv.AGraph(directed=True)
-    for node in tree:
+    for node in proof_tree:
         if node.parents:
             for parent in node.parents:
-                graph.add_edge(tree.get(parent), node)
+                graph.add_edge(proof_tree.get(parent), node)
         else:
             graph.add_node(node)
 
@@ -29,15 +27,16 @@ def position_nodes(tree):
     graph.draw('graph.plain')
 
 def generate():
+    """TODO
+    """
     with open('example.proof') as proof_file:
         proof = parser.parse(proof_file.read())
-
-    position_nodes(proof)
+    
+    get_node_positions(proof)  # Generate a file with node positions
 
     pattern = re.compile(
         r'^node \"[ ]{0,4}(\d+): [^\"]+\" ([0-9.]+) ([0-9.]+) .+$'
     )
-
     nodes = []
     edges = []
 
