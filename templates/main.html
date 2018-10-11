@@ -14,18 +14,59 @@
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
 
     <!-- imports -->
-    <script type="text/javascript" src="{{ url_for('static', filename='js/dag.js') }}"></script>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    </style>
 </head>
 
 <body>
-    <div id="graph">
-        <canvas></canvas>
-    </div>
-    <div id="slidecontainer"></div>
+<div id="graph">
+    <canvas></canvas>
+</div>
+<form id="slidecontainer" method="POST"></form>
+<script type="text/javascript">
+    let data = {{ dagData|safe }};
+    let nodes = new vis.DataSet(data.graph.nodes);
+    let edges = new vis.DataSet(data.graph.edges);
+    let network = null;
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/graph.js') }}"></script>
+    const drawGraph = () => {
+        const parent = document.getElementById('graph');
+        const options = {
+            physics: false
+        };
+        network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
+    };
+
+    const reDrawGraph = () => {
+        network.setData({'nodes': nodes, 'edges': edges});
+    };
+
+    const resetData = () => {
+        data = JSON.parse(dagJson);
+        nodes = new vis.DataSet(data.graph.nodes);
+        edges = new vis.DataSet(data.graph.edges);
+    };
+
+    const renderSlide = () => {
+        const slide = document.createElement('input');
+        slide.type = 'range';
+        slide.min = 1;
+        slide.max = data.order.length;
+        slide.value = data.order.length;
+        slide.name = 'slide';
+        slide.onchange = function () {
+            this.form.submit()
+        };
+
+        const parent = document.getElementById('slidecontainer');
+        while (parent.firstChild) {
+            parent.removeChild(firstChild);
+        }
+        parent.appendChild(slide);
+    };
+
+    drawGraph();
+    renderSlide();
+</script>
 </body>
 
 </html>

@@ -1,11 +1,9 @@
 """TODO"""
 
-import visualizer.util as util
+import proofvisualization.model.util as util
 
 
-class Tree:
-    __slots__ = 'nodes', 'leaves'
-
+class Dag:
     def __init__(self, nodes, leaves):
         self.nodes = nodes
         self.leaves = leaves
@@ -14,10 +12,6 @@ class Tree:
         return self.nodes.get(node_id)
 
     def __iter__(self):
-        """TODO
-
-        :return:
-        """
         for node in self.nodes.values():
             yield node
 
@@ -26,7 +20,6 @@ class Tree:
             util.count_repr(self.nodes, "node", "nodes"),
             util.count_repr(self.leaves, "leaf", "leaves")
         )
-
         return "\n".join((
             util.title_repr(title),
             "\n".join(repr(node) for node in self),

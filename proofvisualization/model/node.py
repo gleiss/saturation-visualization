@@ -1,9 +1,9 @@
-"""A data object for inferences"""
+"""Data object representing a line of proof output"""
 
-import visualizer.util as util
+import proofvisualization.model.util as util
 
 
-class InferenceNode:
+class Node:
     __slots__ = 'number', 'clause', 'inference_rule', 'parents', 'children'
 
     def __init__(self, number, clause, inference_rule, parents):
