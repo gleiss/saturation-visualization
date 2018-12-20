@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request
 from flask_session import Session
 
-from proofvisualization.controller import controller
+from proof_visualization.controller import controller
 
 app = Flask(__name__)
 SESSION_TYPE = 'filesystem'

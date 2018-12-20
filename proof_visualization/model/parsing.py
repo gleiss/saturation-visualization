@@ -5,8 +5,8 @@ import re
 
 import coloredlogs
 
-from proofvisualization.model.dag import Dag
-from proofvisualization.model.node import Node
+from proof_visualization.model.dag import Dag
+from proof_visualization.model.node import Node
 
 __all__ = 'process', 'parse', 'analyse'
 
@@ -27,7 +27,7 @@ def parse(vampire_output):
     """
 
     lines = vampire_output.split('\n')
-    return (parse_line(line) for line in lines)
+    return (parsed_line for parsed_line in (parse_line(line) for line in lines) if parsed_line)
 
 
 def parse_line(line):

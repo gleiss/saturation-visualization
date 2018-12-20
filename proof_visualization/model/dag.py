@@ -1,6 +1,6 @@
 """TODO"""
 
-import proofvisualization.model.util as util
+import proof_visualization.model.util as util
 
 
 class Dag:

@@ -1,6 +1,6 @@
 """Data object representing a line of proof output"""
 
-import proofvisualization.model.util as util
+import proof_visualization.model.util as util
 
 
 class Node:
