@@ -14,7 +14,7 @@ class Node:
         self.children = set()
 
     def __str__(self):
-        return "{: >5}: {}".format(self.number, util.set_repr(self.parents))
+        return self.clause.replace("'", "") if self.clause else ""
 
     def __repr__(self):
         return self.clause.replace("'", "") if self.clause else ""
