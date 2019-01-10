@@ -20,12 +20,16 @@ def get_layout(state=None):
 
     if not state:
         state = len(positions) - 1
-    for node_position in positions[:int(state) + 1]:
+    for index, node_position in enumerate(positions):
         node = dag.get(int(node_position.id_))
-        color = {
-            None: '#dddddd',
-            'theory axiom': '#77aadd'
-        }.get(node.inference_rule, '#99ddff')
+
+        if index <= int(state):
+            color = {
+                None: '#dddddd',
+                'theory axiom': '#77aadd'
+            }.get(node.inference_rule, '#99ddff')
+        else:
+            color = '#ffffff'
 
         nodes.append({
             'id': node.number,

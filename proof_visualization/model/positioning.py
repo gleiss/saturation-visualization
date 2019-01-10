@@ -21,7 +21,8 @@ def calculate_node_positions(proof_dag):
             graph.add_node(node)
     graph.layout(prog='dot')
 
-    file_name = 'graph.plain'  # TODO generate file name dynamically
+    # need to save result in file, since that's how pygraphviz works
+    file_name = 'graph.plain' 
     graph.draw(file_name)
 
     with open(file_name) as graph_positions:
