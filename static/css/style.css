@@ -1,13 +1,34 @@
-html, body {
-    height: 100%;
+html {
+  height: 100%;
+  width: 100%;
 }
 
-#graph {
-    width: 100%;
-    height: calc(100% - 100px);
-    border: 1px solid lightgray;
+body {
+  height: calc(100% - 2rem);
+  width: calc(100% - 2rem);
+  margin: 1rem;
+  overflow: hidden;
+}
+
+main {
+  width: 100%;
+  height: calc(100% - 4rem);
+  border: 1px solid lightgray;
 }
 
 input[type="range"] {
-    width: 90%;
+  width: 100%;
+  margin-left: 0;
+}
+
+.slide-value {
+  display: inline-block;
+  position: relative;
+
+  height: 1.5rem;
+  width: 3rem;
+  margin-top: 0.75rem;
+  margin-left: -1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
 }

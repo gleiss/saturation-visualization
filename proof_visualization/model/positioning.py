@@ -1,11 +1,10 @@
-"""TODO"""
-
 import re
 from collections import namedtuple
 
 import pygraphviz as pgv
 
-PLAIN_PATTERN = re.compile(r'^node \"[ ]{0,4}(\d+): [^\"]+\" ([0-9.]+) ([0-9.]+) .+$')
+PLAIN_PATTERN = re.compile(
+    r'^node \"[ ]{0,4}(\d+): [^\"]+\" ([0-9.]+) ([0-9.]+) .+$')
 
 NodePosition = namedtuple('NodePosition', ['id_', 'x_coord', 'y_coord'])
 

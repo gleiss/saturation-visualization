@@ -1,5 +1,3 @@
-"""TODO"""
-
 import proof_visualization.model.util as util
 
 

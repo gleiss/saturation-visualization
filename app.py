@@ -19,8 +19,8 @@ def home():
 @app.route("/", methods=['POST'])
 def render_history():
     params = request.form.to_dict()
-    state = params.get('state')
-    return render_template('main.html', dagData=controller.get_layout(state))
+    state = params.get('slide')
+    return render_template('main.html', dagData=controller.get_layout(state), slideState=state)
 
 
 if __name__ == '__main__':

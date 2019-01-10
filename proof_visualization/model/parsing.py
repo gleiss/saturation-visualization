@@ -3,14 +3,10 @@
 import logging
 import re
 
-import coloredlogs
-
 from proof_visualization.model.dag import Dag
 from proof_visualization.model.node import Node
 
 __all__ = 'process', 'parse', 'analyse'
-
-coloredlogs.install(level='DEBUG', fmt='%(name)s [%(levelname).1s] %(message)s')
 
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN = re.compile(r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
@@ -43,7 +39,7 @@ def parse_line(line):
 
 
 def analyse(parsed_lines):
-    """Build a DAG from parsed vampire lines."""
+    """Build a DAG from parsed vampire output lines."""
 
     nodes = {}
     for node in parsed_lines:

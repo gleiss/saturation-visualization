@@ -2,71 +2,74 @@
 <html>
 
 <head>
-    <title>Vampire Proof</title>
+  <title>Vampire Proof</title>
 
-    <meta charset="UTF-8">
-    <meta name="description" content="TODO">
-    <meta name="author" content="Lena Schnedlitz">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="description" content="TODO">
+  <meta name="author" content="Lena Schnedlitz">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- vis.js -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
+  <!-- vis.js -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
 
-    <!-- imports -->
-    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- imports -->
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-<div id="graph">
-    <canvas></canvas>
-</div>
-<form id="slidecontainer" method="POST"></form>
+<main id="graph">
+  <canvas></canvas>
+</main>
+<section>
+  <span id="slide-value" class="slide-value"></span>
+  <form id="slide-container" method="POST"></form>
+</section>
+
 <script type="text/javascript">
-    let data = {{ dagData|safe }};
-    let nodes = new vis.DataSet(data.graph.nodes);
-    let edges = new vis.DataSet(data.graph.edges);
-    let network = null;
+  let data = {{ dagData | safe }};
+  {% if slideState is defined %}
+  let slideState = {{ slideState | int }};
+  {% else %}
+  let slideState = data.order.length;
+  {% endif %}
+  let nodes = new vis.DataSet(data.graph.nodes);
+  let edges = new vis.DataSet(data.graph.edges);
+  let network = null;
 
-    const drawGraph = () => {
-        const parent = document.getElementById('graph');
-        const options = {
-            physics: false
-        };
-        network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
+  const drawGraph = () => {
+    const parent = document.getElementById('graph');
+    const options = {
+      physics: false
+    };
+    network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
+  };
+
+  const renderSlide = () => {
+    const slide = document.createElement('input');
+    slide.type = 'range';
+    slide.min = 1;
+    slide.max = data.order.length;
+    slide.value = slideState;
+    slide.name = 'slide';
+    slide.onchange = function () {
+      this.form.submit()
     };
 
-    const reDrawGraph = () => {
-        network.setData({'nodes': nodes, 'edges': edges});
-    };
+    const parent = document.getElementById('slide-container');
+    parent.appendChild(slide);
+  };
 
-    const resetData = () => {
-        data = JSON.parse(dagJson);
-        nodes = new vis.DataSet(data.graph.nodes);
-        edges = new vis.DataSet(data.graph.edges);
-    };
+  const updateSlideValueDisplay = () => {
+    const slideValueDisplay = document.getElementById('slide-value');
+    slideValueDisplay.innerText = slideState;
+    slideValueDisplay.setAttribute('style', `left: ${slideState * 100 / data.order.length}%`);
+  };
 
-    const renderSlide = () => {
-        const slide = document.createElement('input');
-        slide.type = 'range';
-        slide.min = 1;
-        slide.max = data.order.length;
-        slide.value = data.order.length;
-        slide.name = 'slide';
-        slide.onchange = function () {
-            this.form.submit()
-        };
-
-        const parent = document.getElementById('slidecontainer');
-        while (parent.firstChild) {
-            parent.removeChild(firstChild);
-        }
-        parent.appendChild(slide);
-    };
-
-    drawGraph();
-    renderSlide();
+  drawGraph();
+  renderSlide();
+  updateSlideValueDisplay();
 </script>
-</body>
 
+</body>
 </html>

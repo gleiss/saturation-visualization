@@ -9,22 +9,18 @@ from proof_visualization.model.positioning import calculate_node_positions
 
 
 def get_layout(state=None):
+    if not session.get('dag'):
+        init_dag_from_file()
+
     dag = session.get('dag')
     positions = session.get('positions')
-
-    if not dag:
-        with open('example.proof') as proof_file:
-            dag = process(proof_file.read())
-            positions = calculate_node_positions(dag)
-
-            # store in session
-            session['dag'] = dag
-            session['positions'] = positions
 
     nodes = []
     edges = []
 
-    for node_position in positions:
+    if not state:
+        state = len(positions) - 1
+    for node_position in positions[:int(state) + 1]:
         node = dag.get(int(node_position.id_))
         color = {
             None: '#dddddd',
@@ -61,3 +57,13 @@ def get_layout(state=None):
     })
 
     return data
+
+
+def init_dag_from_file():
+    with open('example.proof') as proof_file:
+        dag = process(proof_file.read())
+        positions = calculate_node_positions(dag)
+
+        # store in session
+        session['dag'] = dag
+        session['positions'] = positions
