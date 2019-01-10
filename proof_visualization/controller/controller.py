@@ -7,18 +7,17 @@ from flask import session
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
 
+def init_controller():
+    init_dag_from_file()
+    session['state'] = len(session['positions']) - 1
 
-def get_layout(state=None):
+
+def get_layout():
     
-    if not session.get('dag'):
-        init_dag_from_file()
-
     dag = session.get('dag')
     positions = session.get('positions')
+    state = session['state']
     
-    if not state:
-        state = len(positions) - 1
-        
     nodes = []
     edges = []
 
