@@ -18,6 +18,8 @@ def get_layout(state=None):
     nodes = []
     edges = []
 
+    visibleNodeSet = set(int(node.id_) for node in positions[:int(state)+1])
+
     if not state:
         state = len(positions) - 1
     for index, node_position in enumerate(positions):
@@ -25,14 +27,16 @@ def get_layout(state=None):
 
 
         if index > int(state):
-            hidden = True
+            backgroundColor = '#ffffff00'
+            textColor = '#ffffff00'
+            
         else:
-            hidden = False
+            backgroundColor = {
+                None: '#dddddd',
+                'theory axiom': '#77aadd'
+            }.get(node.inference_rule, '#99ddff')
+            textColor = '#000000'
 
-        backgroundColor = {
-            None: '#dddddd',
-            'theory axiom': '#77aadd'
-        }.get(node.inference_rule, '#99ddff')
         nodes.append({
             'id': node.number,
             'label': str(node),
@@ -46,13 +50,23 @@ def get_layout(state=None):
                 'border': backgroundColor,
                 'background': backgroundColor,
             },
-            'hidden': hidden
+            'font': {
+                'color': textColor
+            }
         })
         for child in node.children:
+            if int(child) in visibleNodeSet:
+                opacity = 1.0
+            else:
+                opacity = 0.0
+
             edges.append({
                 'from': node.number,
                 'to': child,
-                'arrows': 'to'
+                'arrows': 'to',
+                'color': {
+                    'opacity': opacity
+                }
             })
 
     data = json.dumps({
