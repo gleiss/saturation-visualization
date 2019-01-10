@@ -23,14 +23,16 @@ def get_layout(state=None):
     for index, node_position in enumerate(positions):
         node = dag.get(int(node_position.id_))
 
-        if index <= int(state):
-            color = {
-                None: '#dddddd',
-                'theory axiom': '#77aadd'
-            }.get(node.inference_rule, '#99ddff')
-        else:
-            color = '#ffffff'
 
+        if index > int(state):
+            hidden = True
+        else:
+            hidden = False
+
+        backgroundColor = {
+            None: '#dddddd',
+            'theory axiom': '#77aadd'
+        }.get(node.inference_rule, '#99ddff')
         nodes.append({
             'id': node.number,
             'label': str(node),
@@ -41,9 +43,10 @@ def get_layout(state=None):
                 'borderRadius': 0
             },
             'color': {
-                'border': color,
-                'background': color
-            }
+                'border': backgroundColor,
+                'background': backgroundColor,
+            },
+            'hidden': hidden
         })
         for child in node.children:
             edges.append({
