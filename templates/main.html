@@ -47,7 +47,21 @@
     const options = {
       physics: false
     };
+    const viewPosition = JSON.parse(sessionStorage.getItem('viewPosition') || null);
+    const scale = sessionStorage.getItem('scale');
+
     network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
+    if (viewPosition && scale) {
+      network.moveTo({
+        scale: scale,
+        position: viewPosition
+      })
+    }
+
+    network.on('afterDrawing', () => {
+      sessionStorage.setItem('viewPosition', JSON.stringify(network.getViewPosition()));
+      sessionStorage.setItem('scale', network.getScale());
+    });
   };
 
   const renderSlide = () => {
