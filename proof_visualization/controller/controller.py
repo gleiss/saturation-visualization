@@ -9,19 +9,22 @@ from proof_visualization.model.positioning import calculate_node_positions
 
 
 def get_layout(state=None):
+    
     if not session.get('dag'):
         init_dag_from_file()
 
     dag = session.get('dag')
     positions = session.get('positions')
-
+    
+    if not state:
+        state = len(positions) - 1
+        
     nodes = []
     edges = []
 
     visibleNodeSet = set(int(node.id_) for node in positions[:int(state)+1])
 
-    if not state:
-        state = len(positions) - 1
+
     for index, node_position in enumerate(positions):
         node = dag.get(int(node_position.id_))
 
