@@ -10,8 +10,8 @@ pip install -r requirements.txt
 ```
 
 ### Run the App
-* Start the app by running `main.py`:
+* Start the app by running `app.py`:
   ```
-  python main.py
+  python app.py
   ```
 * Open a browser and go to `127.0.0.1:5000`.
