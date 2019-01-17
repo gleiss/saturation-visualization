@@ -13,12 +13,14 @@ def calculate_node_positions(proof_dag):
     """Use pygraphviz to calculate node positions and return the result as a list of NodePositions"""
 
     graph = pgv.AGraph(directed=True)
+
     for node in proof_dag:
-        if node.parents:
-            for parent in node.parents:
-                graph.add_edge(proof_dag.get(parent), node)
-        else:
-            graph.add_node(node)
+        graph.add_node(node.number, label=node.clause)
+
+    for node in proof_dag:
+        for parent in node.parents:
+            graph.add_edge(parent, node.number)
+            
     graph.layout(prog='dot')
 
     # need to save result in file, since that's how pygraphviz works
