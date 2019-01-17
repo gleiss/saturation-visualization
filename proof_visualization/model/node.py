@@ -15,7 +15,7 @@ class Node:
             assert(isinstance(parent, int))
 
         self.number = number
-        self.clause = clause.replace("'", "") if clause else ""
+        self.clause = clause.replace("'", "").replace("\"", "") if clause else ""
         self.inference_rule = inference_rule
         self.parents = parents
         self.children = set()
