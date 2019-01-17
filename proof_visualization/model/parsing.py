@@ -32,7 +32,7 @@ def parse_line(line):
         number = int(number)
         clause = clause.rstrip()
         rule = rule.rstrip()
-        parents = {int(parent) for parent in parents.split(',') if parent}
+        parents = [int(parent) for parent in parents.split(',') if parent]
         return Node(number, clause, rule, parents)
     except AttributeError:
         LOG.warning('\'%s\' does not match the pattern and will be skipped', line)
@@ -49,9 +49,9 @@ def analyse(parsed_lines):
                 nodes[parent].children.add(node.number)
             except KeyError:
                 LOG.info('Clause %d is derived from pre-processing clause %d', node.number, parent)
-                parent_node = Node(parent, None, None, None)
+                parent_node = Node(parent, "Preproc", "Preproc", [])
                 parent_node.children.add(node.number)
                 nodes[parent] = parent_node
 
-    leaves = {node for node in nodes.values() if not node.children}
+    leaves = {node.number for node in nodes.values() if not node.children}
     return Dag(nodes, leaves)
