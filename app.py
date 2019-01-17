@@ -7,6 +7,7 @@ from proof_visualization.controller import controller
 
 app = Flask(__name__)
 SESSION_TYPE = 'filesystem'
+SESSION_FILE_THRESHOLD = 1
 app.config.from_object(__name__)
 Session(app)
 
@@ -31,6 +32,12 @@ def handle_post_request():
     renderData = controller.get_layout()
 
     return render_template('main.html', dagData=renderData, slideState=session['state'])
+
+
+@app.before_first_request
+def clear_session():
+    session.clear()
+
 
 if __name__ == '__main__':
     app.run()
