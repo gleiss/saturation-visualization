@@ -11,6 +11,8 @@ __all__ = 'process', 'parse', 'analyse'
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN = re.compile(r'^\[SA\] active: ([\d]+)\. (.*) ?\[(\D*) ?([\d,]*)\]$')
 
+PREPROCESSING_LABEL = 'Preproc'
+
 
 def process(vampire_output):
     return analyse(parse(vampire_output))
@@ -49,7 +51,7 @@ def analyse(parsed_lines):
                 nodes[parent].children.add(node.number)
             except KeyError:
                 LOG.info('Clause %d is derived from pre-processing clause %d', node.number, parent)
-                parent_node = Node(parent, "Preproc", "Preproc", [])
+                parent_node = Node(parent, PREPROCESSING_LABEL, PREPROCESSING_LABEL, [])
                 parent_node.children.add(node.number)
                 nodes[parent] = parent_node
 

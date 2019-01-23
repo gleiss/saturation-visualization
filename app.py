@@ -20,23 +20,24 @@ def home():
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
-    params = request.form.to_dict()
-
-    if params.get('slide'):
-        session['state'] = int(params['slide'])
-    elif params.get('increase'):
-        session['state'] += 1
-    elif params.get('decrease'):
-        session['state'] -= 1
-
-    renderData = controller.get_layout()
-
-    return render_template('main.html', dagData=renderData, slideState=session['state'])
+    update_history_state(request.form.to_dict())
+    return render_template('main.html', dagData=controller.get_layout(), historyState=session['history_state'])
 
 
 @app.before_first_request
 def clear_session():
     session.clear()
+
+
+def update_history_state(request_params):
+    upper_limit = len(session['positions']) - 1
+
+    if request_params.get('slide'):
+        session['history_state'] = request_params['slide']
+    elif request_params.get('increase'):
+        session['history_state'] = min(session['history_state'] + 1, upper_limit)
+    elif request_params.get('decrease'):
+        session['history_state'] = max(session['history_state'] - 1, 0)
 
 
 if __name__ == '__main__':

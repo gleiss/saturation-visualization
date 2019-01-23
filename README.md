@@ -2,7 +2,7 @@
 
 ## How to Use
 ### Requirements
-This program is written in **Python 3**.  
+This program is written in **Python 3**.
 Requirements are listed in *requirements.txt* and can be installed with **Pip**:
 
 ```

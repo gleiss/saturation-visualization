@@ -7,15 +7,10 @@ class Node:
     __slots__ = 'number', 'clause', 'inference_rule', 'parents', 'children'
 
     def __init__(self, number, clause, inference_rule, parents):
-        assert(isinstance(number, int))
-        assert(isinstance(clause, str))
-        assert(isinstance(inference_rule, str))
-        assert(isinstance(parents, list))
-        for parent in parents:
-            assert(isinstance(parent, int))
+        self._check_assertions(number, clause, inference_rule, parents)
 
         self.number = number
-        self.clause = clause.replace("'", "").replace("\"", "") if clause else ""
+        self.clause = util.remove_quotes(clause)
         self.inference_rule = inference_rule
         self.parents = parents
         self.children = set()
@@ -25,3 +20,12 @@ class Node:
 
     def __repr__(self):
         return self.clause
+
+    @staticmethod
+    def _check_assertions(number, clause, inference_rule, parents):
+        assert isinstance(number, int)
+        assert isinstance(clause, str)
+        assert isinstance(inference_rule, str)
+        assert isinstance(parents, list)
+        for parent in parents:
+            assert isinstance(parent, int)

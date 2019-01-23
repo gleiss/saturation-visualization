@@ -33,10 +33,10 @@
 
 <script type="text/javascript">
   let data = {{ dagData | safe }};
-  {% if slideState is defined %}
-  let slideState = {{ slideState | int }};
+  {% if historyState is defined %}
+  let historyState = {{ historyState | int }};
   {% else %}
-  let slideState = data.order.length;
+  let historyState = data.order.length;
   {% endif %}
   let nodes = new vis.DataSet(data.graph.nodes);
   let edges = new vis.DataSet(data.graph.edges);
@@ -69,7 +69,7 @@
     slide.type = 'range';
     slide.min = 1;
     slide.max = data.order.length;
-    slide.value = slideState;
+    slide.value = historyState;
     slide.name = 'slide';
     slide.onchange = function () {
       this.form.submit()
@@ -81,8 +81,8 @@
 
   const updateSlideValueDisplay = () => {
     const slideValueDisplay = document.getElementById('slide-value');
-    slideValueDisplay.innerText = slideState;
-    slideValueDisplay.setAttribute('style', `left: ${slideState * 100 / data.order.length}%`);
+    slideValueDisplay.innerText = historyState;
+    slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / data.order.length}%`);
   };
 
   drawGraph();

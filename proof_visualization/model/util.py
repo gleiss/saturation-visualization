@@ -1,7 +1,5 @@
 """Utility functions, mostly for string representations."""
 
-__all__ = 'count_repr', 'title_repr', 'set_repr', 'separator', 'last_line'
-
 BORDER = "="
 SEPARATOR = "-"
 LINE_LENGTH = 50
@@ -27,3 +25,9 @@ def separator():
 
 def last_line():
     return BORDER * LINE_LENGTH + "\n"
+
+
+def remove_quotes(string):
+    if not string:
+        return ""
+    return string.replace("'", "").replace("\"", "")

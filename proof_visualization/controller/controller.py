@@ -1,85 +1,38 @@
 """TODO"""
 
-import json
-
 from flask import session
 
+import proof_visualization.controller.json_util as json
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
 
+
 def init_controller():
     init_dag_from_file()
-    session['state'] = len(session['positions']) - 1
+    session['history_state'] = len(session['positions']) - 1
 
 
 def get_layout():
-    
+    """Use data stored in session to create a graph layout for vis.js."""
+
     dag = session.get('dag')
     positions = session.get('positions')
-    state = session['state']
-    
+    history_state = int(session['history_state'])
+    visible_node_set = {int(node.id_) for node in positions[:history_state + 1]}
+
     nodes = []
     edges = []
-
-    visibleNodeSet = set(int(node.id_) for node in positions[:int(state)+1])
-
 
     for index, node_position in enumerate(positions):
         node = dag.get(int(node_position.id_))
 
-
-        if index > int(state):
-            backgroundColor = '#ffffff00'
-            textColor = '#ffffff00'
-            
-        else:
-            backgroundColor = {
-                None: '#dddddd',
-                'theory axiom': '#77aadd'
-            }.get(node.inference_rule, '#99ddff')
-            textColor = '#000000'
-
-        nodes.append({
-            'id': node.number,
-            'label': str(node),
-            'x': int(float(node_position.x_coord) * -100),
-            'y': int(float(node_position.y_coord) * -1000),
-            'shape': 'box' if node.clause else 'ellipse',
-            'shapeProperties': {
-                'borderRadius': 0
-            },
-            'color': {
-                'border': backgroundColor,
-                'background': backgroundColor,
-            },
-            'font': {
-                'color': textColor
-            }
-        })
+        node_visible = index <= history_state
+        nodes.append(json.format_node(node, node_position, node_visible))
         for child in node.children:
-            if int(child) in visibleNodeSet:
-                opacity = 1.0
-            else:
-                opacity = 0.0
+            edge_visible = int(child) in visible_node_set
+            edges.append(json.format_edge(node.number, child, edge_visible))
 
-            edges.append({
-                'from': node.number,
-                'to': child,
-                'arrows': 'to',
-                'color': {
-                    'opacity': opacity
-                }
-            })
-
-    data = json.dumps({
-        'graph': {
-            'nodes': nodes,
-            'edges': edges
-        },
-        'order': list(dag.nodes.keys())
-    })
-
-    return data
+    return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
 
 def init_dag_from_file():
