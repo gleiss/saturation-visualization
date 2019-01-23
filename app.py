@@ -1,11 +1,17 @@
 """The application entry point"""
 
+import os
+
 from flask import Flask, render_template, request, session
 from flask_session import Session
 
 from proof_visualization.controller import controller
 
-app = Flask(__name__)
+VIEW_DIR = os.path.join(os.path.dirname(__file__), 'proof_visualization', 'view')
+TEMPLATE_DIR = os.path.join(VIEW_DIR, 'templates')
+STATIC_DIR = os.path.join(VIEW_DIR, 'static')
+
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 SESSION_TYPE = 'filesystem'
 SESSION_FILE_THRESHOLD = 1
 app.config.from_object(__name__)
