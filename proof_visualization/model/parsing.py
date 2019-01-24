@@ -24,7 +24,7 @@ def parse(vampire_output):
     The parser can only deal with active clauses!
     """
 
-    lines = vampire_output.split('\n')
+    lines = vampire_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
     return (parsed_line for parsed_line in (parse_line(line) for line in lines) if parsed_line)
 
 

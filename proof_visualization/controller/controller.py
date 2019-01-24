@@ -35,6 +35,15 @@ def get_layout():
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
 
+def init_dag(file_content):
+    dag = process(file_content)
+    positions = calculate_node_positions(dag)
+
+    # store in session
+    session['dag'] = dag
+    session['positions'] = positions
+
+
 def init_dag_from_file():
     with open('example.proof') as proof_file:
         dag = process(proof_file.read())

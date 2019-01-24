@@ -26,7 +26,12 @@ def home():
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
-    update_history_state(request.form.to_dict())
+    params = request.form.to_dict()
+    if params.get('file'):
+        controller.init_dag(params['file'])
+        refresh_history_state()
+    else:
+        update_history_state(params)
     return render_template('main.html', dagData=controller.get_layout(), historyState=session['history_state'])
 
 
@@ -41,9 +46,18 @@ def update_history_state(request_params):
     if request_params.get('slide'):
         session['history_state'] = request_params['slide']
     elif request_params.get('increase'):
-        session['history_state'] = min(session['history_state'] + 1, upper_limit)
+        session['history_state'] = session['history_state'] + 1
     elif request_params.get('decrease'):
-        session['history_state'] = max(session['history_state'] - 1, 0)
+        session['history_state'] = session['history_state'] - 1
+
+    if session['history_state'] < 0:
+        session['history_state'] = 0
+    elif 0 < upper_limit < session['history_state']:
+        session['history_state'] = upper_limit
+
+
+def refresh_history_state():
+    session['history_state'] = max(len(session['positions']) - 1, 0)
 
 
 if __name__ == '__main__':

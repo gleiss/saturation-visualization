@@ -22,12 +22,14 @@
   <canvas></canvas>
 </main>
 <section>
-  <form action="" method="post">
-      <input type="submit" name="decrease" value="-" />
-      <input type="submit" name="increase" value="+" />
+  <form id="button-form" action="" method="post" enctype="multipart/form-data">
+    <input type="submit" name="decrease" value="-"/>
+    <input type="submit" name="increase" value="+"/>
+    <input id="file-upload" type="hidden" name="file"/>
+    <input type="file" onchange="uploadFile(this.files)"/>
   </form>
 
-    <span id="slide-value" class="slide-value"></span>
+  <span id="slide-value" class="slide-value"></span>
   <form id="slide-container" method="POST"></form>
 </section>
 
@@ -83,6 +85,15 @@
     const slideValueDisplay = document.getElementById('slide-value');
     slideValueDisplay.innerText = historyState;
     slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / data.order.length}%`);
+  };
+
+  const uploadFile = (files) => {
+    const reader = new FileReader();
+    reader.readAsText(files[0]);
+    reader.onloadend = () => {
+      document.getElementById('file-upload').value = reader.result;
+      document.getElementById('button-form').submit();
+    };
   };
 
   drawGraph();
