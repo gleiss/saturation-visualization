@@ -24,6 +24,8 @@ HIGHLIGHT_COLOR = '#ee8866'
 
 
 def format_node(node, position, visible):
+    if not node:
+        return
     shape = SHAPES.get(node.inference_rule, SHAPES[None])
 
     if visible:

@@ -66,11 +66,17 @@
 </aside>
 
 <script type="text/javascript">
+  {% if reset is defined and reset %}
+    const resetSession = true;
+  {% else %}
+    const resetSession = false;
+  {% endif %}
+
   let data = {{ dagData | safe }};
   {% if historyState is defined %}
     let historyState = {{ historyState | int }};
   {% else %}
-    let historyState = data.order.length - 1;
+    let historyState = data.order.length;
   {% endif %}
   let nodes = new vis.DataSet(data.graph.nodes);
   let edges = new vis.DataSet(data.graph.edges);
@@ -84,8 +90,8 @@
         multiselect: true
       }
     };
-    const viewPosition = JSON.parse(sessionStorage.getItem('viewPosition') || null);
-    const scale = sessionStorage.getItem('scale');
+    const viewPosition = resetSession ? undefined : JSON.parse(sessionStorage.getItem('viewPosition') || null);
+    const scale = resetSession ? undefined : sessionStorage.getItem('scale');
 
     network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
     if (viewPosition && scale) {
@@ -110,7 +116,7 @@
   const renderSlide = () => {
     const slide = document.createElement('input');
     slide.type = 'range';
-    slide.min = 1;
+    slide.min = 0;
     slide.max = data.order.length;
     slide.value = historyState;
     slide.name = 'slide';

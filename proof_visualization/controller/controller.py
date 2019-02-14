@@ -10,7 +10,7 @@ from proof_visualization.model.positioning import calculate_node_positions
 
 def init_controller():
     init_dag_from_file()
-    session['history_state'] = len(session['positions']) - 1
+    session['history_state'] = len(session['positions'])
 
 
 def get_layout():
@@ -19,19 +19,19 @@ def get_layout():
     dag = session.get('dag')
     positions = session.get('positions')
     history_state = int(session['history_state'])
-    visible_node_set = {int(node.id_) for node in positions[:history_state + 1]}
+    visible_node_set = {int(node.id_) for node in positions[:history_state]}
 
     nodes = []
     edges = []
 
     for index, node_position in enumerate(positions):
         node = dag.get(int(node_position.id_))
-
-        node_visible = index <= history_state
-        nodes.append(json.format_node(node, node_position, node_visible))
-        for child in node.children:
-            edge_visible = int(child) in visible_node_set
-            edges.append(json.format_edge(node.number, child, edge_visible))
+        if node:
+            node_visible = index <= history_state
+            nodes.append(json.format_node(node, node_position, node_visible))
+            for child in node.children:
+                edge_visible = int(child) in visible_node_set
+                edges.append(json.format_edge(node.number, child, edge_visible))
 
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
@@ -65,8 +65,7 @@ def init_selection_dag(selection):
     # store in session
     session['dag'] = dag
     session['positions'] = positions
-    import logging
-    logging.error(dag.nodes)
+    session['history_state'] = len(positions)
 
 
 def init_dag_from_file():
