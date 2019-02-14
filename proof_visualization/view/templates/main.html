@@ -9,36 +9,68 @@
   <meta name="author" content="Lena Schnedlitz">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- vis.js -->
+  <!-- VIS.JS -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
 
-  <!-- imports -->
+  <!-- IMPORTS -->
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-<main id="graph">
-  <canvas></canvas>
+<main>
+  <section id="graph">
+    <canvas></canvas>
+  </section>
+  <section>
+    <form id="buttonForm" action="" method="post">
+      <input type="submit" name="decrease" value="-"/>
+      <section id="slideWrapper">
+        <small id="slideValue" class="slide-value"></small>
+        <section id="slideContainer"></section>
+      </section>
+      <input type="submit" name="increase" value="+"/>
+    </form>
+
+  </section>
 </main>
-<section>
-  <form id="button-form" action="" method="post" enctype="multipart/form-data">
-    <input type="submit" name="decrease" value="-"/>
-    <input type="submit" name="increase" value="+"/>
-    <input id="file-upload" type="hidden" name="file"/>
-    <input type="file" onchange="uploadFile(this.files)"/>
+<aside>
+  <!-- FILE SELECTION -->
+  <form id="fileForm" action="" method="post" enctype="multipart/form-data">
+    <input id="fileUpload"
+           type="hidden"
+           name="file"/>
+    <input id="fileSelector"
+           type="file"
+           onchange="uploadFile(this.files)"/>
+    <input class="sidebar-button"
+           type="button"
+           value="New"
+           title="Select a new file..."
+           onclick="chooseFile()"/>
   </form>
 
-  <span id="slide-value" class="slide-value"></span>
-  <form id="slide-container" method="POST"></form>
-</section>
+  <br>
+  <small class="node-info"><strong id="nodeCount">0 nodes</strong> selected</small>
+
+  <!-- RERENDER SELECTION -->
+  <form id="selectForm" action="" method="post">
+    <input id="selection"
+           type="hidden"
+           name="selection"/>
+    <input id="selectionSubmit"
+           class="sidebar-button"
+           type="submit"
+           value="Lay out selection"/>
+  </form>
+</aside>
 
 <script type="text/javascript">
   let data = {{ dagData | safe }};
   {% if historyState is defined %}
-  let historyState = {{ historyState | int }};
+    let historyState = {{ historyState | int }};
   {% else %}
-  let historyState = data.order.length;
+    let historyState = data.order.length - 1;
   {% endif %}
   let nodes = new vis.DataSet(data.graph.nodes);
   let edges = new vis.DataSet(data.graph.edges);
@@ -47,7 +79,10 @@
   const drawGraph = () => {
     const parent = document.getElementById('graph');
     const options = {
-      physics: false
+      physics: false,
+      interaction: {
+        multiselect: true
+      }
     };
     const viewPosition = JSON.parse(sessionStorage.getItem('viewPosition') || null);
     const scale = sessionStorage.getItem('scale');
@@ -64,6 +99,12 @@
       sessionStorage.setItem('viewPosition', JSON.stringify(network.getViewPosition()));
       sessionStorage.setItem('scale', network.getScale());
     });
+    network.on('select', (change) => {
+      document.getElementById('selection').value = change.nodes;
+      const nodeCount = change.nodes.length;
+      document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
+      document.getElementById('selectionSubmit').disabled = nodeCount === 0;
+    })
   };
 
   const renderSlide = () => {
@@ -77,22 +118,24 @@
       this.form.submit()
     };
 
-    const parent = document.getElementById('slide-container');
+    const parent = document.getElementById('slideContainer');
     parent.appendChild(slide);
   };
 
   const updateSlideValueDisplay = () => {
-    const slideValueDisplay = document.getElementById('slide-value');
+    const slideValueDisplay = document.getElementById('slideValue');
     slideValueDisplay.innerText = historyState;
     slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / data.order.length}%`);
   };
+
+  const chooseFile = () => document.getElementById('fileSelector').click();
 
   const uploadFile = (files) => {
     const reader = new FileReader();
     reader.readAsText(files[0]);
     reader.onloadend = () => {
-      document.getElementById('file-upload').value = reader.result;
-      document.getElementById('button-form').submit();
+      document.getElementById('fileUpload').value = reader.result;
+      document.getElementById('fileForm').submit();
     };
   };
 

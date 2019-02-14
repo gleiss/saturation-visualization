@@ -4,16 +4,51 @@ html {
 }
 
 body {
-  height: calc(100% - 2rem);
-  width: calc(100% - 2rem);
-  margin: 1rem;
+  height: 100%;
+  width: 100%;
+  margin: 0;
   overflow: hidden;
+  display: flex;
 }
 
 main {
+  flex-grow: 1;
+  background: #f8f8f8;
+  padding: 1rem;
+}
+
+aside {
+  flex-grow: 0;
+  margin: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#graph {
   width: 100%;
   height: calc(100% - 4rem);
-  border: 1px solid lightgray;
+  border-radius: 2px;
+
+  background: #fff;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .05);
+}
+
+#buttonForm {
+  display: flex;
+  align-items: center;
+}
+
+#slideWrapper {
+  flex-grow: 1;
+  padding: 0.5rem;
+}
+
+#slideContainer {
+  margin-bottom: 1rem;
+}
+
+#fileSelector {
+  display: none;
 }
 
 input[type="range"] {
@@ -25,9 +60,22 @@ input[type="range"] {
   display: inline-block;
   position: relative;
 
-  height: 1.5rem;
+  height: 1rem;
   width: 3rem;
   margin-left: -1.5rem;
   line-height: 1.5rem;
   text-align: center;
+}
+
+#fileForm > input[type="button"] {
+  width: 100%;
+}
+
+.node-info {
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-button {
+  padding: 0.25rem 0.75rem;
 }

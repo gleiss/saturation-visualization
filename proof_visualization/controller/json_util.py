@@ -6,15 +6,21 @@ PREPROCESSING_LABEL = 'Preproc'
 
 # STYLE CONFIG
 SHAPES = {
-    PREPROCESSING_LABEL: 'ellipse',
+    PREPROCESSING_LABEL: 'box',
     None: 'box'
 }
 BACKGROUND_COLORS = {
-    PREPROCESSING_LABEL: '#dddddd',
+    PREPROCESSING_LABEL: '#44bb99',
     'theory axiom': '#77aadd',
-    None: '#99ddff'
+    None: '#dddddd'
+}
+BORDER_COLORS = {
+    PREPROCESSING_LABEL: '#009988',
+    'theory axiom': '#4477aa',
+    None: '#bbbbbb'
 }
 INVISIBLE_COLOR = '#ffffff00'
+HIGHLIGHT_COLOR = '#ee8866'
 
 
 def format_node(node, position, visible):
@@ -22,15 +28,18 @@ def format_node(node, position, visible):
 
     if visible:
         background_color = BACKGROUND_COLORS.get(node.inference_rule, BACKGROUND_COLORS[None])
+        border_color = BORDER_COLORS.get(node.inference_rule, BORDER_COLORS[None])
         text_color = '#000000'
     else:
         background_color = INVISIBLE_COLOR
+        border_color = INVISIBLE_COLOR
         text_color = INVISIBLE_COLOR
 
     return {
         'color': {
             'background': background_color,
-            'border': background_color
+            'border': border_color,
+            'highlight': HIGHLIGHT_COLOR
         },
         'font': {
             'color': text_color
@@ -38,9 +47,6 @@ def format_node(node, position, visible):
         'id': node.number,
         'label': str(node),
         'shape': shape,
-        'shapeProperties': {
-            'borderRadius': 0
-        },
         'x': int(float(position.x_coord) * -100),
         'y': int(float(position.y_coord) * -1000)
     }

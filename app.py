@@ -30,6 +30,9 @@ def handle_post_request():
     if params.get('file'):
         controller.init_dag(params['file'])
         refresh_history_state()
+    elif params.get('selection'):
+        controller.init_selection_dag(params['selection'].split(','))
+        refresh_history_state()
     else:
         update_history_state(params)
     return render_template('main.html', dagData=controller.get_layout(), historyState=session['history_state'])
@@ -43,12 +46,12 @@ def clear_session():
 def update_history_state(request_params):
     upper_limit = len(session['positions']) - 1
 
-    if request_params.get('slide'):
-        session['history_state'] = request_params['slide']
-    elif request_params.get('increase'):
+    if request_params.get('increase'):
         session['history_state'] = session['history_state'] + 1
     elif request_params.get('decrease'):
         session['history_state'] = session['history_state'] - 1
+    elif request_params.get('slide'):
+        session['history_state'] = int(request_params['slide'])
 
     if session['history_state'] < 0:
         session['history_state'] = 0

@@ -3,6 +3,7 @@
 from flask import session
 
 import proof_visualization.controller.json_util as json
+from proof_visualization.model.dag import Dag
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
 
@@ -35,6 +36,19 @@ def get_layout():
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
 
+def reduce_to_selection(dag, selection):
+    selected_nodes = {dag.get(selected_node) for selected_node in selection}
+
+    # use copy for iteration so that selection_nodes can be updated
+    for node in list(selected_nodes):
+        node.parents = []
+        selected_nodes.update(dag.get(child) for child in node.children)
+
+    nodes = {node.number: node for node in selected_nodes}
+    leaves = {node.number for node in nodes.values() if not node.children}
+    return Dag(nodes, leaves)
+
+
 def init_dag(file_content):
     dag = process(file_content)
     positions = calculate_node_positions(dag)
@@ -42,6 +56,17 @@ def init_dag(file_content):
     # store in session
     session['dag'] = dag
     session['positions'] = positions
+
+
+def init_selection_dag(selection):
+    dag = reduce_to_selection(session['dag'], {int(node_id) for node_id in selection})
+    positions = calculate_node_positions(dag)
+
+    # store in session
+    session['dag'] = dag
+    session['positions'] = positions
+    import logging
+    logging.error(dag.nodes)
 
 
 def init_dag_from_file():
