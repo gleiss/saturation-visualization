@@ -26,8 +26,7 @@ def get_layout():
     for node_position in positions:
         node = dag.get(int(node_position.id_))
         if node:
-            node_visible = node.passive_time and node.passive_time <= history_state
-            nodes.append(json.format_node(node, node_position, node_visible))
+            nodes.append(json.format_node(node, node_position, history_state))
             for child in node.children:
                 child_node = dag.get(int(child))
                 if child_node:

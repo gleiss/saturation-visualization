@@ -2,53 +2,26 @@
 
 import json
 
-PREPROCESSING_LABEL = 'Preproc'
-
-# STYLE CONFIG
-SHAPES = {
-    PREPROCESSING_LABEL: 'box',
-    None: 'box'
-}
-BACKGROUND_COLORS = {
-    PREPROCESSING_LABEL: '#44bb99',
-    'theory axiom': '#77aadd',
-    None: '#dddddd'
-}
-BORDER_COLORS = {
-    PREPROCESSING_LABEL: '#009988',
-    'theory axiom': '#4477aa',
-    None: '#bbbbbb'
-}
-INVISIBLE_COLOR = '#ffffff00'
-HIGHLIGHT_COLOR = '#ee8866'
+from proof_visualization.controller.representation_util import compute_representation
 
 
-def format_node(node, position, visible):
+def format_node(node, position, history_state):
     if not node:
         return
-    shape = SHAPES.get(node.inference_rule, SHAPES[None])
-
-    if visible:
-        background_color = BACKGROUND_COLORS.get(node.inference_rule, BACKGROUND_COLORS[None])
-        border_color = BORDER_COLORS.get(node.inference_rule, BORDER_COLORS[None])
-        text_color = '#000000'
-    else:
-        background_color = INVISIBLE_COLOR
-        border_color = INVISIBLE_COLOR
-        text_color = INVISIBLE_COLOR
+    representation = compute_representation(node, history_state)
 
     return {
         'color': {
-            'background': background_color,
-            'border': border_color,
-            'highlight': HIGHLIGHT_COLOR
+            'background': representation.background,
+            'border': representation.border,
+            'highlight': representation.highlight
         },
         'font': {
-            'color': text_color
+            'color': representation.text
         },
         'id': node.number,
         'label': str(node),
-        'shape': shape,
+        'shape': representation.shape,
         'x': int(float(position.x_coord) * -100),
         'y': int(float(position.y_coord) * -1000)
     }
