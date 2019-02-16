@@ -3,6 +3,7 @@
 from flask import session
 
 import proof_visualization.controller.json_util as json
+from proof_visualization.controller.representation_util import compute_representation
 from proof_visualization.model.dag import Dag
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
@@ -26,7 +27,8 @@ def get_layout():
     for node_position in positions:
         node = dag.get(int(node_position.id_))
         if node:
-            nodes.append(json.format_node(node, node_position, history_state))
+            representation = compute_representation(node, history_state)
+            nodes.append(json.format_node(node, node_position, representation))
             for child in node.children:
                 child_node = dag.get(int(child))
                 if child_node:

@@ -2,14 +2,8 @@
 
 import json
 
-from proof_visualization.controller.representation_util import compute_representation
 
-
-def format_node(node, position, history_state):
-    if not node:
-        return
-    representation = compute_representation(node, history_state)
-
+def format_node(node, position, representation):
     return {
         'color': {
             'background': representation.background,
