@@ -39,6 +39,9 @@ class Node:
         assert isinstance(line_number, int)
         self.active_time = line_number
 
+        if not self.passive_time:
+            self.passive_time = self.active_time
+
     def __str__(self):
         return self.clause
 

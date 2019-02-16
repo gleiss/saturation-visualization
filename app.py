@@ -21,24 +21,27 @@ Session(app)
 @app.route("/", methods=['GET'])
 def home():
     controller.init_controller()
-    return render_template('main.html', dagData=controller.get_layout(), reset=True)
+    return render_template('main.html',
+                           dagData=controller.get_layout(), historyLength=session['total_history_length'], reset=True)
 
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
     params = request.form.to_dict()
-    reset=False
+    reset = False
     if params.get('file'):
-        reset=True
+        reset = True
         controller.init_dag(params['file'])
         refresh_history_state()
     elif params.get('selection'):
-        reset=True
+        reset = True
         controller.init_selection_dag(params['selection'].split(','))
         refresh_history_state()
     else:
         update_history_state(params)
-    return render_template('main.html', dagData=controller.get_layout(), historyState=session['history_state'], reset=reset)
+    return render_template('main.html',
+                           dagData=controller.get_layout(), historyState=session['history_state'],
+                           historyLength=session['total_history_length'], reset=reset)
 
 
 @app.before_first_request
@@ -47,7 +50,7 @@ def clear_session():
 
 
 def update_history_state(request_params):
-    upper_limit = len(session['positions'])
+    upper_limit = session['total_history_length'] - 1
 
     if request_params.get('increase'):
         session['history_state'] = session['history_state'] + 1
@@ -63,7 +66,7 @@ def update_history_state(request_params):
 
 
 def refresh_history_state():
-    session['history_state'] = max(len(session['positions']), 0)
+    session['history_state'] = max(session['total_history_length'], 0)
 
 
 if __name__ == '__main__':

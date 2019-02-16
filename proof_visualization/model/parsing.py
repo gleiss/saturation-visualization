@@ -18,7 +18,8 @@ ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'statistics',
 
 
 def process(vampire_output):
-    return analyse(parse(vampire_output))
+    lines = parse(vampire_output)
+    return analyse(lines), len(lines)
 
 
 def parse(vampire_output):
@@ -28,7 +29,7 @@ def parse(vampire_output):
     """
 
     lines = vampire_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
-    return (parsed_line for parsed_line in (parse_line(line) for line in lines) if parsed_line)
+    return [parsed_line for parsed_line in (parse_line(line) for line in lines) if parsed_line]
 
 
 def parse_line(line):

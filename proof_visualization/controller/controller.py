@@ -19,19 +19,20 @@ def get_layout():
     dag = session.get('dag')
     positions = session.get('positions')
     history_state = int(session['history_state'])
-    visible_node_set = {int(node.id_) for node in positions[:history_state]}
 
     nodes = []
     edges = []
 
-    for index, node_position in enumerate(positions):
+    for node_position in positions:
         node = dag.get(int(node_position.id_))
         if node:
-            node_visible = index <= history_state
+            node_visible = node.passive_time and node.passive_time <= history_state
             nodes.append(json.format_node(node, node_position, node_visible))
             for child in node.children:
-                edge_visible = int(child) in visible_node_set
-                edges.append(json.format_edge(node.number, child, edge_visible))
+                child_node = dag.get(int(child))
+                if child_node:
+                    edge_visible = child_node.passive_time and child_node.passive_time <= history_state
+                    edges.append(json.format_edge(node.number, child, edge_visible))
 
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
@@ -50,12 +51,13 @@ def reduce_to_selection(dag, selection):
 
 
 def init_dag(file_content):
-    dag = process(file_content)
+    dag, history_length = process(file_content)
     positions = calculate_node_positions(dag)
 
     # store in session
     session['dag'] = dag
     session['positions'] = positions
+    session['total_history_length'] = history_length
 
 
 def init_selection_dag(selection):
@@ -65,14 +67,15 @@ def init_selection_dag(selection):
     # store in session
     session['dag'] = dag
     session['positions'] = positions
-    session['history_state'] = len(positions)
+    session['history_state'] = session.get('total_history_length') - 1
 
 
 def init_dag_from_file():
     with open('example.proof') as proof_file:
-        dag = process(proof_file.read())
+        dag, history_length = process(proof_file.read())
         positions = calculate_node_positions(dag)
 
         # store in session
         session['dag'] = dag
         session['positions'] = positions
+        session['total_history_length'] = history_length
