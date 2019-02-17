@@ -35,8 +35,13 @@ def handle_post_request():
         controller.init_dag(params['file'])
         refresh_history_state()
     elif params.get('selection'):
+        selection = params['selection'].split(',')
         reset = True
-        controller.init_selection_dag(params['selection'].split(','))
+        if params.get('up'):
+            # TODO replace with real method
+            controller.init_selection_dag(selection)
+        else:
+            controller.init_selection_dag(selection)
         refresh_history_state()
     elif params.get('reset'):
         reset = True

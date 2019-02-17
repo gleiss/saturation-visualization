@@ -39,6 +39,7 @@ const updateSelection = () => {
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
   document.getElementById('selectionSubmit').disabled = nodeCount === 0;
+  document.getElementById('selectionSubmitUp').disabled = nodeCount === 0;
   document.getElementById('selectParents').disabled = nodeCount === 0;
 
 };
