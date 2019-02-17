@@ -22,7 +22,8 @@ Session(app)
 def home():
     controller.init_controller()
     return render_template('main.html',
-                           dagData=controller.get_layout(), historyLength=session['total_history_length'], reset=True)
+                           dagData=controller.get_layout(), historyLength=session['total_history_length'], reset=True,
+                           legend=controller.get_legend())
 
 
 @app.route("/", methods=['POST'])
@@ -41,7 +42,7 @@ def handle_post_request():
         update_history_state(params)
     return render_template('main.html',
                            dagData=controller.get_layout(), historyState=session['history_state'],
-                           historyLength=session['total_history_length'], reset=reset)
+                           historyLength=session['total_history_length'], reset=reset, legend=controller.get_legend())
 
 
 @app.before_first_request

@@ -79,3 +79,15 @@ input[type="range"] {
 .sidebar-button {
   padding: 0.25rem 0.75rem;
 }
+
+.legend {
+  margin-top: auto;
+}
+
+.legend > h5 {
+  margin-bottom: 0;
+}
+
+#legendGraph {
+  width: 100px;
+}

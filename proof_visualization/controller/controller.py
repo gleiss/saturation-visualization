@@ -3,7 +3,7 @@
 from flask import session
 
 import proof_visualization.controller.json_util as json
-from proof_visualization.controller.representation_util import compute_representation
+from proof_visualization.controller.representation_util import compute_representation, legend
 from proof_visualization.model.dag import Dag
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
@@ -46,6 +46,10 @@ def get_layout():
                 edges.append(json.format_edge(*entry))
 
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
+
+
+def get_legend():
+    return legend()
 
 
 def reduce_to_selection(dag, selection):

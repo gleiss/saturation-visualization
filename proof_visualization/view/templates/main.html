@@ -63,9 +63,19 @@
            type="submit"
            value="Lay out selection"/>
   </form>
+
+  <!-- LEGEND -->
+  <article class="legend">
+    <h5>Legend</h5>
+    <section id="legendGraph">
+      <canvas></canvas>
+    </section>
+  </article>
+
 </aside>
 
 <script type="text/javascript">
+  // VARIABLE DEFINITIONS //////////////////////////////////////////////////////////////////////////////////////////////
   {% if reset is defined and reset %}
     const resetSession = true;
   {% else %}
@@ -83,6 +93,7 @@
   let edges = new vis.DataSet(data.graph.edges);
   let network = null;
 
+  // GRAPH /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const drawGraph = () => {
     const parent = document.getElementById('graph');
     const options = {
@@ -114,6 +125,7 @@
     })
   };
 
+  // HISTORY SLIDE /////////////////////////////////////////////////////////////////////////////////////////////////////
   const renderSlide = () => {
     const slide = document.createElement('input');
     slide.type = 'range';
@@ -135,6 +147,7 @@
     slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / historyLength}%`);
   };
 
+  // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
   const chooseFile = () => document.getElementById('fileSelector').click();
 
   const uploadFile = (files) => {
@@ -146,7 +159,29 @@
     };
   };
 
+  // LEGEND ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const drawLegend = () => {
+    const parent = document.getElementById('legendGraph');
+    const options = {
+      physics: false,
+      interaction: {
+        dragNodes: false,
+        dragView: false,
+        keyboard: {
+          enabled: false
+        },
+        selectable: false,
+        zoomView: false
+      }
+    };
+    let legendNodes = {{ legend | safe }};
+    const legendNetwork = new vis.Network(parent, {'nodes': legendNodes}, options);
+  };
+
+
+  // CALLS /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   drawGraph();
+  drawLegend();
   renderSlide();
   updateSlideValueDisplay();
 </script>

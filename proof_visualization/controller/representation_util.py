@@ -47,6 +47,88 @@ REPRESENTATIONS = {
     )
 }
 
+LEGEND = [
+    {
+        'color': {
+            'background': '#dddddd',
+            'border': '#bbbbbb'
+        },
+        'font': {
+            'color': '#000000'
+        },
+        'label': 'active',
+        'shape': 'box',
+        'x': 0,
+        'y': -90
+    },
+    {
+        'color': {
+            'background': '#f1f1f1',
+            'border': '#e3e3e3'
+        },
+        'font': {
+            'color': '#999999'
+        },
+        'label': 'passive',
+        'shape': 'box',
+        'x': 0,
+        'y': -54
+    },
+    {
+        'color': {
+            'background': '#44bb99',
+            'border': '#009988'
+        },
+        'font': {
+            'color': '#000000'
+        },
+        'label': 'preprocessing',
+        'shape': 'box',
+        'x': 0,
+        'y': -18
+    },
+    {
+        'color': {
+            'background': '#77aadd',
+            'border': '#4477aa'
+        },
+        'font': {
+            'color': '#000000'
+        },
+        'label': 'active theory axiom',
+        'shape': 'box',
+        'x': 0,
+        'y': 18
+    },
+    {
+        'color': {
+            'background': '#c8ddf1',
+            'border': '#b4c8dd'
+        },
+        'font': {
+            'color': '#999999'
+        },
+        'label': 'passive theory axiom',
+        'shape': 'box',
+        'x': 0,
+        'y': 54
+    },
+    {
+        'color': {
+            'background': '#ee8866',
+            'border': '#ee8866'
+        },
+        'font': {
+            'color': '#000000',
+            'bold': 'true'
+        },
+        'label': 'highlighted/selected',
+        'shape': 'box',
+        'x': 0,
+        'y': 90
+    }
+]
+
 PREPROCESSING_LABEL = 'Preproc'
 
 
@@ -66,3 +148,7 @@ def compute_representation(node, history_state, has_visible_children):
         return REPRESENTATIONS['preprocessing']
 
     return REPRESENTATIONS['hidden']
+
+
+def legend():
+    return LEGEND
