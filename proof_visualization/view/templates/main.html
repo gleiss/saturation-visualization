@@ -61,8 +61,16 @@
     <input id="selectionSubmit"
            class="sidebar-button"
            type="submit"
+           disabled
            value="Lay out selection"/>
   </form>
+
+  <button id="selectParents"
+          class="sidebar-button spaced"
+          disabled
+          onclick="selectParents()">
+    Select parents
+  </button>
 
   <!-- LEGEND -->
   <article class="legend">
@@ -92,6 +100,7 @@
   let nodes = new vis.DataSet(data.graph.nodes);
   let edges = new vis.DataSet(data.graph.edges);
   let network = null;
+  let selection = [];
 
   // GRAPH /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const drawGraph = () => {
@@ -118,11 +127,18 @@
       sessionStorage.setItem('scale', network.getScale());
     });
     network.on('select', (change) => {
-      document.getElementById('selection').value = change.nodes;
-      const nodeCount = change.nodes.length;
+      selection = change.nodes;
+      updateSelection();
+    })
+  };
+
+  const updateSelection = () => {
+      document.getElementById('selection').value = selection;
+      const nodeCount = selection.length;
       document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
       document.getElementById('selectionSubmit').disabled = nodeCount === 0;
-    })
+      document.getElementById('selectParents').disabled = nodeCount === 0;
+
   };
 
   // HISTORY SLIDE /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,6 +173,22 @@
       document.getElementById('fileUpload').value = reader.result;
       document.getElementById('fileForm').submit();
     };
+  };
+
+  // PARENT SELECTION //////////////////////////////////////////////////////////////////////////////////////////////////
+  const selectParents = () => {
+    const newSelection = [...selection];
+    selection.forEach(selectedNodeId => {
+      network.getConnectedEdges(selectedNodeId).forEach(edgeId => {
+        const edge = edges.get(edgeId);
+        if (edge.to === selectedNodeId) {
+          newSelection.push(edge.from);
+        }
+      })
+    });
+    network.selectNodes(newSelection);
+    selection = newSelection;
+    updateSelection();
   };
 
   // LEGEND ////////////////////////////////////////////////////////////////////////////////////////////////////////////

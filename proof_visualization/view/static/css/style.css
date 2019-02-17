@@ -91,3 +91,7 @@ input[type="range"] {
 #legendGraph {
   width: 100px;
 }
+
+.spaced {
+  margin-top: 1rem;
+}
