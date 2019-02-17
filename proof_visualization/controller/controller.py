@@ -27,13 +27,23 @@ def get_layout():
     for node_position in positions:
         node = dag.get(int(node_position.id_))
         if node:
-            representation = compute_representation(node, history_state)
-            nodes.append(json.format_node(node, node_position, representation))
+            edge_data = []
+            has_visible_children = False
+
+            # define edges to child nodes
             for child in node.children:
                 child_node = dag.get(int(child))
                 if child_node:
                     edge_visible = child_node.passive_time and child_node.passive_time <= history_state
-                    edges.append(json.format_edge(node.number, child, edge_visible))
+                    edge_data.append((node.number, child, edge_visible))
+                    if edge_visible:
+                        has_visible_children = True
+
+            # append representation jsons for node and edges
+            representation = compute_representation(node, history_state, has_visible_children)
+            nodes.append(json.format_node(node, node_position, representation))
+            for entry in edge_data:
+                edges.append(json.format_edge(*entry))
 
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
@@ -72,7 +82,7 @@ def init_selection_dag(selection):
 
 
 def init_dag_from_file():
-    with open('example.proof') as proof_file:
+    with open('example_small.proof') as proof_file:
         dag, history_length = process(proof_file.read())
         positions = calculate_node_positions(dag)
 

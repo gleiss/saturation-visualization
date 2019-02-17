@@ -11,11 +11,11 @@ REPRESENTATIONS = {
         highlight='#ee8866'
     ),
     'passive': Representation(
-        background='#eeeeee',
-        border='#dddddd',
-        text='#000000',
+        background='#f1f1f1',
+        border='#e3e3e3',
+        text='#999999',
         shape='box',
-        highlight='#f6c3b2'
+        highlight='#f8cfc1'
     ),
     'active_theory_axiom': Representation(
         background='#77aadd',
@@ -25,11 +25,11 @@ REPRESENTATIONS = {
         highlight='#ee8866'
     ),
     'passive_theory_axiom': Representation(
-        background='#bbd4ee',
-        border='#bbd4ee',
-        text='#000000',
+        background='#c8ddf1',
+        border='#b4c8dd',
+        text='#999999',
         shape='box',
-        highlight='#f6c3b2'
+        highlight='#f8cfc1'
     ),
     'preprocessing': Representation(
         background='#44bb99',
@@ -50,7 +50,7 @@ REPRESENTATIONS = {
 PREPROCESSING_LABEL = 'Preproc'
 
 
-def compute_representation(node, history_state):
+def compute_representation(node, history_state, has_visible_children):
     if node.inference_rule == 'theory axiom':
         if node.active_time and node.active_time <= history_state:
             return REPRESENTATIONS['active_theory_axiom']
@@ -62,7 +62,7 @@ def compute_representation(node, history_state):
     elif node.passive_time and node.passive_time <= history_state:
         return REPRESENTATIONS['passive']
 
-    if node.inference_rule == 'Preproc':
+    if node.inference_rule == 'Preproc' and has_visible_children:
         return REPRESENTATIONS['preprocessing']
 
     return REPRESENTATIONS['hidden']
