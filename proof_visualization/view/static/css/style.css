@@ -78,13 +78,18 @@ input[type="range"] {
 
 .sidebar-button {
   padding: 0.25rem 0.75rem;
+  width: 100%;
+}
+
+.sidebar-input {
+  padding: 0.25rem;
 }
 
 .legend {
   margin-top: auto;
 }
 
-.legend > h5 {
+article > h5 {
   margin-bottom: 0;
 }
 

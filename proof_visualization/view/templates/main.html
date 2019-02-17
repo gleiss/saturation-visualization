@@ -35,7 +35,7 @@
   </section>
 </main>
 <aside>
-  <!-- FILE SELECTION -->
+  <!-- FILE UPLOAD -->
   <form id="fileForm" action="" method="post" enctype="multipart/form-data">
     <input id="fileUpload"
            type="hidden"
@@ -50,11 +50,8 @@
            onclick="chooseFile()"/>
   </form>
 
-  <br>
-  <small class="node-info"><strong id="nodeCount">0 nodes</strong> selected</small>
-
-  <!-- RERENDER SELECTION -->
-  <form id="selectForm" action="" method="post">
+  <!-- NEW LAYOUT -->
+  <form id="selectForm" class="spaced" action="" method="post">
     <input id="selection"
            type="hidden"
            name="selection"/>
@@ -65,12 +62,30 @@
            value="Lay out selection"/>
   </form>
 
-  <button id="selectParents"
-          class="sidebar-button spaced"
-          disabled
-          onclick="selectParents()">
-    Select parents
-  </button>
+  <!-- SELECTION -->
+  <article>
+    <h5>Selection</h5>
+
+    <!-- INFO -->
+    <small class="node-info"><strong id="nodeCount">0 nodes</strong> selected</small>
+    <br>
+
+    <!-- PARENTS -->
+    <button id="selectParents"
+            class="sidebar-button spaced"
+            disabled
+            onclick="selectParents()">
+      Select parents
+    </button>
+    <br>
+
+    <!-- SEARCH -->
+    <input id="search"
+           class="sidebar-input spaced"
+           type="text"
+           placeholder="Search..."
+           onkeyup="search(this.value)"/>
+  </article>
 
   <!-- LEGEND -->
   <article class="legend">
@@ -90,133 +105,23 @@
     const resetSession = false;
   {% endif %}
 
-  let data = {{ dagData | safe }};
   let historyLength = {{ historyLength | int }};
   {% if historyState is defined %}
     let historyState = {{ historyState | int }};
   {% else %}
     let historyState = historyLength;
   {% endif %}
-  let nodes = new vis.DataSet(data.graph.nodes);
-  let edges = new vis.DataSet(data.graph.edges);
-  let network = null;
+
   let selection = [];
 
-  // GRAPH /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const drawGraph = () => {
-    const parent = document.getElementById('graph');
-    const options = {
-      physics: false,
-      interaction: {
-        multiselect: true
-      }
-    };
-    const viewPosition = resetSession ? undefined : JSON.parse(sessionStorage.getItem('viewPosition') || null);
-    const scale = resetSession ? undefined : sessionStorage.getItem('scale');
+  let network = null;
+  let data = {{ dagData | safe }};
+  let nodes = new vis.DataSet(data.graph.nodes);
+  let edges = new vis.DataSet(data.graph.edges);
 
-    network = new vis.Network(parent, {'nodes': nodes, 'edges': edges}, options);
-    if (viewPosition && scale) {
-      network.moveTo({
-        scale: scale,
-        position: viewPosition
-      })
-    }
-
-    network.on('afterDrawing', () => {
-      sessionStorage.setItem('viewPosition', JSON.stringify(network.getViewPosition()));
-      sessionStorage.setItem('scale', network.getScale());
-    });
-    network.on('select', (change) => {
-      selection = change.nodes;
-      updateSelection();
-    })
-  };
-
-  const updateSelection = () => {
-      document.getElementById('selection').value = selection;
-      const nodeCount = selection.length;
-      document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
-      document.getElementById('selectionSubmit').disabled = nodeCount === 0;
-      document.getElementById('selectParents').disabled = nodeCount === 0;
-
-  };
-
-  // HISTORY SLIDE /////////////////////////////////////////////////////////////////////////////////////////////////////
-  const renderSlide = () => {
-    const slide = document.createElement('input');
-    slide.type = 'range';
-    slide.min = 0;
-    slide.max = historyLength;
-    slide.value = historyState;
-    slide.name = 'slide';
-    slide.onchange = function () {
-      this.form.submit()
-    };
-
-    const parent = document.getElementById('slideContainer');
-    parent.appendChild(slide);
-  };
-
-  const updateSlideValueDisplay = () => {
-    const slideValueDisplay = document.getElementById('slideValue');
-    slideValueDisplay.innerText = historyState;
-    slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / historyLength}%`);
-  };
-
-  // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  const chooseFile = () => document.getElementById('fileSelector').click();
-
-  const uploadFile = (files) => {
-    const reader = new FileReader();
-    reader.readAsText(files[0]);
-    reader.onloadend = () => {
-      document.getElementById('fileUpload').value = reader.result;
-      document.getElementById('fileForm').submit();
-    };
-  };
-
-  // PARENT SELECTION //////////////////////////////////////////////////////////////////////////////////////////////////
-  const selectParents = () => {
-    const newSelection = [...selection];
-    selection.forEach(selectedNodeId => {
-      network.getConnectedEdges(selectedNodeId).forEach(edgeId => {
-        const edge = edges.get(edgeId);
-        if (edge.to === selectedNodeId) {
-          newSelection.push(edge.from);
-        }
-      })
-    });
-    network.selectNodes(newSelection);
-    selection = newSelection;
-    updateSelection();
-  };
-
-  // LEGEND ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const drawLegend = () => {
-    const parent = document.getElementById('legendGraph');
-    const options = {
-      physics: false,
-      interaction: {
-        dragNodes: false,
-        dragView: false,
-        keyboard: {
-          enabled: false
-        },
-        selectable: false,
-        zoomView: false
-      }
-    };
-    let legendNodes = {{ legend | safe }};
-    const legendNetwork = new vis.Network(parent, {'nodes': legendNodes}, options);
-  };
-
-
-  // CALLS /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  drawGraph();
-  drawLegend();
-  renderSlide();
-  updateSlideValueDisplay();
+  let legendNodes = {{ legend | safe }};
 </script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/actions.js') }}"></script>
 
 </body>
 </html>
