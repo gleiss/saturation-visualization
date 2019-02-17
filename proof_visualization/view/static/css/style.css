@@ -1,6 +1,7 @@
 html {
   height: 100%;
   width: 100%;
+  font-family: 'Arial', 'Helvetica', sans-serif;
 }
 
 body {
@@ -73,7 +74,7 @@ input[type="range"] {
 
 .node-info {
   margin-top: 2rem;
-  margin-bottom: 0.5rem;
+  opacity: 0.5;
 }
 
 .sidebar-button {
@@ -82,22 +83,33 @@ input[type="range"] {
 }
 
 .sidebar-input {
-  padding: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  border: solid 1px #ddd;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, .07);
 }
 
 .legend {
   margin-top: auto;
 }
 
-article > h5 {
+article > h2 {
+  margin-top: 1.5rem;
   margin-bottom: 0;
+  font-size: 1.3rem;
+  font-weight: 100;
 }
 
 #legendGraph {
   height: 180px;
   max-width: 150px;
+  margin-left: -17px;
 }
 
 .spaced {
   margin-top: 1rem;
+}
+
+.half-spaced {
+  margin-top: 0.5rem;
 }

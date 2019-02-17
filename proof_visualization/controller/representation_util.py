@@ -58,7 +58,7 @@ LEGEND = [
         },
         'label': 'active',
         'shape': 'box',
-        'x': 0,
+        'x': -50,
         'y': -90
     },
     {
@@ -71,7 +71,7 @@ LEGEND = [
         },
         'label': 'passive',
         'shape': 'box',
-        'x': 0,
+        'x': -45,
         'y': -54
     },
     {
@@ -84,7 +84,7 @@ LEGEND = [
         },
         'label': 'preprocessing',
         'shape': 'box',
-        'x': 0,
+        'x': -25,
         'y': -18
     },
     {
@@ -97,7 +97,7 @@ LEGEND = [
         },
         'label': 'active theory axiom',
         'shape': 'box',
-        'x': 0,
+        'x': -10,
         'y': 18
     },
     {
@@ -110,7 +110,7 @@ LEGEND = [
         },
         'label': 'passive theory axiom',
         'shape': 'box',
-        'x': 0,
+        'x': -5,
         'y': 54
     },
     {

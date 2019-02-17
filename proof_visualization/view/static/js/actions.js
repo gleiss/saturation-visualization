@@ -47,7 +47,7 @@ const renderSlide = () => {
   const slide = document.createElement('input');
   slide.type = 'range';
   slide.min = 0;
-  slide.max = historyLength;
+  slide.max = historyLength - 1;
   slide.value = historyState;
   slide.name = 'slide';
   slide.onchange = function () {
@@ -61,7 +61,7 @@ const renderSlide = () => {
 const updateSlideValueDisplay = () => {
   const slideValueDisplay = document.getElementById('slideValue');
   slideValueDisplay.innerText = historyState;
-  slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / historyLength}%`);
+  slideValueDisplay.setAttribute('style', `left: ${historyState * 100 / (historyLength - 1)}%`);
 };
 
 // FILE UPLOAD /////////////////////////////////////////////////////////////////////////////////////////////////////////

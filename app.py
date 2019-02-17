@@ -38,6 +38,10 @@ def handle_post_request():
         reset = True
         controller.init_selection_dag(params['selection'].split(','))
         refresh_history_state()
+    elif params.get('reset'):
+        reset = True
+        controller.reset_dag()
+        refresh_history_state()
     else:
         update_history_state(params)
     return render_template('main.html',
@@ -67,7 +71,7 @@ def update_history_state(request_params):
 
 
 def refresh_history_state():
-    session['history_state'] = max(session['total_history_length'], 0)
+    session['history_state'] = session['total_history_length'] - 1
 
 
 if __name__ == '__main__':

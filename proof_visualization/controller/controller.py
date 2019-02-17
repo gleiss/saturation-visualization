@@ -11,7 +11,7 @@ from proof_visualization.model.positioning import calculate_node_positions
 
 def init_controller():
     init_dag_from_file()
-    session['history_state'] = session['total_history_length']
+    session['history_state'] = session['total_history_length'] - 1
 
 
 def get_layout():
@@ -76,6 +76,11 @@ def init_dag(file_content):
 
 
 def init_selection_dag(selection):
+    # store dag for reset
+    session['old_dag'] = session['dag']
+    session['old_positions'] = session['positions']
+
+    # generate new dag
     dag = reduce_to_selection(session['dag'], {int(node_id) for node_id in selection})
     positions = calculate_node_positions(dag)
 
@@ -83,6 +88,11 @@ def init_selection_dag(selection):
     session['dag'] = dag
     session['positions'] = positions
     session['history_state'] = session.get('total_history_length') - 1
+
+
+def reset_dag():
+    session['dag'] = session['old_dag']
+    session['positions'] = session['old_positions']
 
 
 def init_dag_from_file():

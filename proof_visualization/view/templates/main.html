@@ -31,7 +31,6 @@
       </section>
       <input type="submit" name="increase" value="+"/>
     </form>
-
   </section>
 </main>
 <aside>
@@ -50,8 +49,16 @@
            onclick="chooseFile()"/>
   </form>
 
+  <!-- RESET GRAPH -->
+  <form id="resetForm" class="spaced" action="" method="post">
+    <input class="sidebar-button"
+           type="submit"
+           name="reset"
+           value="Reset graph"/>
+  </form>
+
   <!-- NEW LAYOUT -->
-  <form id="selectForm" class="spaced" action="" method="post">
+  <form id="selectForm" class="half-spaced" action="" method="post">
     <input id="selection"
            type="hidden"
            name="selection"/>
@@ -59,12 +66,12 @@
            class="sidebar-button"
            type="submit"
            disabled
-           value="Lay out selection"/>
+           value="Render selection only"/>
   </form>
 
   <!-- SELECTION -->
   <article>
-    <h5>Selection</h5>
+    <h2>Selection</h2>
 
     <!-- INFO -->
     <small class="node-info"><strong id="nodeCount">0 nodes</strong> selected</small>
@@ -83,13 +90,13 @@
     <input id="search"
            class="sidebar-input spaced"
            type="text"
-           placeholder="Search..."
+           placeholder="Search for node ..."
            onkeyup="search(this.value)"/>
   </article>
 
   <!-- LEGEND -->
   <article class="legend">
-    <h5>Legend</h5>
+    <h2>Legend</h2>
     <section id="legendGraph">
       <canvas></canvas>
     </section>
@@ -109,7 +116,7 @@
   {% if historyState is defined %}
     let historyState = {{ historyState | int }};
   {% else %}
-    let historyState = historyLength;
+    let historyState = historyLength - 1;
   {% endif %}
 
   let selection = [];
@@ -122,6 +129,5 @@
   let legendNodes = {{ legend | safe }};
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/actions.js') }}"></script>
-
 </body>
 </html>
