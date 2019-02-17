@@ -20,9 +20,10 @@ main {
 
 aside {
   flex-grow: 0;
+  flex-direction: column;
   margin: 1rem 1.5rem;
   display: flex;
-  flex-direction: column;
+  max-width: 300px;
 }
 
 #graph {
@@ -94,7 +95,7 @@ input[type="range"] {
 }
 
 article > h2 {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   margin-bottom: 0;
   font-size: 1.3rem;
   font-weight: 100;
@@ -112,4 +113,19 @@ article > h2 {
 
 .half-spaced {
   margin-top: 0.5rem;
+}
+
+ul {
+  margin-top: 0.5rem;
+  padding-left: 0;
+}
+
+li {
+  list-style: none;
+  font-size: 0.833rem;
+  cursor: pointer;
+}
+
+li:hover {
+  text-decoration: underline;
 }

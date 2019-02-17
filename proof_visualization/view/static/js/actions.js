@@ -1,6 +1,7 @@
 // RESET ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const reset = () => {
   document.getElementById('search').value = '';
+  document.getElementById('searchResults').innerHTML = '';
 };
 
 // GRAPH ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,11 +96,28 @@ const selectParents = () => {
 // SEARCH //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const search = (value) => {
   if (!value) {
+    document.getElementById('searchResults').innerHTML = '';
     return;
   }
-  selection = Object.values(nodes._data).filter(node => node.label.includes(value)).map(node => node.id);
+  const selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
+  selection = selectedNodes.map(node => node.id);
   network.selectNodes(selection);
   updateSelection();
+
+  const resultContainer = document.getElementById('searchResults');
+  resultContainer.innerHTML = selectedNodes.map(node => {
+    if (node.label === 'Preproc') {
+      return ''
+    }
+    return `<li onclick="selectNode(${node.id})">${node.label}</li>`
+  }).join('');
+};
+
+const selectNode = (nodeId) => {
+  network.selectNodes([nodeId]);
+  selection = [nodeId];
+  updateSelection();
+  reset();
 };
 
 // LEGEND //////////////////////////////////////////////////////////////////////////////////////////////////////////////
