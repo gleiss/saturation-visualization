@@ -11,7 +11,7 @@ from proof_visualization.model.positioning import calculate_node_positions
 
 def init_controller():
     init_dag_from_file()
-    session['history_state'] = len(session['positions'])
+    session['history_state'] = session['total_history_length']
 
 
 def get_layout():

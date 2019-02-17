@@ -119,10 +119,10 @@ LEGEND = [
             'border': '#ee8866'
         },
         'font': {
-            'color': '#000000',
-            'bold': 'true'
+            'multi': 'html',
+            'color': '#000000'
         },
-        'label': 'highlighted/selected',
+        'label': '<b>highlighted/selected</b>',
         'shape': 'box',
         'x': 0,
         'y': 90

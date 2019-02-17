@@ -89,7 +89,8 @@ input[type="range"] {
 }
 
 #legendGraph {
-  width: 100px;
+  height: 180px;
+  max-width: 150px;
 }
 
 .spaced {
