@@ -91,8 +91,9 @@ def init_selection_dag(selection):
 
 
 def reset_dag():
-    session['dag'] = session['old_dag']
-    session['positions'] = session['old_positions']
+    if session.get('old_dag'):
+        session['dag'] = session['old_dag']
+        session['positions'] = session['old_positions']
 
 
 def init_dag_from_file():
