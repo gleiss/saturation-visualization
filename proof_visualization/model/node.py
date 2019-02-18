@@ -9,9 +9,9 @@ class Node:
         'clause',
         'inference_rule',
         'parents',
-        'children',
         'statistics',
         'is_from_preprocessing',
+        'new_time',
         'passive_time',
         'active_time'
     ]
@@ -23,23 +23,32 @@ class Node:
         self.clause = util.remove_quotes(clause)
         self.inference_rule = inference_rule
         self.parents = parents
-        self.children = set()
 
         self.statistics = statistics
 
         self.is_from_preprocessing = False
+        self.new_time = None
         self.passive_time = None
         self.active_time = None
+  
+    def set_new_time(self, line_number):
+        assert isinstance(line_number, int)
+        assert(self.new_time == None)
+        assert(self.passive_time == None)
+        assert(self.active_time == None)
+        self.new_time = line_number
 
     def set_passive_time(self, line_number):
         assert isinstance(line_number, int)
+        assert(self.new_time != None)
         assert(self.passive_time == None)
         assert(self.active_time == None)
         self.passive_time = line_number
 
     def set_active_time(self, line_number):
         assert isinstance(line_number, int)
-        assert(not self.passive_time == None)
+        assert(self.new_time != None)
+        assert(self.passive_time != None)
         assert(self.active_time == None)
         self.active_time = line_number
         

@@ -70,6 +70,9 @@ def analyse(parsed_lines):
             current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics)
             nodes[line.number] = current_node
 
+            # set new time
+            current_node.set_new_time(index)
+
         elif line.type == "new" and (line.number in nodes):
             # get existing node
             current_node = nodes.get(line.number)
@@ -77,6 +80,9 @@ def analyse(parsed_lines):
             assert(line.number == current_node.number)
             assert(line.inference_rule == current_node.inference_rule)
         
+            # set new time
+            current_node.set_new_time(index)
+            
         elif line.type == "passive" and (line.number in nodes):
             if not line.number in nodes:
                 LOG.warning("Found clause with id %s, which was added to passive, but wasn't added as new before. Maybe you forgot to output the new clauses?", line.number)
@@ -122,5 +128,5 @@ def analyse(parsed_lines):
 
     print("number of nodes in parsed dag: " + str(len(parsedDag.nodes)))
     print("number of nodes in active dag: " + str(len(dag.nodes)))
-    
+
     return dag

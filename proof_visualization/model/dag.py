@@ -9,19 +9,19 @@ class Dag:
         self.nodes = nodes
         
         # compute leaves
-        self.leaves = {node.number for node in nodes.values() if not node.children}
-        
-        # compute children
-        for _, node in self.nodes.items():
+        leaves = set()
+        nonLeaves = set()
+        for node in nodes.values():
             for parent in node.parents:
-                try:
-                    self.nodes[parent].children.add(node.number)
-                except KeyError:
-                    print("parent id: " + str(parent))
-                    assert(False)
-
+                nonLeaves.add(parent)
+        for nodeId in nodes:
+            if not nodeId in nonLeaves:
+                leaves.add(nodeId)
+        self.leaves = leaves
+        
     def get(self, node_id):
         assert node_id
+        assert node_id in self.nodes
         return self.nodes.get(node_id)
 
     def __iter__(self):

@@ -132,7 +132,7 @@ LEGEND = [
 PREPROCESSING_LABEL = 'Preproc'
 
 
-def compute_representation(node, history_state, has_visible_children):
+def compute_representation(node, history_state):
     if node.inference_rule == 'theory axiom':
         if node.active_time and node.active_time <= history_state:
             return REPRESENTATIONS['active_theory_axiom']
@@ -143,8 +143,10 @@ def compute_representation(node, history_state, has_visible_children):
         return REPRESENTATIONS['active']
     elif node.passive_time and node.passive_time <= history_state:
         return REPRESENTATIONS['passive']
+    elif node.new_time and node.new_time <= history_state:
+        return REPRESENTATIONS['passive'] # TODO: add seperate representation for new, maybe as even lighter nodes?
 
-    if node.inference_rule == 'Preproc' and has_visible_children:
+    if node.inference_rule == 'Preproc':
         return REPRESENTATIONS['preprocessing']
 
     return REPRESENTATIONS['hidden']

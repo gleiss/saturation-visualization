@@ -23,47 +23,30 @@ def get_layout():
 
     nodes = []
     edges = []
-
+        
     for node_position in positions:
         node = dag.get(int(node_position.id_))
-        if node:
-            edge_data = []
-            has_visible_children = False
+        assert(node)
 
-            # define edges to child nodes
-            for child in node.children:
-                child_node = dag.get(int(child))
-                if child_node:
-                    edge_visible = child_node.passive_time and child_node.passive_time <= history_state
-                    edge_data.append((node.number, child, edge_visible))
-                    if edge_visible:
-                        has_visible_children = True
+        # append representation jsons for node
+        representation = compute_representation(node, history_state)
+        nodes.append(json.format_node(node, node_position, representation))
 
-            # append representation jsons for node and edges
-            representation = compute_representation(node, history_state, has_visible_children)
-            nodes.append(json.format_node(node, node_position, representation))
-            for entry in edge_data:
-                edges.append(json.format_edge(*entry))
+        # append representation jsons for edges
+        edge_visible = node.new_time and node.new_time <= history_state
+
+        for parentId in node.parents:
+            parentNode = dag.get(parentId)
+            assert(parentNode)
+            
+            edgeData = (parentId, node.number, edge_visible)
+            edges.append(json.format_edge(*edgeData))
 
     return json.dump_graph(nodes, edges, list(dag.nodes.keys()))
 
 
 def get_legend():
     return legend()
-
-
-def reduce_to_selection(dag, selection):
-    selected_nodes = {dag.get(selected_node) for selected_node in selection}
-
-    # use copy for iteration so that selection_nodes can be updated
-    for node in list(selected_nodes):
-        node.parents = []
-        selected_nodes.update(dag.get(child) for child in node.children)
-
-    nodes = {node.number: node for node in selected_nodes}
-
-    return Dag(nodes)
-
 
 def init_dag(file_content):
     dag, history_length = process(file_content)
@@ -74,6 +57,10 @@ def init_dag(file_content):
     session['positions'] = positions
     session['total_history_length'] = history_length
 
+def init_dag_from_file():
+    with open('example.proof') as proof_file:
+        file_content = proof_file.read()
+        init_dag(file_content)
 
 def init_selection_dag(selection):
     # store dag for reset
@@ -81,14 +68,13 @@ def init_selection_dag(selection):
     session['old_positions'] = session['positions']
 
     # generate new dag
-    dag = reduce_to_selection(session['dag'], {int(node_id) for node_id in selection})
-    positions = calculate_node_positions(dag)
+    # TODO: use the implemented transformation, dummy for now
+    dag = session['dag']
 
     # store in session
     session['dag'] = dag
     session['positions'] = positions
     session['history_state'] = session.get('total_history_length') - 1
-
 
 def reset_dag():
     if session.get('old_dag'):
@@ -96,12 +82,4 @@ def reset_dag():
         session['positions'] = session['old_positions']
 
 
-def init_dag_from_file():
-    with open('example.proof') as proof_file:
-        dag, history_length = process(proof_file.read())
-        positions = calculate_node_positions(dag)
 
-        # store in session
-        session['dag'] = dag
-        session['positions'] = positions
-        session['total_history_length'] = history_length
