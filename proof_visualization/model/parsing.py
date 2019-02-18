@@ -12,7 +12,7 @@ import proof_visualization.model.util as util
 __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN = re.compile(r'^(\[[A-Z]{2}\] [a-z]{5,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN = re.compile(r'^(\[[A-Z]{2}\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
 
 PREPROCESSING_LABEL = 'Preproc'
 
@@ -42,6 +42,8 @@ def parse_line(line):
         statistics = [int(stat) for stat in statistics.split(':')]
         inference_rule = inference_rule.rstrip()
         parents = [int(parent) for parent in parents.split(',') if parent]
+        if type_ == "new":
+            print(ParsedLine(type_, number, clause, statistics, inference_rule, parents))
         # if type_ == "final":
         #     print("Parsed preprocessing line with id %s", number)
         # # if type_ == "passive":
@@ -60,55 +62,66 @@ def analyse(parsed_lines):
     nodes = {}
     for index, line in enumerate(parsed_lines):
 
-        existing_node = nodes.get(line.number)
+        # clause occurs in final preprocessing
+        if line.type == "final":
+            assert(not line.number in nodes)
+            
+            # create new node, but ignore parents
+            current_node = Node(line.number, line.clause, line.inference_rule, [], line.statistics)
+            current_node.is_from_preprocessing = True
+            nodes[line.number] = current_node
+
+        elif line.type == "new" and (not line.number in nodes):
+            # create new node
+            current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics)
+            nodes[line.number] = current_node
+
+        elif line.type == "new" and (line.number in nodes):
+            # get existing node
+            current_node = nodes.get(line.number)
+            assert(current_node.is_from_preprocessing == True)
+            assert(line.number == current_node.number)
+            assert(line.inference_rule == current_node.inference_rule)
         
-        if existing_node == None:
-            if line.type == "active":
-                print(index)
+        elif line.type == "passive" and (line.number in nodes):
+            if not line.number in nodes:
+                LOG.warning("Found clause with id %s, which was added to passive, but wasn't added as new before. Maybe you forgot to output the new clauses?", line.number)
+                assert(False)
+            # get existing node
+            current_node = nodes.get(line.number)
+            assert(line.number == current_node.number)
+            assert(line.inference_rule == current_node.inference_rule)
+            assert(line.parents == current_node.parents or current_node.parents == [])
+
+            # TODO: the literals in the clause occur not necessarily always in the same order. Should parse them separately, order them consistently and then do a sanity comparison. Parsing them is not much extra implementation effort, since we anyway need it for later features.
+
+            # set passive time
+            current_node.set_passive_time(index)
+
+        elif line.type == "active":
+            if not line.number in nodes:
                 LOG.warning("Found clause with id %s, which was added to active, but wasn't added to passive before. Maybe you forgot to output the passive clauses?", line.number)
                 assert(False)
 
-            assert(line.type == "final" or line.type == "passive")
-            current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics)
-            nodes[line.number] = current_node
-        else:
-            assert(line.number == existing_node.number)
-            # TODO: the literals in the clause occur not necessarily always in the same order. Should parse them separately, order them consistently and then compare. Parsing them is not much extra implementation effort, since we anyway need it for later features.
-            # if not line.clause == existing_node.clause:
-            #     print(line.clause)
-            #     print(existing_node.clause)
-            # assert(line.clause == existing_node.clause)
+            current_node = nodes.get(line.number)
+            assert(line.number == current_node.number)
+            assert(line.inference_rule == current_node.inference_rule)
+            assert(line.parents == current_node.parents or current_node.parents == [])
+
+            # TODO: the literals in the clause occur not necessarily always in the same order. Should parse them separately, order them consistently and then do a sanity comparison. Parsing them is not much extra implementation effort, since we anyway need it for later features.
             # TODO: collect the selected literal, which is only there at some point (probably at the point where the clause gets activated)
-            # if not line.statistics == existing_node.statistics:
-            #     print(line.statistics)
-            #     print(existing_node.statistics)
-            # assert(line.statistics == existing_node.statistics)
-            assert(line.inference_rule == existing_node.inference_rule)
-            assert(line.parents == existing_node.parents)
 
-            assert((line.type == "passive" and existing_node.passive_time == None and existing_node.active_time == None) or (line.type == "active" and (not existing_node.passive_time == None) and existing_node.active_time == None))
-            current_node = existing_node
-
-        # set line type info
-        if line.type == 'final':
-            # clause occurs in final preprocessing
-            current_node.is_from_preprocessing = True
-        elif line.type == 'passive':
-            current_node.set_passive_time(index)
-        elif line.type == 'active':
+            # set active time
             current_node.set_active_time(index)
+
+        else:
+            # unreachable
+            print(line)
+            assert((line.type == "final") or (line.type == "new") or (line.type == "passive") or (line.type == "active"))
+            assert(False)
 
         # TODO: add sanity check that each preprocessing clause was added to passive.
 
-        # set children
-        for parent in current_node.parents:
-            try:
-                nodes[parent].children.add(current_node.number)
-            except KeyError:
-                LOG.info('Clause %d is derived from (non-final) pre-processing clause %d', current_node.number, parent)
-                parent_node = Node(parent, PREPROCESSING_LABEL, PREPROCESSING_LABEL, [], [])
-                parent_node.children.add(current_node.number)
-                nodes[parent] = parent_node
-
     leaves = {node.number for node in nodes.values() if not node.children}
+    
     return Dag(nodes, leaves)
