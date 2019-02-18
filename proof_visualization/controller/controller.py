@@ -8,6 +8,9 @@ from proof_visualization.model.dag import Dag
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
 
+from proof_visualization.model.transformations import filterNonConsequences
+from proof_visualization.model.transformations import filterNonParents
+
 
 def init_controller():
     init_dag_from_file()
@@ -62,14 +65,38 @@ def init_dag_from_file():
         file_content = proof_file.read()
         init_dag(file_content)
 
-def init_selection_dag(selection):
+def init_filter_non_consequences(selection):
+    oldDag = session['dag']
+
     # store dag for reset
-    session['old_dag'] = session['dag']
+    session['old_dag'] = oldDag
     session['old_positions'] = session['positions']
 
     # generate new dag
-    # TODO: use the implemented transformation, dummy for now
-    dag = session['dag']
+    relevantNodeIds = set()
+    for e in selection:
+        relevantNodeIds.add(int(e))
+    dag = filterNonConsequences(oldDag, relevantNodeIds)
+    positions = calculate_node_positions(dag)
+
+    # store in session
+    session['dag'] = dag
+    session['positions'] = positions
+    session['history_state'] = session.get('total_history_length') - 1
+
+def init_filter_non_parents(selection):
+    oldDag = session['dag']
+
+    # store dag for reset
+    session['old_dag'] = oldDag
+    session['old_positions'] = session['positions']
+
+    # generate new dag
+    relevantNodeIds = set()
+    for e in selection:
+        relevantNodeIds.add(int(e))
+    dag = filterNonParents(oldDag, relevantNodeIds)
+    positions = calculate_node_positions(dag)
 
     # store in session
     session['dag'] = dag

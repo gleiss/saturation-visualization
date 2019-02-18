@@ -39,9 +39,9 @@ def handle_post_request():
         reset = True
         if params.get('up'):
             # TODO replace with real method
-            controller.init_selection_dag(selection)
+            controller.init_filter_non_parents(selection)
         else:
-            controller.init_selection_dag(selection)
+            controller.init_filter_non_consequences(selection)
         refresh_history_state()
     elif params.get('reset'):
         reset = True
