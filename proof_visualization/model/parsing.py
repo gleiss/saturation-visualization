@@ -7,6 +7,8 @@ from collections import namedtuple
 from proof_visualization.model.dag import Dag
 from proof_visualization.model.node import Node
 
+from proof_visualization.model.transformations import filterNonActiveDerivingNodes
+
 import proof_visualization.model.util as util
 
 __all__ = 'process', 'parse', 'analyse'
@@ -42,14 +44,6 @@ def parse_line(line):
         statistics = [int(stat) for stat in statistics.split(':')]
         inference_rule = inference_rule.rstrip()
         parents = [int(parent) for parent in parents.split(',') if parent]
-        if type_ == "new":
-            print(ParsedLine(type_, number, clause, statistics, inference_rule, parents))
-        # if type_ == "final":
-        #     print("Parsed preprocessing line with id %s", number)
-        # # if type_ == "passive":
-        # #    print("Parsed passive line with id %s", number)
-        # if type_ == "active":
-        #     print("Parsed active line with id %s", number)
 
         return ParsedLine(type_, number, clause, statistics, inference_rule, parents)
     except AttributeError:
@@ -121,7 +115,12 @@ def analyse(parsed_lines):
             assert(False)
 
         # TODO: add sanity check that each preprocessing clause was added to passive.
-
-    leaves = {node.number for node in nodes.values() if not node.children}
     
-    return Dag(nodes, leaves)
+    parsedDag = Dag(nodes)
+
+    dag = filterNonActiveDerivingNodes(parsedDag)
+
+    print("number of nodes in parsed dag: " + str(len(parsedDag.nodes)))
+    print("number of nodes in active dag: " + str(len(dag.nodes)))
+    
+    return dag

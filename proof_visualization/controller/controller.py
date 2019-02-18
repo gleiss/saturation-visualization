@@ -61,8 +61,8 @@ def reduce_to_selection(dag, selection):
         selected_nodes.update(dag.get(child) for child in node.children)
 
     nodes = {node.number: node for node in selected_nodes}
-    leaves = {node.number for node in nodes.values() if not node.children}
-    return Dag(nodes, leaves)
+
+    return Dag(nodes)
 
 
 def init_dag(file_content):

@@ -1,27 +1,24 @@
 import proof_visualization.model.util as util
 from proof_visualization.model.node import Node
 
-
+# datastructure for DAGs, which we use to represent proofs
 class Dag:
-    def __init__(self, nodes, leaves):
-        self._check_assertions(nodes, leaves)
+    def __init__(self, nodes):
+        self._check_assertions(nodes)
 
         self.nodes = nodes
-        self.leaves = leaves
-
+        
+        # compute leaves
+        self.leaves = {node.number for node in nodes.values() if not node.children}
+        
         # compute children
-        for _, node in nodes.items():
+        for _, node in self.nodes.items():
             for parent in node.parents:
                 try:
-                    nodes[parent].children.add(node.number)
+                    self.nodes[parent].children.add(node.number)
                 except KeyError:
                     print("parent id: " + str(parent))
                     assert(False)
-                    # LOG.info('Clause %d is derived from (non-final) pre-processing clause %d', node.number, parent)
-                    # parent_node = Node(parent, PREPROCESSING_LABEL, PREPROCESSING_LABEL, [], [])
-                    # parent_node.children.add(node.number)
-                    # nodes[parent] = parent_node
-
 
     def get(self, node_id):
         assert node_id
@@ -45,10 +42,9 @@ class Dag:
         ))
 
     @staticmethod
-    def _check_assertions(nodes, leaves):
+    def _check_assertions(nodes):
         assert isinstance(nodes, dict)
         for key, value in nodes.items():
             assert isinstance(key, int)
             assert isinstance(value, Node)
-        for leaf in leaves:
-            assert isinstance(leaf, int)
+

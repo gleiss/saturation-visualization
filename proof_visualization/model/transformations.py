@@ -15,14 +15,13 @@ def filterNonParents(dag, relevantIds):
 	# use new set to avoid mutating relevantIds
 	transitiveParents = relevantIds
 
-	# need to compute remaining nodes and remaining leaves of new dag
+	# need to compute remaining nodes
 	remainingNodes = dict()
-	remainingLeaves = set()
 
 	# add all transitive parents of transitiveParents to transitiveParents
 	iterator = ReversePostOrderTraversal(dag)
 	while(iterator.hasNext()):
-		currentNode = iterator.next()
+		currentNode = iterator.getNext()
 		currentNodeId = currentNode.number
 
 		# if currentNode is relevant 
@@ -35,11 +34,7 @@ def filterNonParents(dag, relevantIds):
 			# add node to remainingNodes
 			remainingNodes[currentNodeId] = currentNode
 
-			# if leaf, add node also to remainingLeaves
-			if currentNodeId in dag.leaves:
-				remainingLeaves.add(currentNodeId)
-
-	return Dag(remainingNodes, remainingLeaves)
+	return Dag(remainingNodes)
 
 def filterNonConsequences(dag, relevantIds):
 	assert isinstance(dag, Dag)
@@ -50,14 +45,13 @@ def filterNonConsequences(dag, relevantIds):
 	# use new set to avoid mutating relevantIds
 	transitiveChildren = relevantIds
 
-	# need to compute remaining nodes and remaining leaves of new dag
+	# need to compute remaining nodes
 	remainingNodes = dict()
-	remainingLeaves = set()
 
 	# add all transitive children of ids in transitiveChildren to transitiveChildren
 	postOrderTraversal = DFPostOrderTraversal(dag)
 	while(postOrderTraversal.hasNext()):
-		currentNode = postOrderTraversal.next()
+		currentNode = postOrderTraversal.getNext()
 		currentNodeId = currentNode.number
 		# check if currentNode occurs in transitiveChildren or 
 		# has a parent which occurs in transitiveChildren
@@ -81,12 +75,8 @@ def filterNonConsequences(dag, relevantIds):
 
 			# add node to remainingNodes
 			remainingNodes[currentNodeId] = currentNode
-
-			# if leaf, add node also to remainingLeaves
-			if currentNodeId in dag.leaves:
-				remainingLeaves.add(currentNodeId)
 	
-	return Dag(remainingNodes, remainingLeaves)
+	return Dag(remainingNodes)
 
 # create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents
 def createBoundaryNode(dag,node):
@@ -102,9 +92,9 @@ def filterNonActiveDerivingNodes(dag):
 	# collect all active nodes
 	activatedNodes = set()
 	for _, node in dag.nodes.items():
-		if not node.active_time == None:
-			activatedNodes.add(node)
-	
+		if node.active_time != None:
+			activatedNodes.add(node.number)
+		
 	# remove all nodes which are not transitive parents of activated nodes
 	transformedDag = filterNonParents(dag, activatedNodes)
 

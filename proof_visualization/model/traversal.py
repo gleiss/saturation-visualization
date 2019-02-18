@@ -10,11 +10,18 @@ class DFPostOrderTraversal:
 		self.visited = set()
 
 	def hasNext(self):
-		return len(self.todo) > 0
+		while(len(self.todo) > 0):
+			last = self.todo[-1]
+			if last in self.visited:
+				self.todo.pop()
+			else:
+				# there exists at least one unvisited node
+				return True
+		return False
 
 	# returns the next node (the actual node, not its id) for traversal 
 	# only call after checking for hasNext
-	def next(self):
+	def getNext(self):
 		while len(self.todo) > 0:
 			currentId = self.todo[-1]
 			currentNode = self.dag.get(currentId)
@@ -54,11 +61,11 @@ class ReversePostOrderTraversal:
 		it = DFPostOrderTraversal(dag)
 		self.postOrder = list()
 		while(it.hasNext()):
-			self.postOrder.append(it.next())
+			self.postOrder.append(it.getNext())
 
 	def hasNext(self):
 		return len(self.postOrder) > 0
 
-	def next(self):
+	def getNext(self):
 		assert(self.hasNext())
 		return self.postOrder.pop()
