@@ -93,4 +93,22 @@ def createBoundaryNode(dag,node):
 	assert(isinstance(dag, Dag))
 	assert(isinstance(node, Node))
 
-	return Node(node.number, node.clause, "Boundary", [])
+	return Node(node.number, node.clause, "Boundary", [], [])
+
+# remove all nodes, which are not used to derive any clause which is activated at some point
+# (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have never been added to passive)
+def filterNonActiveDerivingNodes(dag):
+
+	# collect all active nodes
+	activatedNodes = set()
+	for _, node in dag.nodes.items():
+		if not node.active_time == None:
+			activatedNodes.add(node)
+	
+	# remove all nodes which are not transitive parents of activated nodes
+	transformedDag = filterNonParents(dag, activatedNodes)
+
+	return transformedDag
+
+		
+
