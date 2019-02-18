@@ -97,7 +97,7 @@ def reset_dag():
 
 
 def init_dag_from_file():
-    with open('example_small.proof') as proof_file:
+    with open('example.proof') as proof_file:
         dag, history_length = process(proof_file.read())
         positions = calculate_node_positions(dag)
 
