@@ -65,7 +65,7 @@ def init_dag_from_file():
         file_content = proof_file.read()
         init_dag(file_content)
 
-def init_filter_non_consequences(selection):
+def filter_non_consequences(selection):
     oldDag = session['dag']
 
     # store dag for reset
@@ -84,7 +84,7 @@ def init_filter_non_consequences(selection):
     session['positions'] = positions
     session['history_state'] = session.get('total_history_length') - 1
 
-def init_filter_non_parents(selection):
+def filter_non_parents(selection):
     oldDag = session['dag']
 
     # store dag for reset
