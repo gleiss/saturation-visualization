@@ -139,6 +139,9 @@ def compute_representation(node, history_state):
         elif node.passive_time != None and node.passive_time <= history_state:
             return REPRESENTATIONS['passive_theory_axiom']
 
+    if node.is_from_preprocessing:
+        return REPRESENTATIONS['preprocessing']
+
     if node.active_time != None and node.active_time <= history_state:
         return REPRESENTATIONS['active']
     elif node.passive_time != None and node.passive_time <= history_state:
@@ -146,8 +149,6 @@ def compute_representation(node, history_state):
     elif node.new_time != None and node.new_time <= history_state:
         return REPRESENTATIONS['passive'] # TODO: add seperate representation for new, maybe as even lighter nodes?
 
-    if node.inference_rule == 'Preproc':
-        return REPRESENTATIONS['preprocessing']
 
     return REPRESENTATIONS['hidden']
 

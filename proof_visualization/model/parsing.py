@@ -62,13 +62,12 @@ def analyse(parsed_lines):
             assert(not line.number in nodes)
             
             # create new node, but ignore parents
-            current_node = Node(line.number, line.clause, line.inference_rule, [], line.statistics)
-            current_node.is_from_preprocessing = True
+            current_node = Node(line.number, line.clause, line.inference_rule, [], line.statistics, True)
             nodes[line.number] = current_node
 
         elif line.type == "new" and (not line.number in nodes):
             # create new node
-            current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics)
+            current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics, False)
             nodes[line.number] = current_node
 
             # set new time

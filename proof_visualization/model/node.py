@@ -16,8 +16,8 @@ class Node:
         'active_time'
     ]
 
-    def __init__(self, number, clause, inference_rule, parents, statistics):
-        self._check_assertions(number, clause, inference_rule, parents, statistics)
+    def __init__(self, number, clause, inference_rule, parents, statistics, is_from_preprocessing):
+        self._check_assertions(number, clause, inference_rule, parents, statistics, is_from_preprocessing)
 
         self.number = number
         self.clause = util.remove_quotes(clause)
@@ -26,7 +26,7 @@ class Node:
 
         self.statistics = statistics
 
-        self.is_from_preprocessing = False
+        self.is_from_preprocessing = is_from_preprocessing
         self.new_time = None
         self.passive_time = None
         self.active_time = None
@@ -59,7 +59,7 @@ class Node:
         return self.clause
 
     @staticmethod
-    def _check_assertions(number, clause, inference_rule, parents, statistics):
+    def _check_assertions(number, clause, inference_rule, parents, statistics, is_from_preprocessing):
         assert isinstance(number, int)
         assert isinstance(clause, str)
         assert isinstance(inference_rule, str)
@@ -69,3 +69,4 @@ class Node:
             assert isinstance(parent, int)
         for stat in statistics:
             assert isinstance(stat, int)
+        assert isinstance(is_from_preprocessing, bool)

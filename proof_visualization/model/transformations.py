@@ -95,7 +95,7 @@ def createBoundaryNode(dag,node):
 	assert(isinstance(dag, Dag))
 	assert(isinstance(node, Node))
 
-	boundaryNode = Node(node.number, node.clause, "Boundary", [], node.statistics)
+	boundaryNode = Node(node.number, node.clause, "Boundary", [], node.statistics, node.is_from_preprocessing)
 	if node.new_time != None:
 		boundaryNode.set_new_time(node.new_time)
 	if node.passive_time != None:
