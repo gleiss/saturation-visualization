@@ -16,8 +16,8 @@ def format_node(node, position, representation):
         'id': node.number,
         'label': str(node),
         'shape': representation.shape,
-        'x': int(float(position.x_coord) * -100),
-        'y': int(float(position.y_coord) * -1000)
+        'x': int(float(position.x_coord) * -70),
+        'y': int(float(position.y_coord) * -120)
     }
 
 
