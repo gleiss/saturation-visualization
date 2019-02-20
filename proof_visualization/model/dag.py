@@ -18,7 +18,7 @@ class Dag:
             if not nodeId in nonLeaves:
                 leaves.add(nodeId)
         self.leaves = leaves
-        
+
     def get(self, node_id):
         assert node_id
         assert node_id in self.nodes
@@ -40,6 +40,17 @@ class Dag:
             "\n".join(repr(node) for node in self.leaves),
             util.last_line()
         ))
+
+    def numberOfHistorySteps(self):
+        counter = 0
+        for node in self.nodes.values():
+            if node.active_time:
+                counter = counter + 1
+        return counter
+        
+    def lastStep(self):
+        length = self.numberOfHistorySteps()
+        return max(length, 0)
 
     @staticmethod
     def _check_assertions(nodes):

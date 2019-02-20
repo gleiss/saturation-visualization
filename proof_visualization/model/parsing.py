@@ -23,7 +23,7 @@ ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'statistics',
 
 def process(vampire_output):
     lines = parse(vampire_output)
-    return analyse(lines), len(lines)
+    return analyse(lines)
 
 
 def parse(vampire_output):
@@ -54,7 +54,8 @@ def analyse(parsed_lines):
     """Build a DAG from parsed vampire output lines."""
 
     nodes = {}
-    for index, line in enumerate(parsed_lines):
+    index = 0
+    for line in parsed_lines:
 
         # clause occurs in final preprocessing
         if line.type == "final":
@@ -112,6 +113,7 @@ def analyse(parsed_lines):
             # TODO: collect the selected literal, which is only there at some point (probably at the point where the clause gets activated)
 
             # set active time
+            index = index + 1
             current_node.set_active_time(index)
 
         else:

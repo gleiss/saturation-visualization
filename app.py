@@ -22,7 +22,7 @@ Session(app)
 def home():
     controller.init_controller()
     return render_template('main.html',
-                           dagData=controller.get_layout(), historyLength=session['total_history_length'], reset=True,
+                           dagData=controller.get_layout(), historyLength=session['dag'].numberOfHistorySteps(), reset=True,
                            legend=controller.get_legend())
 
 
@@ -50,7 +50,7 @@ def handle_post_request():
         update_history_state(params)
     return render_template('main.html',
                            dagData=controller.get_layout(), historyState=session['history_state'],
-                           historyLength=session['total_history_length'], reset=reset, legend=controller.get_legend())
+                           historyLength=session['dag'].numberOfHistorySteps(), reset=reset, legend=controller.get_legend())
 
 
 @app.before_first_request
@@ -59,24 +59,24 @@ def clear_session():
 
 
 def update_history_state(request_params):
-    upper_limit = session['total_history_length'] - 1
-
+    # update history state to new canidate value
     if request_params.get('increase'):
-        session['history_state'] = session['history_state'] + 1
+        historyState = session['history_state'] + 1
     elif request_params.get('decrease'):
-        session['history_state'] = session['history_state'] - 1
+        historyState = session['history_state'] - 1
     elif request_params.get('slide'):
-        session['history_state'] = int(request_params['slide'])
+        historyState = int(request_params['slide'])
 
-    if session['history_state'] < 0:
-        session['history_state'] = 0
-    elif 0 < upper_limit < session['history_state']:
-        session['history_state'] = upper_limit
+    # make sure candidate is in meaningful interval and change if necessary
+    historyState = max(0, historyState)
 
+    lastStep = session['dag'].lastStep()
+    historyState = min(historyState, lastStep)
+
+    session['history_state'] = historyState
 
 def refresh_history_state():
-    session['history_state'] = session['total_history_length'] - 1
-
+    session['history_state'] = session['dag'].lastStep()
 
 if __name__ == '__main__':
     app.run()

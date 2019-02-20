@@ -13,9 +13,18 @@ from proof_visualization.model.transformations import filterNonParents
 
 
 def init_controller():
-    init_dag_from_file()
-    session['history_state'] = session['total_history_length'] - 1
+    with open('example.proof') as proof_file:
+        file_content = proof_file.read()
+        init_dag(file_content)
+    session['history_state'] = session['dag'].lastStep()
 
+def init_dag(file_content):
+    dag = process(file_content)
+    positions = calculate_node_positions(dag)
+
+    # store in session
+    session['dag'] = dag
+    session['positions'] = positions
 
 def get_layout():
     """Use data stored in session to create a graph layout for vis.js."""
@@ -51,20 +60,6 @@ def get_layout():
 def get_legend():
     return legend()
 
-def init_dag(file_content):
-    dag, history_length = process(file_content)
-    positions = calculate_node_positions(dag)
-
-    # store in session
-    session['dag'] = dag
-    session['positions'] = positions
-    session['total_history_length'] = history_length
-
-def init_dag_from_file():
-    with open('example.proof') as proof_file:
-        file_content = proof_file.read()
-        init_dag(file_content)
-
 def filter_non_consequences(selection):
     oldDag = session['dag']
 
@@ -82,7 +77,7 @@ def filter_non_consequences(selection):
     # store in session
     session['dag'] = dag
     session['positions'] = positions
-    session['history_state'] = session.get('total_history_length') - 1
+    session['history_state'] = dag.lastStep()
 
 def filter_non_parents(selection):
     oldDag = session['dag']
@@ -101,12 +96,11 @@ def filter_non_parents(selection):
     # store in session
     session['dag'] = dag
     session['positions'] = positions
-    session['history_state'] = session.get('total_history_length') - 1
+    session['history_state'] = dag.lastStep()
 
 def reset_dag():
     if session.get('old_dag'):
         session['dag'] = session['old_dag']
         session['positions'] = session['old_positions']
-
 
 
