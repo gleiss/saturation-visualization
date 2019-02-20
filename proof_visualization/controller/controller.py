@@ -16,21 +16,21 @@ def init_controller():
     with open('example.proof') as proof_file:
         file_content = proof_file.read()
         init_dag(file_content)
-    session['history_state'] = session['dag'].lastStep()
+    session['history_state'] = session['dags'][0].lastStep()
 
 def init_dag(file_content):
     dag = process(file_content)
     positions = calculate_node_positions(dag)
 
     # store in session
-    session['dag'] = dag
-    session['positions'] = positions
+    session['dags'] = [dag]
+    session['positions'] = [positions]
 
 def get_layout():
     """Use data stored in session to create a graph layout for vis.js."""
 
-    dag = session.get('dag')
-    positions = session.get('positions')
+    dag = session.get('dags')[-1]
+    positions = session.get('positions')[-1]
     history_state = int(session['history_state'])
 
     nodes = []
@@ -61,11 +61,7 @@ def get_legend():
     return legend()
 
 def filter_non_consequences(selection):
-    oldDag = session['dag']
-
-    # store dag for reset
-    session['old_dag'] = oldDag
-    session['old_positions'] = session['positions']
+    oldDag = session['dags'][-1]
 
     # generate new dag
     relevantNodeIds = set()
@@ -75,16 +71,12 @@ def filter_non_consequences(selection):
     positions = calculate_node_positions(dag)
 
     # store in session
-    session['dag'] = dag
-    session['positions'] = positions
+    session['dags'].append(dag)
+    session['positions'].append(positions)
     session['history_state'] = dag.lastStep()
 
 def filter_non_parents(selection):
-    oldDag = session['dag']
-
-    # store dag for reset
-    session['old_dag'] = oldDag
-    session['old_positions'] = session['positions']
+    oldDag = session['dags'][-1]
 
     # generate new dag
     relevantNodeIds = set()
@@ -94,13 +86,12 @@ def filter_non_parents(selection):
     positions = calculate_node_positions(dag)
 
     # store in session
-    session['dag'] = dag
-    session['positions'] = positions
+    session['dags'].append(dag)
+    session['positions'].append(positions)
     session['history_state'] = dag.lastStep()
 
 def reset_dag():
-    if session.get('old_dag'):
-        session['dag'] = session['old_dag']
-        session['positions'] = session['old_positions']
-
-
+    if len(session.get('dags')) > 0:
+        assert(len(session.get('positions')) > 0)
+        session.get('dags').pop()
+        session.get('positions').pop()
