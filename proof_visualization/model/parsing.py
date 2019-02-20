@@ -8,6 +8,7 @@ from proof_visualization.model.dag import Dag
 from proof_visualization.model.node import Node
 
 from proof_visualization.model.transformations import filterNonActiveDerivingNodes
+from proof_visualization.model.transformations import mergePreprocessing
 
 import proof_visualization.model.util as util
 
@@ -142,4 +143,6 @@ def analyse(parsed_lines):
     print("number of nodes in parsed dag: " + str(len(parsedDag.nodes)))
     print("number of nodes in active dag: " + str(len(dag.nodes)))
 
-    return dag
+    mergedDag = mergePreprocessing(dag)
+
+    return mergedDag

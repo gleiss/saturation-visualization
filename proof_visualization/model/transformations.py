@@ -120,5 +120,48 @@ def filterNonActiveDerivingNodes(dag):
 
 	return transformedDag
 
+# vampire performs preprocessing in multiple steps
+# we are only interested in 
+# 1) the input-formulas (and axioms added by Vampire) 
+# 2) the clauses resulting from them
+# We therefore merge together all preprocessing steps into single steps 
+# from input-formulas/vapire-added-axioms to final-preprocessing-clauses
+# additionally remove all choice axiom parents, since we treat them as part of the background theory
+def mergePreprocessing(dag):
+	postOrderTraversal = DFPostOrderTraversal(dag)
+	while(postOrderTraversal.hasNext()):
+		currentNode = postOrderTraversal.getNext()
+
+		# if there is a preprocessing node n1 with a parent node n2 which has itself a parent node n3,
+		# then replace n2 by n3 in the parents of n1
+		if currentNode.is_from_preprocessing:
+			newParents = []
+			for parentId in currentNode.parents:
+				parentNode = dag.get(parentId)
+				assert(parentNode.is_from_preprocessing)
+
+				if len(parentNode.parents) == 0:
+					if parentNode.inference_rule != "choice axiom":
+						newParents.append(parentId)
+
+				for parent2Id in parentNode.parents:
+					parent2Node = dag.get(parent2Id)
+					assert(parent2Node.is_from_preprocessing)
+
+					newParents.append(parent2Id)
+			
+			currentNode.parents = newParents
+
+	# remove unused nodes like n2. 
+	# not that they are now not reachable anymore from the leaves of the dag
+	remainingNodes = dict()
+	postOrderTraversal2 = DFPostOrderTraversal(dag)
+	while(postOrderTraversal2.hasNext()):
+		currentNode = postOrderTraversal2.getNext()
+		currentId = currentNode.number
+		remainingNodes[currentId] = currentNode
+
+	return Dag(remainingNodes)
+
 		
 
