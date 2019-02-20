@@ -14,7 +14,8 @@ import proof_visualization.model.util as util
 __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN = re.compile(r'^(\[[A-Z]{2}\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN_SATURATION = re.compile(r'^(\[[A-Z]{2}\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
+OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\]$')
 
 PREPROCESSING_LABEL = 'Preproc'
 
@@ -36,8 +37,10 @@ def parse(vampire_output):
 
 
 def parse_line(line):
+    # first try to parse line as output from saturation, i.e. line has form
+    # [SA] new: Clause, [SA] passive: Clause, or [SA] active: Clause
     try:
-        type_, number, clause, statistics, _, inference_rule, parents = re.match(OUTPUT_PATTERN, line).groups()
+        type_, number, clause, statistics, _, inference_rule, parents = re.match(OUTPUT_PATTERN_SATURATION, line).groups()
         type_ = type_.split(']')[1].strip()
         number = int(number)
         clause = util.remove_quotes(clause.rstrip())
@@ -47,8 +50,19 @@ def parse_line(line):
 
         return ParsedLine(type_, number, clause, statistics, inference_rule, parents)
     except AttributeError:
-        LOG.warning('\'%s\' does not match the pattern and will be skipped', line)
+        # next try to parse line as output from preprocessing (actually from print_clausifier_premises)
+        try:
+            number, clause, inference_rule, parents = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
+            type_ = "preprocessing"
+            number = int(number)
+            clause = util.remove_quotes(clause.rstrip())
+            statistics = []
+            inference_rule = inference_rule.rstrip()
+            parents = [int(parent) for parent in parents.split(',') if parent]
 
+            return ParsedLine(type_, number, clause, statistics, inference_rule, parents)
+        except AttributeError:
+            LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
 
 def analyse(parsed_lines):
     """Build a DAG from parsed vampire output lines."""
@@ -57,12 +71,12 @@ def analyse(parsed_lines):
     index = 0
     for line in parsed_lines:
 
-        # clause occurs in final preprocessing
-        if line.type == "final":
+        # clause occurs in preprocessing
+        if line.type == "preprocessing":
             assert(not line.number in nodes)
             
-            # create new node, but ignore parents
-            current_node = Node(line.number, line.clause, line.inference_rule, [], line.statistics, True)
+            # create new node
+            current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics, True)
             nodes[line.number] = current_node
 
         elif line.type == "new" and (not line.number in nodes):
@@ -120,8 +134,6 @@ def analyse(parsed_lines):
             print(line)
             assert((line.type == "final") or (line.type == "new") or (line.type == "passive") or (line.type == "active"))
             assert(False)
-
-        # TODO: add sanity check that each preprocessing clause was added to passive.
     
     parsedDag = Dag(nodes)
 

@@ -45,7 +45,7 @@ def get_layout():
         nodes.append(json.format_node(node, node_position, representation))
 
         # append representation jsons for edges
-        edge_visible = node.new_time != None and node.new_time <= history_state
+        edge_visible = node.is_from_preprocessing or (node.new_time != None and node.new_time <= history_state)
 
         for parentId in node.parents:
             parentNode = dag.get(parentId)
