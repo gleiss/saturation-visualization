@@ -25,7 +25,8 @@ def format_edge(parent, child, visible):
     return {
         'arrows': 'to',
         'color': {
-            'opacity': 1.0 if visible else 0.0
+            'opacity': 1.0 if visible else 0.0,
+            'color': '#dddddd'
         },
         'from': parent,
         'to': child
