@@ -36,6 +36,10 @@ def filterNonParents(dag, relevantIds):
 
 	return Dag(remainingNodes)
 
+# returns a new dag containing only the nodes which either
+# have an id in relevantIds or
+# are transitive children of a node with id in relevantIds.
+# additionally keeps boundary nodes
 def filterNonConsequences(dag, relevantIds):
 	assert isinstance(dag, Dag)
 	assert isinstance(relevantIds, set)
@@ -53,29 +57,37 @@ def filterNonConsequences(dag, relevantIds):
 	while(postOrderTraversal.hasNext()):
 		currentNode = postOrderTraversal.getNext()
 		currentNodeId = currentNode.number
+
 		# check if currentNode occurs in transitiveChildren or 
 		# has a parent which occurs in transitiveChildren
-		isRelevant = (currentNodeId in transitiveChildren)
+		existsRelevantParent = False
 		for parentId in currentNode.parents:
 			if parentId in transitiveChildren:
-				isRelevant = True
-	
+				existsRelevantParent = True
+		isRelevant = (currentNodeId in transitiveChildren) or existsRelevantParent
+
 		if isRelevant:
 			# add its id to the set of relevant ids
 			transitiveChildren.add(currentNodeId)
 
-			# add a boundary node for each parent which doesn't occurs in transitiveChildren
-			for parentId in currentNode.parents:
-				if not parentId in transitiveChildren:
-					boundaryNode = createBoundaryNode(dag, dag.get(parentId))
-					boundaryNodeId = boundaryNode.number
-					
-					assert(not boundaryNodeId in dag.leaves) # boundaryNode has currentNode as child and is therefore no leaf 
-					remainingNodes[boundaryNodeId] = boundaryNode
-
+			# if there exists at least one relevant parent, introduce boundary nodes for all nonrelevant parents
+			if existsRelevantParent:
+				# add a boundary node for each parent which doesn't occurs in transitiveChildren
+				for parentId in currentNode.parents:
+					if not parentId in transitiveChildren:
+						boundaryNode = createBoundaryNode(dag, dag.get(parentId))
+						boundaryNodeId = boundaryNode.number
+						
+						assert(not boundaryNodeId in dag.leaves) # boundaryNode has currentNode as child and is therefore no leaf 
+						remainingNodes[boundaryNodeId] = boundaryNode
+			
+			# otherwise ignore all parents: introduce a copy of the node which has no parents
+			else:
+				currentNode = createBoundaryNode(dag, currentNode)
+				
 			# add node to remainingNodes
 			remainingNodes[currentNodeId] = currentNode
-	
+
 	return Dag(remainingNodes)
 
 # create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents
@@ -83,7 +95,15 @@ def createBoundaryNode(dag,node):
 	assert(isinstance(dag, Dag))
 	assert(isinstance(node, Node))
 
-	return Node(node.number, node.clause, "Boundary", [], [])
+	boundaryNode = Node(node.number, node.clause, "Boundary", [], node.statistics)
+	if node.new_time:
+		boundaryNode.set_new_time(node.new_time)
+	if node.passive_time:
+		boundaryNode.set_passive_time(node.passive_time)
+	if node.active_time:
+		boundaryNode.set_active_time(node.active_time)
+
+	return boundaryNode
 
 # remove all nodes, which are not used to derive any clause which is activated at some point
 # (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have never been added to passive)
