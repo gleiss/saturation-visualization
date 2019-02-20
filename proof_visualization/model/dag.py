@@ -52,6 +52,17 @@ class Dag:
         length = self.numberOfHistorySteps()
         return max(length, 0)
 
+    def children(self, nodeId):
+        assert(nodeId)
+        assert(nodeId in self.nodes)
+        children = []
+        for node in self.nodes.values():
+            for parentId in node.parents:
+                if parentId == nodeId:
+                    children.append(node.number)
+        return children
+
+
     @staticmethod
     def _check_assertions(nodes):
         assert isinstance(nodes, dict)
