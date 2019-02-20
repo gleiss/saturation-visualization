@@ -96,11 +96,11 @@ def createBoundaryNode(dag,node):
 	assert(isinstance(node, Node))
 
 	boundaryNode = Node(node.number, node.clause, "Boundary", [], node.statistics)
-	if node.new_time:
+	if node.new_time != None:
 		boundaryNode.set_new_time(node.new_time)
-	if node.passive_time:
+	if node.passive_time != None:
 		boundaryNode.set_passive_time(node.passive_time)
-	if node.active_time:
+	if node.active_time != None:
 		boundaryNode.set_active_time(node.active_time)
 
 	return boundaryNode

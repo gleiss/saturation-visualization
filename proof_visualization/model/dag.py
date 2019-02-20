@@ -44,10 +44,10 @@ class Dag:
     def numberOfHistorySteps(self):
         counter = 0
         for node in self.nodes.values():
-            if node.active_time:
+            if node.active_time != None:
                 counter = counter + 1
         return counter
-        
+
     def lastStep(self):
         length = self.numberOfHistorySteps()
         return max(length, 0)
