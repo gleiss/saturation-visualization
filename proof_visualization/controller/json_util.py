@@ -15,6 +15,7 @@ def format_node(node, position, representation):
         },
         'id': node.number,
         'label': str(node),
+        'rule': node.inference_rule,
         'shape': representation.shape,
         'x': int(float(position.x_coord) * -70),
         'y': int(float(position.y_coord) * -120)

@@ -36,13 +36,27 @@ const drawGraph = () => {
 
 const updateSelection = () => {
   document.getElementById('selection').value = selection;
+
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
-  document.getElementById('selectionSubmit').disabled = nodeCount === 0;
-  document.getElementById('selectionSubmitUp').disabled = nodeCount === 0;
-  document.getElementById('selectParents').disabled = nodeCount === 0;
-  document.getElementById('selectChildren').disabled = nodeCount === 0;
 
+  const selectionButtonsDisabled = nodeCount === 0;
+  document.getElementById('selectionSubmit').disabled = selectionButtonsDisabled;
+  document.getElementById('selectionSubmitUp').disabled = selectionButtonsDisabled;
+  document.getElementById('selectParents').disabled = selectionButtonsDisabled;
+  document.getElementById('selectChildren').disabled = selectionButtonsDisabled;
+
+  if (nodeCount === 1) {
+    // display node details
+    const node = nodes.get(selection[0]);
+    document.getElementById('nodeDetails').classList.remove('hidden');
+    document.getElementById('nodeDetailsId').innerText = node.id;
+    document.getElementById('nodeDetailsClause').innerText = node.label;
+    document.getElementById('nodeDetailsRule').innerText = node.rule;
+  } else {
+    // hide node details
+    document.getElementById('nodeDetails').classList.add('hidden');
+  }
 };
 
 // HISTORY SLIDE ///////////////////////////////////////////////////////////////////////////////////////////////////////
