@@ -41,6 +41,7 @@ const updateSelection = () => {
   document.getElementById('selectionSubmit').disabled = nodeCount === 0;
   document.getElementById('selectionSubmitUp').disabled = nodeCount === 0;
   document.getElementById('selectParents').disabled = nodeCount === 0;
+  document.getElementById('selectChildren').disabled = nodeCount === 0;
 
 };
 
@@ -78,17 +79,34 @@ const uploadFile = (files) => {
   };
 };
 
-// PARENT SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
+// SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
 const selectParents = () => {
-  const newSelection = [...selection];
+  const newSelectionSet = new Set(selection);
   selection.forEach(selectedNodeId => {
     network.getConnectedEdges(selectedNodeId).forEach(edgeId => {
       const edge = edges.get(edgeId);
       if (edge.to === selectedNodeId) {
-        newSelection.push(edge.from);
+        newSelectionSet.add(edge.from);
       }
     })
   });
+  const newSelection = [...newSelectionSet];
+  network.selectNodes(newSelection);
+  selection = newSelection;
+  updateSelection();
+};
+
+const selectChildren = () => {
+  const newSelectionSet = new Set(selection);
+  selection.forEach(selectedNodeId => {
+    network.getConnectedEdges(selectedNodeId).forEach(edgeId => {
+      const edge = edges.get(edgeId);
+      if (edge.from === selectedNodeId) {
+        newSelectionSet.add(edge.to);
+      }
+    })
+  });
+  const newSelection = [...newSelectionSet];
   network.selectNodes(newSelection);
   selection = newSelection;
   updateSelection();
