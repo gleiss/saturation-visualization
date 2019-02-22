@@ -93,12 +93,27 @@
       Select parents
     </button>
     <br>
+
+    <!-- CHILDREN -->
     <button id="selectChildren"
             class="sidebar-button spaced"
             disabled
             onclick="selectChildren()">
       Select children
     </button>
+    <br>
+
+    <!-- COMMON CONSEQUENCES -->
+    <form id="selectForm" class="spaced" action="" method="post">
+      <input id="consequenceSelection"
+             type="hidden"
+             name="consequences"/>
+      <input id="findCommonConsequences"
+             class="sidebar-button"
+             type="submit"
+             disabled
+             value="Find common consequences"/>
+    </form>
     <br>
 
     <!-- SEARCH -->
@@ -110,7 +125,7 @@
     <ul id="searchResults">
     </ul>
 
-    <section id="nodeDetails">
+    <section id="nodeDetails" class="hidden">
       <h3>Selected Node:</h3>
       <strong class="data-label">Id</strong>
       <span id="nodeDetailsId"></span>
@@ -148,7 +163,7 @@
     let historyState = historyLength - 1;
   {% endif %}
 
-  let selection = [];
+  let selection = {{ preSelection }};
 
   let network = null;
   let data = {{ dagData | safe }};

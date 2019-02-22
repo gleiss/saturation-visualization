@@ -34,8 +34,13 @@ const drawGraph = () => {
   })
 };
 
+const preSelectNodes = () => {
+  network.selectNodes(selection);
+};
+
 const updateSelection = () => {
   document.getElementById('selection').value = selection;
+  document.getElementById('consequenceSelection').value = selection;
 
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
@@ -45,6 +50,7 @@ const updateSelection = () => {
   document.getElementById('selectionSubmitUp').disabled = selectionButtonsDisabled;
   document.getElementById('selectParents').disabled = selectionButtonsDisabled;
   document.getElementById('selectChildren').disabled = selectionButtonsDisabled;
+  document.getElementById('findCommonConsequences').disabled = nodeCount <= 1;
 
   if (nodeCount === 1) {
     // display node details
@@ -175,6 +181,7 @@ const drawLegend = () => {
 // CALLS ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 reset();
 drawGraph();
+preSelectNodes();
 drawLegend();
 renderSlide();
 updateSlideValueDisplay();

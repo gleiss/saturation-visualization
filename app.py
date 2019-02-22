@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, session
 from flask_session import Session
 
 from proof_visualization.controller import controller
+from proof_visualization.model.search import findCommonConsequences
 
 VIEW_DIR = os.path.join(os.path.dirname(__file__), 'proof_visualization', 'view')
 TEMPLATE_DIR = os.path.join(VIEW_DIR, 'templates')
@@ -23,13 +24,14 @@ def home():
     controller.init_controller()
     return render_template('main.html',
                            dagData=controller.get_layout(), historyLength=session['dags'][0].numberOfHistorySteps(), reset=True,
-                           legend=controller.get_legend())
+                           legend=controller.get_legend(), preSelection=[])
 
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
     params = request.form.to_dict()
     reset = False
+    selection = []
     if params.get('file'):
         reset = True
         controller.init_dag(params['file'])
@@ -46,11 +48,16 @@ def handle_post_request():
         reset = True
         controller.reset_dag()
         refresh_history_state()
+    elif params.get('consequences'):
+        node_ids = {int(id_) for id_ in params['consequences'].split(',')}
+        selection = findCommonConsequences(session['dags'][-1], node_ids)
+        selection.extend(node_ids)
     else:
         update_history_state(params)
     return render_template('main.html',
                            dagData=controller.get_layout(), historyState=session['history_state'],
-                           historyLength=session['dags'][0].numberOfHistorySteps(), reset=reset, legend=controller.get_legend())
+                           historyLength=session['dags'][0].numberOfHistorySteps(), reset=reset,
+                           legend=controller.get_legend(), preSelection=selection)
 
 
 @app.before_first_request
