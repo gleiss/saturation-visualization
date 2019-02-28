@@ -138,7 +138,12 @@ const search = (value) => {
     document.getElementById('searchResults').innerHTML = '';
     return;
   }
-  const selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
+  let selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
+  selectedNodes.sort(function(a, b){
+    console.log(a.label);
+    console.log(b.label);
+    return a.label.length - b.label.length;
+  });
   selection = selectedNodes.map(node => node.id);
   network.selectNodes(selection);
   updateSelection();

@@ -37,8 +37,9 @@ def handle_post_request():
         controller.init_dag(params['file'])
         refresh_history_state()
     elif params.get('selection'):
-        selection = params['selection'].split(',')
+        selection = [int(param) for param in params['selection'].split(',')]
         reset = True
+        
         if params.get('up'):
             controller.filter_non_parents(selection)
         else:
