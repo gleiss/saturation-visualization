@@ -139,9 +139,7 @@ const search = (value) => {
     return;
   }
   let selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
-  selectedNodes.sort(function(a, b){
-    console.log(a.label);
-    console.log(b.label);
+  selectedNodes.sort((a, b) => {
     return a.label.length - b.label.length;
   });
   selection = selectedNodes.map(node => node.id);
@@ -161,7 +159,6 @@ const selectNode = (nodeId) => {
   network.selectNodes([nodeId]);
   selection = [nodeId];
   updateSelection();
-  reset();
 };
 
 // LEGEND //////////////////////////////////////////////////////////////////////////////////////////////////////////////
