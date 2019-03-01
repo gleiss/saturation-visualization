@@ -49,6 +49,7 @@ def handle_post_request():
         reset = True
         controller.reset_dag()
         refresh_history_state()
+        selection = params.get('selection', [])
     elif params.get('consequences'):
         node_ids = {int(id_) for id_ in params['consequences'].split(',')}
         selection = findCommonConsequences(session['dags'][-1], node_ids)

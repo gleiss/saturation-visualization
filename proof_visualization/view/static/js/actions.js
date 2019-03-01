@@ -41,6 +41,7 @@ const preSelectNodes = () => {
 const updateSelection = () => {
   document.getElementById('selection').value = selection;
   document.getElementById('consequenceSelection').value = selection;
+  document.getElementById('resetSelection').value = selection;
 
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
