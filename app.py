@@ -52,7 +52,6 @@ def handle_post_request():
     elif params.get('consequences'):
         node_ids = {int(id_) for id_ in params['consequences'].split(',')}
         selection = findCommonConsequences(session['dags'][-1], node_ids)
-        selection.extend(node_ids)
     else:
         update_history_state(params)
     return render_template('main.html',

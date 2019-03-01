@@ -23,7 +23,7 @@ aside {
   flex-direction: column;
   margin: 1rem 1.5rem;
   display: flex;
-  max-width: 300px;
+  width: 300px;
 }
 
 #graph {
