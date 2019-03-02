@@ -23,8 +23,9 @@ Session(app)
 def home():
     controller.init_controller()
     return render_template('main.html',
-                           dagData=controller.get_layout(), historyLength=session['dags'][0].numberOfHistorySteps(), reset=True,
-                           legend=controller.get_legend(), preSelection=[])
+                           dagData=controller.get_layout(), historyLength=session['dags'][0].numberOfHistorySteps(),
+                           reset=True,
+                           legend=controller.get_legend(), preSelection=[], isInitial=True)
 
 
 @app.route("/", methods=['POST'])
@@ -32,14 +33,16 @@ def handle_post_request():
     params = request.form.to_dict()
     reset = False
     selection = []
+    initial = False
     if params.get('file'):
         reset = True
         controller.init_dag(params['file'])
         refresh_history_state()
+        initial = True
     elif params.get('selection'):
         selection = [int(param) for param in params['selection'].split(',')]
         reset = True
-        
+
         if params.get('up'):
             controller.filter_non_parents(selection)
         else:
@@ -50,6 +53,7 @@ def handle_post_request():
         controller.reset_dag()
         refresh_history_state()
         selection = params.get('selection', [])
+        initial = len(session['dags']) == 1
     elif params.get('consequences'):
         node_ids = {int(id_) for id_ in params['consequences'].split(',')}
         selection = findCommonConsequences(session['dags'][-1], node_ids)
@@ -58,7 +62,7 @@ def handle_post_request():
     return render_template('main.html',
                            dagData=controller.get_layout(), historyState=session['history_state'],
                            historyLength=session['dags'][0].numberOfHistorySteps(), reset=reset,
-                           legend=controller.get_legend(), preSelection=selection)
+                           legend=controller.get_legend(), preSelection=selection, isInitial=initial)
 
 
 @app.before_first_request
@@ -83,8 +87,10 @@ def update_history_state(request_params):
 
     session['history_state'] = historyState
 
+
 def refresh_history_state():
     session['history_state'] = session['dags'][0].lastStep()
+
 
 if __name__ == '__main__':
     app.run()

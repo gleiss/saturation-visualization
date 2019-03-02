@@ -54,7 +54,8 @@
     <input id="resetSelection"
            type="hidden"
            name="selection"/>
-    <input class="sidebar-button"
+    <input id="undoButton"
+           class="sidebar-button"
            type="submit"
            name="reset"
            value="Undo transformation"/>
@@ -157,6 +158,10 @@
     const resetSession = true;
   {% else %}
     const resetSession = false;
+  {% endif %}
+
+  {% if isInitial %}
+    document.getElementById('undoButton').disabled = true;
   {% endif %}
 
   let historyLength = {{ historyLength | int }};
