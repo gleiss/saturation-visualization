@@ -148,19 +148,19 @@ PREPROCESSING_LABEL = 'Preproc'
 
 def compute_representation(node, history_state):
     if node.inference_rule == 'theory axiom':
-        if node.active_time != None and node.active_time <= history_state:
+        if node.active_time is not None and node.active_time <= history_state:
             return REPRESENTATIONS['active_theory_axiom']
-        elif node.passive_time != None and node.passive_time <= history_state:
+        elif node.passive_time is not None and node.passive_time <= history_state:
             return REPRESENTATIONS['passive_theory_axiom']
 
     if node.is_from_preprocessing:
         return REPRESENTATIONS['preprocessing'] if node.parents else REPRESENTATIONS['input']
 
-    if node.active_time != None and node.active_time <= history_state:
+    if node.active_time is not None and node.active_time <= history_state:
         return REPRESENTATIONS['active']
-    elif node.passive_time != None and node.passive_time <= history_state:
+    elif node.passive_time is not None and node.passive_time <= history_state:
         return REPRESENTATIONS['passive']
-    elif node.new_time != None and node.new_time < history_state:
+    elif node.new_time is not None and node.new_time < history_state:
         return REPRESENTATIONS['new'] # TODO: add seperate representation for new, maybe as even lighter nodes?
 
     return REPRESENTATIONS['hidden']

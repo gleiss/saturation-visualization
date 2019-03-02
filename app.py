@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, session
 from flask_session import Session
 
 from proof_visualization.controller import controller
-from proof_visualization.model.search import findCommonConsequences
+from proof_visualization.model.search import find_common_consequences
 
 VIEW_DIR = os.path.join(os.path.dirname(__file__), 'proof_visualization', 'view')
 TEMPLATE_DIR = os.path.join(VIEW_DIR, 'templates')
@@ -23,7 +23,7 @@ Session(app)
 def home():
     controller.init_controller()
     return render_template('main.html',
-                           dagData=controller.get_layout(), historyLength=session['dags'][0].numberOfHistorySteps(),
+                           dagData=controller.get_layout(), historyLength=session['dags'][0].number_of_history_steps(),
                            reset=True,
                            legend=controller.get_legend(), preSelection=[], isInitial=True)
 
@@ -56,12 +56,12 @@ def handle_post_request():
         initial = len(session['dags']) == 1
     elif params.get('consequences'):
         node_ids = {int(id_) for id_ in params['consequences'].split(',')}
-        selection = findCommonConsequences(session['dags'][-1], node_ids)
+        selection = find_common_consequences(session['dags'][-1], node_ids)
     else:
         update_history_state(params)
     return render_template('main.html',
                            dagData=controller.get_layout(), historyState=session['history_state'],
-                           historyLength=session['dags'][0].numberOfHistorySteps(), reset=reset,
+                           historyLength=session['dags'][0].number_of_history_steps(), reset=reset,
                            legend=controller.get_legend(), preSelection=selection, isInitial=initial)
 
 
@@ -73,23 +73,23 @@ def clear_session():
 def update_history_state(request_params):
     # update history state to new canidate value
     if request_params.get('increase'):
-        historyState = session['history_state'] + 1
+        history_state = session['history_state'] + 1
     elif request_params.get('decrease'):
-        historyState = session['history_state'] - 1
+        history_state = session['history_state'] - 1
     elif request_params.get('slide'):
-        historyState = int(request_params['slide'])
+        history_state = int(request_params['slide'])
 
     # make sure candidate is in meaningful interval and change if necessary
-    historyState = max(0, historyState)
+    history_state = max(0, history_state)
 
-    lastStep = session['dags'][0].lastStep()
-    historyState = min(historyState, lastStep)
+    last_step = session['dags'][0].last_step()
+    history_state = min(history_state, last_step)
 
-    session['history_state'] = historyState
+    session['history_state'] = history_state
 
 
 def refresh_history_state():
-    session['history_state'] = session['dags'][0].lastStep()
+    session['history_state'] = session['dags'][0].last_step()
 
 
 if __name__ == '__main__':

@@ -1,44 +1,43 @@
 from proof_visualization.model.dag import Dag
-from proof_visualization.model.node import Node
 from proof_visualization.model.traversal import DFPostOrderTraversal
-from proof_visualization.model.traversal import ReversePostOrderTraversal
 
-# return ids of nodes, which have a derivation where each of the nodes in relevantIds occurs
-def findCommonConsequences(dag, relevantIds):
+
+# return ids of nodes, which have a derivation where each of the nodes in relevant_ids occurs
+def find_common_consequences(dag, relevant_ids):
     assert isinstance(dag, Dag)
-    assert isinstance(relevantIds, set)
-    for relevantId in relevantIds:
-        assert isinstance(relevantId, int)
+    assert isinstance(relevant_ids, set)
+    for relevant_id in relevant_ids:
+        assert isinstance(relevant_id, int)
 
-    # create dictionary which for each nodeId keep track of which relevantIds occur in the derivation
-    idToRelevantParents = dict()
+    # create dictionary which for each nodeId keep track of which relevant_ids occur in the derivation
+    id_to_relevant_parents = {}
 
     # want to compute common consequences
-    commonConsequences = list()
+    common_consequences = []
 
     # add all transitive children of ids in transitiveChildren to transitiveChildren
-    postOrderTraversal = DFPostOrderTraversal(dag)
-    while(postOrderTraversal.hasNext()):
-        currentNode = postOrderTraversal.getNext()
-        currentNodeId = currentNode.number
+    post_order_traversal = DFPostOrderTraversal(dag)
+    while post_order_traversal.has_next():
+        current_node = post_order_traversal.get_next()
+        current_node_id = current_node.number
 
         # compute relevant parents and update dictionary
-        if currentNodeId in relevantIds:
-            relevantParents = {currentNodeId}
+        if current_node_id in relevant_ids:
+            relevant_parents = {current_node_id}
         else:
-            relevantParents = set()
-        for parentId in currentNode.parents:
+            relevant_parents = set()
+        for parentId in current_node.parents:
             print(parentId)
-            print(idToRelevantParents[parentId])
-            if parentId in idToRelevantParents:
-                relevantParents.update(idToRelevantParents[parentId])
-        idToRelevantParents[currentNodeId] = relevantParents
-        
-        # check whether each relevant id occurs in relevant parents
-        print("len relevantIds: " + str(len(relevantIds)))
-        print("len relevantParents: " + str(len(relevantParents)))
-        if len(relevantIds) == len(relevantParents):
-            commonConsequences.append(currentNodeId)
+            print(id_to_relevant_parents[parentId])
+            if parentId in id_to_relevant_parents:
+                relevant_parents.update(id_to_relevant_parents[parentId])
+                id_to_relevant_parents[current_node_id] = relevant_parents
 
-    print(commonConsequences)
-    return commonConsequences
+        # check whether each relevant id occurs in relevant parents
+        print("len relevant_ids: " + str(len(relevant_ids)))
+        print("len relevant_parents: " + str(len(relevant_parents)))
+        if len(relevant_ids) == len(relevant_parents):
+            common_consequences.append(current_node_id)
+
+    print(common_consequences)
+    return common_consequences

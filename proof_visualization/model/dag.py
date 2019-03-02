@@ -1,28 +1,28 @@
+"""Data structure for DAGs which is used to represent proofs."""
+
 import proof_visualization.model.util as util
 from proof_visualization.model.node import Node
 
-# datastructure for DAGs, which we use to represent proofs
+
 class Dag:
     def __init__(self, nodes):
         self._check_assertions(nodes)
 
         self.nodes = nodes
-        
+
         # compute leaves
         leaves = set()
-        nonLeaves = set()
+        non_leaves = set()
         for node in nodes.values():
             for parent in node.parents:
-                nonLeaves.add(parent)
-        for nodeId in nodes:
-            if not nodeId in nonLeaves:
-                leaves.add(nodeId)
+                non_leaves.add(parent)
+        for node_id in nodes:
+            if node_id not in non_leaves:
+                leaves.add(node_id)
         self.leaves = leaves
 
     def get(self, node_id):
-        assert node_id
-        assert node_id in self.nodes
-        return self.nodes.get(node_id)
+        return self.nodes[node_id]
 
     def __iter__(self):
         for node in self.nodes.values():
@@ -30,8 +30,8 @@ class Dag:
 
     def __repr__(self):
         title = "Tree with {} and {}".format(
-            util.count_repr(self.nodes, "node", "nodes"),
-            util.count_repr(self.leaves, "leaf", "leaves")
+            util.count_repr(self.nodes, singular="node", plural="nodes"),
+            util.count_repr(self.leaves, singular="leaf", plural="leaves")
         )
         return "\n".join((
             util.title_repr(title),
@@ -41,27 +41,23 @@ class Dag:
             util.last_line()
         ))
 
-    def numberOfHistorySteps(self):
-        counter = 0
-        for node in self.nodes.values():
-            if node.active_time != None:
-                counter = counter + 1
-        return counter
+    def number_of_history_steps(self):
+        return sum(node.active_time is not None for node in self.nodes.values())
 
-    def lastStep(self):
-        length = self.numberOfHistorySteps()
+    def last_step(self):
+        length = self.number_of_history_steps()
         return max(length, 0)
 
-    def children(self, nodeId):
-        assert(nodeId)
-        assert(nodeId in self.nodes)
+    def children(self, node_id):
+        if not self.nodes.get(node_id):
+            raise Exception('Invalid node id {}'.format(node_id))
+
         children = []
         for node in self.nodes.values():
-            for parentId in node.parents:
-                if parentId == nodeId:
+            for parent_id in node.parents:
+                if parent_id == node_id:
                     children.append(node.number)
         return children
-
 
     @staticmethod
     def _check_assertions(nodes):
@@ -69,4 +65,3 @@ class Dag:
         for key, value in nodes.items():
             assert isinstance(key, int)
             assert isinstance(value, Node)
-

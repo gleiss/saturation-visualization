@@ -30,28 +30,28 @@ class Node:
         self.new_time = None
         self.passive_time = None
         self.active_time = None
-  
+
     def set_new_time(self, line_number):
         assert isinstance(line_number, int)
-        assert(self.new_time == None)
-        assert(self.passive_time == None)
-        assert(self.active_time == None)
+        assert self.new_time is None
+        assert self.passive_time is None
+        assert self.active_time is None
         self.new_time = line_number
 
     def set_passive_time(self, line_number):
         assert isinstance(line_number, int)
-        assert(self.new_time != None)
-        assert(self.passive_time == None)
-        assert(self.active_time == None)
+        assert self.new_time is not None
+        assert self.passive_time is None
+        assert self.active_time is None
         self.passive_time = line_number
 
     def set_active_time(self, line_number):
         assert isinstance(line_number, int)
-        assert(self.new_time != None)
-        assert(self.passive_time != None)
-        assert(self.active_time == None)
+        assert self.new_time is not None
+        assert self.passive_time is not None
+        assert self.active_time is None
         self.active_time = line_number
-        
+
     def __str__(self):
         return self.clause
 
