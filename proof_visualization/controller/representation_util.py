@@ -17,6 +17,13 @@ REPRESENTATIONS = {
         shape='box',
         highlight='#f8cfc1'
     ),
+    'new': Representation(
+        background='#f8f8f8',
+        border='#f1f1f1',
+        text='#999999',
+        shape='box',
+        highlight='#f8cfc1'
+    ),
     'active_theory_axiom': Representation(
         background='#77aadd',
         border='#4477aa',
@@ -31,9 +38,16 @@ REPRESENTATIONS = {
         shape='box',
         highlight='#f8cfc1'
     ),
-    'preprocessing': Representation(
+    'input': Representation(
         background='#44bb99',
         border='#009988',
+        text='#000000',
+        shape='box',
+        highlight='#ee8866'
+    ),
+    'preprocessing': Representation(
+        background='#eedd88',
+        border='#ddcc77',
         text='#000000',
         shape='box',
         highlight='#ee8866'
@@ -140,15 +154,14 @@ def compute_representation(node, history_state):
             return REPRESENTATIONS['passive_theory_axiom']
 
     if node.is_from_preprocessing:
-        return REPRESENTATIONS['preprocessing']
+        return REPRESENTATIONS['preprocessing'] if node.parents else REPRESENTATIONS['input']
 
     if node.active_time != None and node.active_time <= history_state:
         return REPRESENTATIONS['active']
     elif node.passive_time != None and node.passive_time <= history_state:
         return REPRESENTATIONS['passive']
-    elif node.new_time != None and node.new_time <= history_state:
-        return REPRESENTATIONS['passive'] # TODO: add seperate representation for new, maybe as even lighter nodes?
-
+    elif node.new_time != None and node.new_time < history_state:
+        return REPRESENTATIONS['new'] # TODO: add seperate representation for new, maybe as even lighter nodes?
 
     return REPRESENTATIONS['hidden']
 
