@@ -185,6 +185,5 @@ const drawLegend = () => {
 reset();
 drawGraph();
 preSelectNodes();
-drawLegend();
 renderSlide();
 updateSlideValueDisplay();

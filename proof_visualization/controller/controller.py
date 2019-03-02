@@ -93,7 +93,6 @@ def filter_non_parents(selection):
 
 
 def reset_dag():
-    if len(session.get('dags')) > 0:
-        assert (len(session.get('positions')) > 0)
-        session.get('dags').pop()
-        session.get('positions').pop()
+    if session.get('dags') and session.get('positions'):
+        session['dags'].pop()
+        session['positions'].pop()

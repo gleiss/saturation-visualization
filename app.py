@@ -22,47 +22,48 @@ Session(app)
 @app.route("/", methods=['GET'])
 def home():
     controller.init_controller()
-    return render_template('main.html',
-                           dagData=controller.get_layout(), historyLength=session['dags'][0].number_of_history_steps(),
-                           reset=True,
-                           legend=controller.get_legend(), preSelection=[], isInitial=True)
+    template_values = get_default_values()
+    template_values['reset'] = True
+    template_values['no_undo'] = True
+    return render_template('main.html', **template_values)
 
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
     params = request.form.to_dict()
-    reset = False
-    selection = []
-    initial = False
+    template_values = get_default_values()
+
     if params.get('file'):
-        reset = True
         controller.init_dag(params['file'])
         refresh_history_state()
-        initial = True
+        template_values['reset'] = True
+        template_values['no_undo'] = True
+
     elif params.get('selection'):
         selection = [int(param) for param in params['selection'].split(',')]
-        reset = True
 
         if params.get('up'):
             controller.filter_non_parents(selection)
         else:
             controller.filter_non_consequences(selection)
         refresh_history_state()
-    elif params.get('reset'):
-        reset = True
+        template_values['reset'] = True
+        template_values['preselected_nodes'] = selection
+
+    elif params.get('undo'):
         controller.reset_dag()
         refresh_history_state()
-        selection = params.get('selection', [])
-        initial = len(session['dags']) == 1
+        template_values['reset'] = True
+        template_values['no_undo'] = len(session['dags']) == 1
+        template_values['preselected_nodes'] = params.get('selection', [])
+
     elif params.get('consequences'):
         node_ids = {int(id_) for id_ in params['consequences'].split(',')}
-        selection = find_common_consequences(session['dags'][-1], node_ids)
+        template_values['preselected_nodes'] = find_common_consequences(session['dags'][-1], node_ids)
+
     else:
         update_history_state(params)
-    return render_template('main.html',
-                           dagData=controller.get_layout(), historyState=session['history_state'],
-                           historyLength=session['dags'][0].number_of_history_steps(), reset=reset,
-                           legend=controller.get_legend(), preSelection=selection, isInitial=initial)
+    return render_template('main.html', **template_values)
 
 
 @app.before_first_request
@@ -78,6 +79,8 @@ def update_history_state(request_params):
         history_state = session['history_state'] - 1
     elif request_params.get('slide'):
         history_state = int(request_params['slide'])
+    else:
+        history_state = 0
 
     # make sure candidate is in meaningful interval and change if necessary
     history_state = max(0, history_state)
@@ -90,6 +93,17 @@ def update_history_state(request_params):
 
 def refresh_history_state():
     session['history_state'] = session['dags'][0].last_step()
+
+
+def get_default_values():
+    return {
+        'dag_data': controller.get_layout(),
+        'history_state': session['history_state'],
+        'history_length': session['dags'][0].number_of_history_steps(),
+        'reset': False,
+        'no_undo': False,
+        'preselected_nodes': []
+    }
 
 
 if __name__ == '__main__':

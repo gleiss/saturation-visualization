@@ -57,7 +57,7 @@
     <input id="undoButton"
            class="sidebar-button"
            type="submit"
-           name="reset"
+           name="undo"
            value="Undo transformation"/>
   </form>
 
@@ -142,14 +142,6 @@
     </section>
   </article>
 
-  <!-- LEGEND -->
-  <article class="legend">
-    <h2>Legend</h2>
-    <section id="legendGraph">
-      <canvas></canvas>
-    </section>
-  </article>
-
 </aside>
 
 <script type="text/javascript">
@@ -160,25 +152,23 @@
     const resetSession = false;
   {% endif %}
 
-  {% if isInitial %}
+  {% if no_undo %}
     document.getElementById('undoButton').disabled = true;
   {% endif %}
 
-  let historyLength = {{ historyLength | int }};
-  {% if historyState is defined %}
-    let historyState = {{ historyState | int }};
+  let historyLength = {{ history_length | int }};
+  {% if history_state is defined %}
+    let historyState = {{ history_state | int }};
   {% else %}
     let historyState = historyLength - 1;
   {% endif %}
 
-  let selection = {{ preSelection }};
+  let selection = {{ preselected_nodes }};
 
   let network = null;
-  let data = {{ dagData | safe }};
+  let data = {{ dag_data | safe }};
   let nodes = new vis.DataSet(data.graph.nodes);
   let edges = new vis.DataSet(data.graph.edges);
-
-  let legendNodes = {{ legend | safe }};
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/actions.js') }}"></script>
 </body>
