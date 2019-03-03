@@ -22,7 +22,8 @@ class Dag:
         self.leaves = leaves
 
     def get(self, node_id):
-        return self.nodes[node_id]
+        # TODO use self.nodes[node_id] instead
+        return self.nodes.get(node_id)
 
     def __iter__(self):
         for node in self.nodes.values():

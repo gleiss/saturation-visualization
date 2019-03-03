@@ -1,4 +1,4 @@
-"""The application entry point"""
+"""The application entry point."""
 
 import os
 
@@ -6,7 +6,6 @@ from flask import Flask, render_template, request, session
 from flask_session import Session
 
 from proof_visualization.controller import controller
-from proof_visualization.model.search import find_common_consequences
 
 VIEW_DIR = os.path.join(os.path.dirname(__file__), 'proof_visualization', 'view')
 TEMPLATE_DIR = os.path.join(VIEW_DIR, 'templates')
@@ -22,47 +21,59 @@ Session(app)
 @app.route("/", methods=['GET'])
 def home():
     controller.init_controller()
-    template_values = get_default_values()
-    template_values['reset'] = True
-    template_values['no_undo'] = True
+    template_values = _get_default_values()
+    template_values.update({
+        'reset': True,
+        'no_undo': True
+    })
     return render_template('main.html', **template_values)
 
 
 @app.route("/", methods=['POST'])
 def handle_post_request():
-    params = request.form.to_dict()
-    template_values = get_default_values()
+    request_params = request.form.to_dict()
 
-    if params.get('file'):
-        controller.init_dag(params['file'])
-        refresh_history_state()
-        template_values['reset'] = True
-        template_values['no_undo'] = True
+    if request_params.get('file'):
+        controller.init_dag(request_params['file'])
+        controller.refresh_history_state()
+        custom_template_values = {
+            'reset': True,
+            'no_undo': True
+        }
 
-    elif params.get('selection'):
-        selection = [int(param) for param in params['selection'].split(',')]
+    elif request_params.get('selection'):
+        selection = _as_list(request_params['selection'])
 
-        if params.get('up'):
+        if request_params.get('up'):
             controller.filter_non_parents(selection)
         else:
             controller.filter_non_consequences(selection)
-        refresh_history_state()
-        template_values['reset'] = True
-        template_values['preselected_nodes'] = selection
+        controller.refresh_history_state()
+        custom_template_values = {
+            'reset': True,
+            'preselected_nodes': selection
+        }
 
-    elif params.get('undo'):
+    elif request_params.get('undo'):
         controller.reset_dag()
-        refresh_history_state()
-        template_values['reset'] = True
-        template_values['no_undo'] = len(session['dags']) == 1
-        template_values['preselected_nodes'] = params.get('selection', [])
+        controller.refresh_history_state()
+        custom_template_values = {
+            'reset': True,
+            'no_undo': len(session['dags']) == 1,
+            'preselected_nodes': _as_list(request_params['resetSelection'])
+        }
 
-    elif params.get('consequences'):
-        node_ids = {int(id_) for id_ in params['consequences'].split(',')}
-        template_values['preselected_nodes'] = find_common_consequences(session['dags'][-1], node_ids)
+    elif request_params.get('consequenceSelection'):
+        custom_template_values = {
+            'preselected_nodes': controller.find_common_consequences(_as_list(request_params['consequenceSelection']))
+        }
 
     else:
-        update_history_state(params)
+        _calculate_new_history_state(request_params)
+        custom_template_values = {}
+
+    template_values = _get_default_values()
+    template_values.update(custom_template_values)
     return render_template('main.html', **template_values)
 
 
@@ -71,8 +82,10 @@ def clear_session():
     session.clear()
 
 
-def update_history_state(request_params):
-    # update history state to new canidate value
+# HELPERS ##############################################################################################################
+
+def _calculate_new_history_state(request_params):
+    # update history state to new candidate value
     if request_params.get('increase'):
         history_state = session['history_state'] + 1
     elif request_params.get('decrease'):
@@ -91,11 +104,7 @@ def update_history_state(request_params):
     session['history_state'] = history_state
 
 
-def refresh_history_state():
-    session['history_state'] = session['dags'][0].last_step()
-
-
-def get_default_values():
+def _get_default_values():
     return {
         'dag_data': controller.get_layout(),
         'history_state': session['history_state'],
@@ -105,6 +114,12 @@ def get_default_values():
         'preselected_nodes': []
     }
 
+
+def _as_list(selection_string):
+    return [int(node_id) for node_id in selection_string.split(',')]
+
+
+# MAIN #################################################################################################################
 
 if __name__ == '__main__':
     app.run()

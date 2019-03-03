@@ -4,6 +4,7 @@ from flask import session
 
 import proof_visualization.controller.json_util as json
 from proof_visualization.controller.representation_util import compute_representation, legend
+from proof_visualization.model import search
 from proof_visualization.model.parsing import process
 from proof_visualization.model.positioning import calculate_node_positions
 import proof_visualization.model.transformations as transformations
@@ -37,7 +38,9 @@ def get_layout():
 
     for node_position in positions:
         node = dag.get(int(node_position.id_))
-        assert node
+        if not node:
+            # TODO ensure node is not None
+            continue
 
         # append representation jsons for node
         representation = compute_representation(node, history_state)
@@ -65,8 +68,8 @@ def filter_non_consequences(selection):
 
     # generate new dag
     relevant_node_ids = set()
-    for e in selection:
-        relevant_node_ids.add(int(e))
+    for node_id in selection:
+        relevant_node_ids.add(node_id)
     dag = transformations.filter_non_consequences(old_dag, relevant_node_ids)
     positions = calculate_node_positions(dag)
 
@@ -92,7 +95,15 @@ def filter_non_parents(selection):
     session['history_state'] = dag.last_step()
 
 
+def find_common_consequences(relevant_ids):
+    search.find_common_consequences(session['dags'][-1], set(relevant_ids))
+
+
 def reset_dag():
     if session.get('dags') and session.get('positions'):
         session['dags'].pop()
         session['positions'].pop()
+
+
+def refresh_history_state():
+    session['history_state'] = session['dags'][0].last_step()

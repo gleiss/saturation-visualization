@@ -36,6 +36,7 @@ const drawGraph = () => {
 
 const preSelectNodes = () => {
   network.selectNodes(selection);
+  updateSelection();
 };
 
 const updateSelection = () => {
