@@ -84,15 +84,14 @@ def analyse(parsed_lines):
                 # create new node
                 current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics, False)
                 nodes[line.number] = current_node
+                current_node.set_new_time(index)
             else:
                 # fetch existing node
                 current_node = nodes[line.number]
                 assert current_node.is_from_preprocessing
                 assert line.number == current_node.number
                 assert line.inference_rule == current_node.inference_rule
-
-            # set new time
-            current_node.set_new_time(index)
+                current_node.set_new_time(index)
 
         elif line.type == "passive":
             if line.number not in nodes:
@@ -109,9 +108,9 @@ def analyse(parsed_lines):
             assert (line.parents == current_node.parents or current_node.parents == [])
 
             # TODO:
-            # The literals in the clause occur not necessarily always in the same order. Should parse them
-            # separately, order them consistently and then do a sanity comparison. Parsing them is not much extra
-            # implementation effort, since we anyway need it for later features.
+            # The literals in the clause occur not necessarily always in the same order. Should parse them separately,
+            # order them consistently and then do a sanity comparison. Parsing them is not much extra implementation
+            # effort, since we anyway need it for later features.
 
             # set passive time
             current_node.set_passive_time(index)

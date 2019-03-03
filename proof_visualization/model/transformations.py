@@ -80,8 +80,8 @@ def filter_non_consequences(dag, relevant_ids):
                         boundary_node = create_boundary_node(dag, dag.get(parent_id))
                         boundary_node_id = boundary_node.number
 
-                        assert (
-                            not boundary_node_id in dag.leaves)  # boundary_node has current_node as child and is therefore no leaf
+                        assert boundary_node_id not in dag.leaves
+                        # boundary_node has current_node as child and is therefore no leaf
                         remaining_nodes[boundary_node_id] = boundary_node
 
             # otherwise ignore all parents: introduce a copy of the node which has no parents
@@ -111,7 +111,8 @@ def create_boundary_node(dag, node):
 
 
 # remove all nodes, which are not used to derive any clause which is activated at some point
-# (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have never been added to passive)
+# (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have
+# never been added to passive)
 def filter_non_active_deriving_nodes(dag):
     # collect all active nodes
     activated_nodes = set()
@@ -126,10 +127,10 @@ def filter_non_active_deriving_nodes(dag):
 
 
 # vampire performs preprocessing in multiple steps
-# we are only interested in 
-# 1) the input-formulas (and axioms added by Vampire) 
+# we are only interested in
+# 1) the input-formulas (and axioms added by Vampire)
 # 2) the clauses resulting from them
-# We therefore merge together all preprocessing steps into single steps 
+# We therefore merge together all preprocessing steps into single steps
 # from input-formulas/vapire-added-axioms to final-preprocessing-clauses
 # additionally remove all choice axiom parents, since we treat them as part of the background theory
 def merge_preprocessing(dag):
@@ -149,11 +150,11 @@ def merge_preprocessing(dag):
                     if parent_node.inference_rule != "choice axiom":
                         new_parents.append(parent_id)
 
-                for parent2Id in parent_node.parents:
-                    parent_2_node = dag.get(parent2Id)
+                for parent_2_id in parent_node.parents:
+                    parent_2_node = dag.get(parent_2_id)
                     assert parent_2_node.is_from_preprocessing
 
-                    new_parents.append(parent2Id)
+                    new_parents.append(parent_2_id)
 
             current_node.parents = new_parents
 

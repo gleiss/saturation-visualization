@@ -43,7 +43,11 @@ class Dag:
         ))
 
     def number_of_history_steps(self):
-        return sum(node.active_time is not None for node in self.nodes.values())
+        counter = 0
+        for node in self.nodes.values():
+            if node.active_time is not None:
+                counter += 1
+        return counter
 
     def last_step(self):
         length = self.number_of_history_steps()

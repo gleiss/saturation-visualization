@@ -96,7 +96,7 @@ def filter_non_parents(selection):
 
 
 def find_common_consequences(relevant_ids):
-    search.find_common_consequences(session['dags'][-1], set(relevant_ids))
+    return search.find_common_consequences(session['dags'][-1], set(relevant_ids))
 
 
 def reset_dag():

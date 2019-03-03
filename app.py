@@ -37,8 +37,7 @@ def handle_post_request():
         controller.init_dag(request_params['file'])
         controller.refresh_history_state()
         custom_template_values = {
-            'reset': True,
-            'no_undo': True
+            'reset': True
         }
 
     elif request_params.get('selection'):
@@ -59,7 +58,6 @@ def handle_post_request():
         controller.refresh_history_state()
         custom_template_values = {
             'reset': True,
-            'no_undo': len(session['dags']) == 1,
             'preselected_nodes': _as_list(request_params['resetSelection'])
         }
 
@@ -110,7 +108,7 @@ def _get_default_values():
         'history_state': session['history_state'],
         'history_length': session['dags'][0].number_of_history_steps(),
         'reset': False,
-        'no_undo': False,
+        'no_undo': len(session['dags']) == 1,
         'preselected_nodes': []
     }
 

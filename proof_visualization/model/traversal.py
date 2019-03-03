@@ -9,7 +9,7 @@ class DFPostOrderTraversal:
         self.visited = set()
 
     def has_next(self):
-        while len(self.todo) > 0:
+        while self.todo:
             last = self.todo[-1]
             if last in self.visited:
                 self.todo.pop()

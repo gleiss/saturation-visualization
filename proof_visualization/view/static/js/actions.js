@@ -178,7 +178,7 @@ const drawLegend = () => {
       zoomView: false
     }
   };
-  const legendNetwork = new vis.Network(parent, {'nodes': legendNodes}, options);
+  // const legendNetwork = new vis.Network(parent, {'nodes': legendNodes}, options);
 };
 
 
