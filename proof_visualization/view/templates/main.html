@@ -40,123 +40,98 @@
   </section>
 </main>
 <aside>
-  <!-- FILE UPLOAD -->
-  <form id="fileForm" action="" method="post" enctype="multipart/form-data">
-    <input id="fileUpload"
-           type="hidden"
-           name="file"/>
-    <input id="fileSelector"
-           type="file"
-           onchange="uploadFile(this.files)"/>
-    <input class="sidebar-button"
-           type="button"
-           value="New"
-           title="Select a new file..."
-           onclick="chooseFile()"/>
-  </form>
+  <section class="form-group spaced">
+    <!-- FILE UPLOAD -->
+    <form id="fileForm" action="" method="post" enctype="multipart/form-data">
+      <input type="hidden" id="fileUpload" name="file"/>
+      <input type="file" id="fileSelector" class="hidden" onchange="uploadFile(this.files)"/>
 
-  <!-- RESET GRAPH -->
-  <form id="resetForm" class="spaced" action="" method="post">
-    <input id="resetSelection"
-           type="hidden"
-           name="resetSelection"/>
-    <input id="resetMarkers"
-           type="hidden"
-           name="marked"/>
-    <input id="undoButton"
-           class="sidebar-button"
-           type="submit"
-           name="undo"
-           value="Undo transformation"/>
-  </form>
-
-  <!-- NEW LAYOUT -->
-  <form id="selectForm" class="half-spaced" action="" method="post">
-    <input id="selection"
-           type="hidden"
-           name="selection"/>
-    <input id="selectMarkers"
-           type="hidden"
-           name="marked"/>
-    <input id="selectionSubmit"
-           class="sidebar-button"
-           type="submit"
-           disabled
-           name="down"
-           value="Render selection only (down)"/>
-    <br>
-    <input id="selectionSubmitUp"
-           class="sidebar-button half-spaced"
-           type="submit"
-           disabled
-           name="up"
-           value="Render selection only (up)"/>
-  </form>
-
-  <!-- SELECTION -->
-  <article>
-    <h2>Selection</h2>
-
-    <!-- INFO -->
-    <small class="node-info"><strong id="nodeCount">0 nodes</strong> selected</small>
-    <br>
-
-    <!-- PARENTS -->
-    <button id="selectParents"
-            class="sidebar-button spaced"
-            disabled
-            onclick="selectParents()">
-      Select parents
-    </button>
-    <br>
-
-    <!-- CHILDREN -->
-    <button id="selectChildren"
-            class="sidebar-button spaced"
-            disabled
-            onclick="selectChildren()">
-      Select children
-    </button>
-    <br>
-
-    <!-- COMMON CONSEQUENCES -->
-    <form id="selectForm" class="spaced" action="" method="post">
-      <input id="consequenceSelection"
-             type="hidden"
-             name="consequenceSelection"/>
-      <input id="consequenceMarkers"
-             type="hidden"
-             name="marked"/>
-      <input id="findCommonConsequences"
-             class="sidebar-button"
-             type="submit"
-             disabled
-             value="Find common consequences"/>
+      <input type="button"
+             value="A"
+             title="Pick a new file"
+             onclick="chooseFile()"/>
     </form>
-    <br>
 
-    <!-- SEARCH -->
-    <input id="search"
-           class="sidebar-input spaced"
-           type="text"
-           placeholder="Search for node ..."
-           onkeyup="search(this.value)"/>
-    <ul id="searchResults">
-    </ul>
+    <!-- TRANSFORMATION -->
+    <form action="" method="post">
+      <input type="hidden" id="transformationSelection" name="selection"/>
+      <input type="hidden" id="transformationMarkers" name="marked"/>
 
-    <section id="nodeDetails" class="hidden">
-      <h3>Selected Node:</h3>
-      <strong class="data-label">Id</strong>
-      <span id="nodeDetailsId"></span>
-      <br>
-      <strong class="data-label">Clause</strong>
-      <span id="nodeDetailsClause"></span>
-      <br>
-      <strong class="data-label">Inference Rule</strong>
-      <span id="nodeDetailsRule"></span>
+      <input type="submit"
+             id="undoLastStep"
+             value="B"
+             title="Undo last transformation"
+             name="undo"/>
+      <input type="submit"
+             id="selectUp"
+             disabled
+             value="C"
+             title="Render selection only (up)"
+             name="up"/>
+      <input type="submit"
+             id="selectDown"
+             disabled
+             value="D"
+             title="Render selection only (down)"
+             name="down"/>
+    </form>
+  </section>
+
+  <section class="card">
+    <article>
+      <h2>Select Nodes</h2>
+      <section class="form-group">
+        <!-- SELECT RELATIVES -->
+        <section class="fake-form">
+          <button id="selectParents"
+                  disabled
+                  title="Select parents"
+                  onclick="selectParents()">A
+          </button>
+          <button id="selectChildren"
+                  disabled
+                  title="Select children"
+                  onclick="selectChildren()">B
+          </button>
+        </section>
+
+        <!-- SELECT CONSEQUENCES -->
+        <form action="" method="post">
+          <input id="consequenceSelection" type="hidden" name="consequenceOrigins"/>
+          <input id="consequenceMarkers" type="hidden" name="marked"/>
+
+          <input type="submit"
+                 id="findCommonConsequences"
+                 disabled
+                 value="C"
+                 title="Find common consequences"/>
+        </form>
+      </section>
+      <!-- SEARCH -->
+      <input id="search"
+             class="sidebar-input spaced"
+             type="text"
+             placeholder="Search for a node ..."
+             onkeyup="search(this.value)"/>
+      <ul id="searchResults">
+      </ul>
+    </article>
+    <section class="subsection">
+      <!-- DETAILS -->
+      <article id="nodeDetails" class="hidden">
+        <h2>Selected Node:</h2>
+        <small class="data-label">Id</small>
+        <span id="nodeDetailsId"></span>
+        <small class="data-label">Clause</small>
+        <span id="nodeDetailsClause"></span>
+        <small class="data-label">Inference Rule</small>
+        <span id="nodeDetailsRule"></span>
+      </article>
+
+      <!-- COUNT INFO -->
+      <small id="nodeInfo"><strong id="nodeCount">0 nodes</strong> selected</small>
     </section>
-  </article>
-
+  </section>
 </aside>
 
 <script type="text/javascript">
@@ -168,7 +143,7 @@
   {% endif %}
 
   {% if no_undo %}
-    document.getElementById('undoButton').disabled = true;
+    document.getElementById('undoLastStep').disabled = true;
   {% endif %}
 
   let historyLength = {{ history_length | int }};

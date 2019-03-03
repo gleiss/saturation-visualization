@@ -65,17 +65,16 @@ const preSelectNodes = () => {
 };
 
 const updateSelection = () => {
-  document.getElementById('selection').value = selection;
   document.getElementById('consequenceSelection').value = selection;
-  document.getElementById('resetSelection').value = selection;
+  document.getElementById('transformationSelection').value = selection;
   document.getElementById('historySelection').value = selection;
 
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
 
   const selectionButtonsDisabled = nodeCount === 0;
-  document.getElementById('selectionSubmit').disabled = selectionButtonsDisabled;
-  document.getElementById('selectionSubmitUp').disabled = selectionButtonsDisabled;
+  document.getElementById('selectDown').disabled = selectionButtonsDisabled;
+  document.getElementById('selectUp').disabled = selectionButtonsDisabled;
   document.getElementById('selectParents').disabled = selectionButtonsDisabled;
   document.getElementById('selectChildren').disabled = selectionButtonsDisabled;
   document.getElementById('findCommonConsequences').disabled = nodeCount <= 1;
@@ -83,12 +82,14 @@ const updateSelection = () => {
   if (nodeCount === 1) {
     // display node details
     const node = nodes.get(selection[0]);
+    document.getElementById('nodeInfo').classList.add('hidden');
     document.getElementById('nodeDetails').classList.remove('hidden');
     document.getElementById('nodeDetailsId').innerText = node.id;
     document.getElementById('nodeDetailsClause').innerText = node.label;
     document.getElementById('nodeDetailsRule').innerText = node.rule;
   } else {
     // hide node details
+    document.getElementById('nodeInfo').classList.remove('hidden');
     document.getElementById('nodeDetails').classList.add('hidden');
   }
 };
@@ -109,9 +110,8 @@ const preMarkNodes = () => {
 
 const updateMarkers = () => {
   const markerList = Array.from(marked);
-  document.getElementById('selectMarkers').value = markerList;
   document.getElementById('consequenceMarkers').value = markerList;
-  document.getElementById('resetMarkers').value = markerList;
+  document.getElementById('transformationMarkers').value = markerList;
   document.getElementById('historyMarkers').value = markerList;
 };
 

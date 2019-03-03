@@ -40,6 +40,15 @@ def handle_post_request():
             'reset': True
         }
 
+    elif request_params.get('undo'):
+        controller.reset_dag()
+        controller.refresh_history_state()
+        custom_template_values = {
+            'reset': True,
+            'preselected_nodes': _as_list(request_params['selection']),
+            'marked_nodes': _as_list(request_params['marked'])
+        }
+
     elif request_params.get('selection'):
         selection = _as_list(request_params['selection'])
 
@@ -54,18 +63,9 @@ def handle_post_request():
             'marked_nodes': _as_list(request_params['marked'])
         }
 
-    elif request_params.get('undo'):
-        controller.reset_dag()
-        controller.refresh_history_state()
+    elif request_params.get('consequenceOrigins'):
         custom_template_values = {
-            'reset': True,
-            'preselected_nodes': _as_list(request_params['resetSelection']),
-            'marked_nodes': _as_list(request_params['marked'])
-        }
-
-    elif request_params.get('consequenceSelection'):
-        custom_template_values = {
-            'preselected_nodes': controller.find_common_consequences(_as_list(request_params['consequenceSelection'])),
+            'preselected_nodes': controller.find_common_consequences(_as_list(request_params['consequenceOrigins'])),
             'marked_nodes': _as_list(request_params['marked'])
         }
 
