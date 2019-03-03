@@ -31,7 +31,32 @@ const drawGraph = () => {
   network.on('select', (change) => {
     selection = change.nodes;
     updateSelection();
-  })
+  });
+  network.on('oncontext', (rightClickEvent) => {
+    rightClickEvent.event.preventDefault();
+    const clickedNodeId = network.getNodeAt({
+      x: rightClickEvent.event.layerX,
+      y: rightClickEvent.event.layerY
+    });
+    if (!clickedNodeId) {
+      return;
+    }
+
+    const clickedNode = nodes.get(clickedNodeId);
+    if (marked.has(clickedNodeId)) {
+      // remove marker
+      marked.delete(clickedNodeId);
+      clickedNode.color.background = clickedNode.color.default.background;
+      clickedNode.color.border = clickedNode.color.default.border;
+    } else {
+      // add marker
+      marked.add(clickedNodeId);
+      clickedNode.color.background = clickedNode.color.marked.background;
+      clickedNode.color.border = clickedNode.color.marked.border;
+    }
+    nodes.update(clickedNode);
+    updateMarkers();
+  });
 };
 
 const preSelectNodes = () => {
@@ -65,6 +90,27 @@ const updateSelection = () => {
     // hide node details
     document.getElementById('nodeDetails').classList.add('hidden');
   }
+};
+
+const preMarkNodes = () => {
+  const nodesToUpdate = [];
+  marked.forEach(nodeId => {
+    const node = nodes.get(nodeId);
+    if (node) {
+      node.color.background = node.color.marked.background;
+      node.color.border = node.color.marked.border;
+      nodesToUpdate.push(node)
+    }
+  });
+  nodes.update(nodesToUpdate);
+  updateMarkers();
+};
+
+const updateMarkers = () => {
+  const markerList = Array.from(marked);
+  document.getElementById('selectMarkers').value = markerList;
+  document.getElementById('consequenceMarkers').value = markerList;
+  document.getElementById('resetMarkers').value = markerList;
 };
 
 // HISTORY SLIDE ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +231,7 @@ const drawLegend = () => {
 // CALLS ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 reset();
 drawGraph();
+preMarkNodes();
 preSelectNodes();
 renderSlide();
 updateSlideValueDisplay();

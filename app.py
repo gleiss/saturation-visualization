@@ -50,7 +50,8 @@ def handle_post_request():
         controller.refresh_history_state()
         custom_template_values = {
             'reset': True,
-            'preselected_nodes': selection
+            'preselected_nodes': selection,
+            'marked_nodes': _as_list(request_params['marked'])
         }
 
     elif request_params.get('undo'):
@@ -58,16 +59,19 @@ def handle_post_request():
         controller.refresh_history_state()
         custom_template_values = {
             'reset': True,
-            'preselected_nodes': _as_list(request_params['resetSelection'])
+            'preselected_nodes': _as_list(request_params['resetSelection']),
+            'marked_nodes': _as_list(request_params['marked'])
         }
 
     elif request_params.get('consequenceSelection'):
         custom_template_values = {
-            'preselected_nodes': controller.find_common_consequences(_as_list(request_params['consequenceSelection']))
+            'preselected_nodes': controller.find_common_consequences(_as_list(request_params['consequenceSelection'])),
+            'marked_nodes': _as_list(request_params['marked'])
         }
 
     else:
         _calculate_new_history_state(request_params)
+        # TODO
         custom_template_values = {}
 
     template_values = _get_default_values()
@@ -109,7 +113,8 @@ def _get_default_values():
         'history_length': session['dags'][0].number_of_history_steps(),
         'reset': False,
         'no_undo': len(session['dags']) == 1,
-        'preselected_nodes': []
+        'preselected_nodes': [],
+        'marked_nodes': []
     }
 
 

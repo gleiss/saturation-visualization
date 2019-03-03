@@ -54,6 +54,9 @@
     <input id="resetSelection"
            type="hidden"
            name="resetSelection"/>
+    <input id="resetMarkers"
+           type="hidden"
+           name="marked"/>
     <input id="undoButton"
            class="sidebar-button"
            type="submit"
@@ -66,6 +69,9 @@
     <input id="selection"
            type="hidden"
            name="selection"/>
+    <input id="selectMarkers"
+           type="hidden"
+           name="marked"/>
     <input id="selectionSubmit"
            class="sidebar-button"
            type="submit"
@@ -112,6 +118,9 @@
       <input id="consequenceSelection"
              type="hidden"
              name="consequenceSelection"/>
+    <input id="consequenceMarkers"
+           type="hidden"
+           name="marked"/>
       <input id="findCommonConsequences"
              class="sidebar-button"
              type="submit"
@@ -160,6 +169,7 @@
   let historyState = {{ history_state | int }};
 
   let selection = {{ preselected_nodes }};
+  let marked = new Set({{ marked_nodes }});
 
   let network = null;
   let data = {{ dag_data | safe }};

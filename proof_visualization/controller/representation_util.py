@@ -1,63 +1,64 @@
 from collections import namedtuple
 
-Representation = namedtuple('Representation', ['background', 'border', 'text', 'shape', 'highlight'])
+Style = namedtuple('Style', ['background', 'border'])
+Representation = namedtuple('Representation', ['default_style', 'text', 'shape', 'highlight_style', 'marked_style'])
 
 REPRESENTATIONS = {
     'active': Representation(
-        background='#dddddd',
-        border='#bbbbbb',
+        default_style=Style(background='#dddddd', border='#bbbbbb'),
         text='#000000',
         shape='box',
-        highlight='#ee8866'
+        highlight_style=Style(background='#ee8866', border='#ee8866'),
+        marked_style=Style(background='#ffaabb', border='#ee3377')
     ),
     'passive': Representation(
-        background='#f1f1f1',
-        border='#e3e3e3',
+        default_style=Style(background='#f1f1f1', border='#e3e3e3'),
         text='#999999',
         shape='box',
-        highlight='#f8cfc1'
+        highlight_style=Style(background='#f8cfc1', border='#f8cfc1'),
+        marked_style=Style(background='#ffdde3', border='#f8adc8')
     ),
     'new': Representation(
-        background='#f8f8f8',
-        border='#f1f1f1',
+        default_style=Style(background='#f8f8f8', border='#f1f1f1'),
         text='#999999',
         shape='box',
-        highlight='#f8cfc1'
+        highlight_style=Style(background='#f8cfc1', border='#f8cfc1'),
+        marked_style=Style(background='#ffdde3', border='#f8adc8')
     ),
     'active_theory_axiom': Representation(
-        background='#77aadd',
-        border='#4477aa',
+        default_style=Style(background='#77aadd', border='#4477aa'),
         text='#000000',
         shape='box',
-        highlight='#ee8866'
+        highlight_style=Style(background='#ee8866', border='#ee8866'),
+        marked_style=Style(background='#ffaabb', border='#ee3377')
     ),
     'passive_theory_axiom': Representation(
-        background='#c8ddf1',
-        border='#b4c8dd',
+        default_style=Style(background='#c8ddf1', border='#b4c8dd'),
         text='#999999',
         shape='box',
-        highlight='#f8cfc1'
+        highlight_style=Style(background='#f8cfc1', border='#f8cfc1'),
+        marked_style=Style(background='#ffdde3', border='#f8adc8')
     ),
     'input': Representation(
-        background='#44bb99',
-        border='#009988',
+        default_style=Style(background='#44bb99', border='#009988'),
         text='#000000',
         shape='box',
-        highlight='#ee8866'
+        highlight_style=Style(background='#ee8866', border='#ee8866'),
+        marked_style=Style(background='#ffaabb', border='#ee3377')
     ),
     'preprocessing': Representation(
-        background='#eedd88',
-        border='#ddcc77',
+        default_style=Style(background='#eedd88', border='#ddcc77'),
         text='#000000',
         shape='box',
-        highlight='#ee8866'
+        highlight_style=Style(background='#ee8866', border='#ee8866'),
+        marked_style=Style(background='#ffaabb', border='#ee3377')
     ),
     'hidden': Representation(
-        background='#ffffff00',
-        border='#ffffff00',
+        default_style=Style(background='#ffffff00', border='#ffffff00'),
         text='#ffffff00',
         shape='box',
-        highlight='#ffffff00'
+        highlight_style=Style(background='#ffffff00', border='#ffffff00'),
+        marked_style=Style(background='#ffffff00', border='#ffffff00')
     )
 }
 
@@ -161,7 +162,7 @@ def compute_representation(node, history_state):
     elif node.passive_time is not None and node.passive_time <= history_state:
         return REPRESENTATIONS['passive']
     elif node.new_time is not None and node.new_time < history_state:
-        return REPRESENTATIONS['new'] # TODO: add seperate representation for new, maybe as even lighter nodes?
+        return REPRESENTATIONS['new']
 
     return REPRESENTATIONS['hidden']
 

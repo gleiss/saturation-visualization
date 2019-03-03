@@ -6,9 +6,20 @@ import json
 def format_node(node, position, representation):
     return {
         'color': {
-            'background': representation.background,
-            'border': representation.border,
-            'highlight': representation.highlight
+            'background': representation.default_style.background,
+            'border': representation.default_style.border,
+            'highlight': {
+                'background': representation.highlight_style.background,
+                'border': representation.highlight_style.border
+            },
+            'marked': {
+                'background': representation.marked_style.background,
+                'border': representation.marked_style.border
+            },
+            'default': {
+                'background': representation.default_style.background,
+                'border': representation.default_style.border
+            }
         },
         'font': {
             'color': representation.text
