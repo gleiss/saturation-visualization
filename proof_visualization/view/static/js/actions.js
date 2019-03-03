@@ -68,6 +68,7 @@ const updateSelection = () => {
   document.getElementById('selection').value = selection;
   document.getElementById('consequenceSelection').value = selection;
   document.getElementById('resetSelection').value = selection;
+  document.getElementById('historySelection').value = selection;
 
   const nodeCount = selection.length;
   document.getElementById('nodeCount').innerText = nodeCount === 1 ? '1 node' : `${nodeCount} nodes`;
@@ -111,6 +112,7 @@ const updateMarkers = () => {
   document.getElementById('selectMarkers').value = markerList;
   document.getElementById('consequenceMarkers').value = markerList;
   document.getElementById('resetMarkers').value = markerList;
+  document.getElementById('historyMarkers').value = markerList;
 };
 
 // HISTORY SLIDE ///////////////////////////////////////////////////////////////////////////////////////////////////////

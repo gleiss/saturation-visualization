@@ -71,8 +71,10 @@ def handle_post_request():
 
     else:
         _calculate_new_history_state(request_params)
-        # TODO
-        custom_template_values = {}
+        custom_template_values = {
+            'preselected_nodes': _as_list(request_params.get('historySelection')),
+            'marked_nodes': _as_list(request_params.get('marked'))
+        }
 
     template_values = _get_default_values()
     template_values.update(custom_template_values)

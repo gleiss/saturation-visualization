@@ -24,6 +24,12 @@
   </section>
   <section>
     <form id="buttonForm" action="" method="post">
+      <input id="historySelection"
+             type="hidden"
+             name="historySelection"/>
+      <input id="historyMarkers"
+             type="hidden"
+             name="marked"/>
       <input type="submit" name="decrease" value="-"/>
       <section id="slideWrapper">
         <small id="slideValue" class="slide-value"></small>
@@ -118,9 +124,9 @@
       <input id="consequenceSelection"
              type="hidden"
              name="consequenceSelection"/>
-    <input id="consequenceMarkers"
-           type="hidden"
-           name="marked"/>
+      <input id="consequenceMarkers"
+             type="hidden"
+             name="marked"/>
       <input id="findCommonConsequences"
              class="sidebar-button"
              type="submit"
