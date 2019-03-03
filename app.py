@@ -121,6 +121,8 @@ def _get_default_values():
 
 
 def _as_list(selection_string):
+    if not selection_string:
+        return []
     return [int(node_id) for node_id in selection_string.split(',')]
 
 
