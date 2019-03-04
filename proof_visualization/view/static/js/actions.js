@@ -199,13 +199,24 @@ const search = (value) => {
   updateSelection();
 
   const resultContainer = document.getElementById('searchResults');
-  resultContainer.innerHTML = selectedNodes.map(node => {
+  let prunedNodes;
+  if (selectedNodes.length > 20) {
+    prunedNodes = selectedNodes.slice(0,21);
+  } else {
+    prunedNodes = selectedNodes;
+  }
+
+  let resultList = prunedNodes.map(node => {
     if (node.label === 'Preproc') {
       return ''
     }
     return `<li onclick="selectNode(${node.id})">${node.label}</li>`
   }).join('');
   resultContainer.classList.add('focused');
+  if (selectedNodes.length > 20) {
+    resultList = resultList + '<li>...</li>';
+  }
+  resultContainer.innerHTML = resultList;
 };
 
 const selectNode = (nodeId) => {
