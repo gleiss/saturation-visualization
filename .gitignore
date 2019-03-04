@@ -109,8 +109,6 @@ venv.bak/
 # vs code
 .vscode/
 
-*.svg
-
 # npm
 node_modules/
 

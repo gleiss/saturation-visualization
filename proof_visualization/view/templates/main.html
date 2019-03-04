@@ -30,12 +30,12 @@
       <input id="historyMarkers"
              type="hidden"
              name="marked"/>
-      <input type="submit" name="decrease" value="-"/>
+      <input type="submit" id="showPreviousStep" name="decrease" value="-"/>
       <section id="slideWrapper">
         <small id="slideValue" class="slide-value"></small>
         <section id="slideContainer"></section>
       </section>
-      <input type="submit" name="increase" value="+"/>
+      <input type="submit" id="showNextStep" name="increase" value="+"/>
     </form>
   </section>
 </main>
@@ -47,7 +47,8 @@
       <input type="file" id="fileSelector" class="hidden" onchange="uploadFile(this.files)"/>
 
       <input type="button"
-             value="A"
+             id="uploadFile"
+             value="file"
              title="Pick a new file"
              onclick="chooseFile()"/>
     </form>
@@ -59,19 +60,19 @@
 
       <input type="submit"
              id="undoLastStep"
-             value="B"
+             value="undo"
              title="Undo last transformation"
              name="undo"/>
       <input type="submit"
              id="selectUp"
              disabled
-             value="C"
+             value="up"
              title="Render selection only (up)"
              name="up"/>
       <input type="submit"
              id="selectDown"
              disabled
-             value="D"
+             value="down"
              title="Render selection only (down)"
              name="down"/>
     </form>
@@ -113,19 +114,15 @@
              type="text"
              placeholder="Search for a node ..."
              onkeyup="search(this.value)"/>
-      <ul id="searchResults" class="hidden">
+      <ul id="searchResults">
       </ul>
     </article>
     <section class="subsection">
       <!-- DETAILS -->
       <article id="nodeDetails" class="hidden">
-        <h2>Selected Node:</h2>
-        <small class="data-label">Id</small>
-        <span id="nodeDetailsId"></span>
-        <small class="data-label">Clause</small>
-        <span id="nodeDetailsClause"></span>
-        <small class="data-label">Inference Rule</small>
-        <span id="nodeDetailsRule"></span>
+        <h2>Node <span id="nodeDetailsId"></span></h2>
+        <h3 id="nodeDetailsRule"></h3>
+        <p id="nodeDetailsClause"></p>
       </article>
 
       <!-- COUNT INFO -->

@@ -2,7 +2,7 @@
 const reset = () => {
   document.getElementById('search').value = '';
   document.getElementById('searchResults').innerHTML = '';
-  document.getElementById('searchResults').classList.add('hidden');
+  document.getElementById('searchResults').classList.remove('focused');
 };
 
 // GRAPH ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ const updateSelection = () => {
     const node = nodes.get(selection[0]);
     document.getElementById('nodeInfo').classList.add('hidden');
     document.getElementById('nodeDetails').classList.remove('hidden');
-    document.getElementById('nodeDetailsId').innerText = node.id;
+    document.getElementById('nodeDetailsId').innerText = `#${node.id}`;
     document.getElementById('nodeDetailsClause').innerText = node.label;
     document.getElementById('nodeDetailsRule').innerText = node.rule;
   } else {
@@ -187,7 +187,7 @@ const selectChildren = () => {
 const search = (value) => {
   if (!value) {
     document.getElementById('searchResults').innerHTML = '';
-    document.getElementById('searchResults').classList.add('hidden');
+    document.getElementById('searchResults').classList.remove('focused');
     return;
   }
   let selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
@@ -199,13 +199,13 @@ const search = (value) => {
   updateSelection();
 
   const resultContainer = document.getElementById('searchResults');
-  resultContainer.classList.remove('hidden');
   resultContainer.innerHTML = selectedNodes.map(node => {
     if (node.label === 'Preproc') {
       return ''
     }
     return `<li onclick="selectNode(${node.id})">${node.label}</li>`
   }).join('');
+  resultContainer.classList.add('focused');
 };
 
 const selectNode = (nodeId) => {
