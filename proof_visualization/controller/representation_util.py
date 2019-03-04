@@ -47,7 +47,7 @@ REPRESENTATIONS = {
         marked_style=Style(background='#ffaabb', border='#ee3377')
     ),
     'preprocessing': Representation(
-        default_style=Style(background='#eedd88', border='#ddcc77'),
+        default_style=Style(background='#abe0d1', border='#8cd1c9'),
         text='#000000',
         shape='box',
         highlight_style=Style(background='#ee8866', border='#ee8866'),
