@@ -212,11 +212,11 @@ const search = (value) => {
     }
     return `<li onclick="selectNode(${node.id})">${node.label}</li>`
   }).join('');
-  resultContainer.classList.add('focused');
   if (selectedNodes.length > 20) {
-    resultList = resultList + '<li>...</li>';
+    resultList = resultList + '<li class="disabled-element">...</li>';
   }
   resultContainer.innerHTML = resultList;
+  resultContainer.classList.add('focused');
 };
 
 const selectNode = (nodeId) => {
