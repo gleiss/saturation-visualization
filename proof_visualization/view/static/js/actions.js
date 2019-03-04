@@ -2,6 +2,7 @@
 const reset = () => {
   document.getElementById('search').value = '';
   document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('searchResults').classList.add('hidden');
 };
 
 // GRAPH ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,6 +187,7 @@ const selectChildren = () => {
 const search = (value) => {
   if (!value) {
     document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchResults').classList.add('hidden');
     return;
   }
   let selectedNodes = Object.values(nodes._data).filter(node => node.label.includes(value));
@@ -197,6 +199,7 @@ const search = (value) => {
   updateSelection();
 
   const resultContainer = document.getElementById('searchResults');
+  resultContainer.classList.remove('hidden');
   resultContainer.innerHTML = selectedNodes.map(node => {
     if (node.label === 'Preproc') {
       return ''
