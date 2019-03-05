@@ -27,17 +27,12 @@ def find_common_consequences(dag, relevant_ids):
         else:
             relevant_parents = set()
         for parentId in current_node.parents:
-            print(parentId)
-            print(id_to_relevant_parents[parentId])
             if parentId in id_to_relevant_parents:
                 relevant_parents.update(id_to_relevant_parents[parentId])
         id_to_relevant_parents[current_node_id] = relevant_parents
 
         # check whether each relevant id occurs in relevant parents
-        print("len relevant_ids: " + str(len(relevant_ids)))
-        print("len relevant_parents: " + str(len(relevant_parents)))
         if len(relevant_ids) == len(relevant_parents):
             common_consequences.append(current_node_id)
 
-    print(common_consequences)
     return common_consequences
