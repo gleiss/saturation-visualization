@@ -14,7 +14,7 @@ __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN_SATURATION = re.compile(
-    r'^(\[[A-Z]{2}\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
+    r'^(\[SA\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
 OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\]$')
 
 PREPROCESSING_LABEL = 'Preproc'
