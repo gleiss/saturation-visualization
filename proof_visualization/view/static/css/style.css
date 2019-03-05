@@ -253,7 +253,7 @@ input[type="range"] {
   text-align: center;
 }
 
-#uploadFile {
+#uploadFileButton {
   background-image: url("../svg/file-plus.svg");
 }
 
