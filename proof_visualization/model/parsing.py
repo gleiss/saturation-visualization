@@ -57,7 +57,6 @@ def parse_line(line):
             clause = util.remove_quotes(clause.rstrip())
             if clause.endswith("(TD)"):
                 clause = clause[:-4]
-                print(clause)
             statistics = []
             inference_rule = inference_rule.rstrip()
             parents = [int(parent) for parent in parents.split(',') if parent]
