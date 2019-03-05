@@ -61,6 +61,14 @@ const drawGraph = () => {
 };
 
 const preSelectNodes = () => {
+  const nodesToSelect = [];
+  selection.forEach(nodeId => {
+    const node = nodes.get(nodeId);
+    if (node) {
+      nodesToSelect.push(nodeId)
+    }
+  });
+  selection = nodesToSelect;
   network.selectNodes(selection);
   updateSelection();
 };
