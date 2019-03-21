@@ -82,8 +82,19 @@ def analyse(parsed_lines):
             if line.number not in nodes:
                 # create new node
                 current_node = Node(line.number, line.clause, line.inference_rule, line.parents, line.statistics, False)
-                nodes[line.number] = current_node
                 current_node.set_new_time(index)
+
+                # hack: pretend that empty clause was added to passive and then activated
+                if(line.clause == "$false"):
+                    current_node.set_passive_time(index)
+                    index = index + 1
+                    current_node.set_active_time(index)
+                    print("Found empty clause, therefore stopping to parse lines")
+                    nodes[line.number] = current_node
+                    break
+
+                nodes[line.number] = current_node
+
             else:
                 # fetch existing node
                 current_node = nodes[line.number]
