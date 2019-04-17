@@ -39,7 +39,7 @@ and make sure to pipe standard and error output to the output-file using `&>`.
   ```
   python3 app.py
   ```
-* Open a browser and go to `127.0.0.1:5000`.
-* Open the output-file using the top left button.
+* Open a browser and go to `127.0.0.1:5000`. (as default, the output-file example.proof will be visualized)
+* Open the output-file you generated with Vampire using the top left button.
 
 
