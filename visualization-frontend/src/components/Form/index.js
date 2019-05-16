@@ -9,4 +9,4 @@ const SliderForm = styled(Form)`
 `;
 
 export default Form;
-export default SliderForm;
+export {SliderForm};

@@ -40,4 +40,4 @@ const SmallSubmitButton = styled(SubmitButton)`
 `;
 
 export default SubmitButton;
-export default SmallSubmitButton;
+export {SmallSubmitButton};

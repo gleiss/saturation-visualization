@@ -43,5 +43,4 @@ const SearchResults = styled.ul`
   }
 `;
 
-export default SearchField;
-export default SearchResults;
+export {SearchField, SearchResults};
