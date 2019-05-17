@@ -32,6 +32,32 @@ body,
 }
 
 
+/* TODO */
+li {
+  margin: 0 -0.5rem;
+  padding: 0 0.7rem;
+  list-style: none;
+  line-height: 1.5;
+  font-size: 0.833rem;
+  color: #343539;
+  cursor: pointer;
+}
+
+li:hover {
+  background: #f4f5f7;
+  color: #000;
+  border-radius: 2px;
+}
+
+li:first-child {
+  margin-top: 0.5rem;
+}
+
+li.disabled-element:hover {
+  background: transparent;
+}
+
+
 /*
 #uploadFileButton {
   background-image: url("../../../proof_visualization/view/static/svg/file-plus.svg");

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import GraphMenu from './GraphMenu';
-import NodeMenu from './NodeMenu';
+import NodeCard from './NodeCard';
 
 
 export default class Aside extends React.Component {
@@ -9,7 +9,7 @@ export default class Aside extends React.Component {
     return (
       <aside>
         <GraphMenu/>
-        <NodeMenu/>
+        <NodeCard/>
       </aside>
     );
   }

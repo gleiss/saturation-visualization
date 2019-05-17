@@ -1,0 +1,44 @@
+.component-graph-menu {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.component-graph-menu form {
+  display: flex;
+}
+
+.component-graph-menu input[type=button],
+.component-graph-menu input[type=submit] {
+  height: 50px;
+  width: 50px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 2px;
+  background-color: #d4d8d9;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent;
+}
+
+.component-graph-menu input[type=button]:hover,
+.component-graph-menu input[type=submit]:hover {
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-graph-menu input[type=button]:focus,
+.component-graph-menu input[type=submit]:focus {
+  outline: none;
+}
+
+.component-graph-menu input[type=button]:active,
+.component-graph-menu input[type=submit]:active {
+  box-shadow: inset 1px 3px 8px 2px rgba(0, 0, 0, .1);
+  outline: none;
+}
+
+.component-graph-menu input[type=button]:disabled,
+.component-graph-menu input[type=submit]:disabled {
+  background-color: #e6ebef;
+  box-shadow: none;
+  color: transparent;
+}
