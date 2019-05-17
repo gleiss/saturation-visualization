@@ -39,5 +39,4 @@ const SmallSubmitButton = styled(SubmitButton)`
   margin: 0;
 `;
 
-export default SubmitButton;
-export {SmallSubmitButton};
+export {SubmitButton, SmallSubmitButton};

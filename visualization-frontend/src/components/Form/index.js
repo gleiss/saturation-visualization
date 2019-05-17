@@ -8,5 +8,4 @@ const SliderForm = styled(Form)`
   align-items: center;
 `;
 
-export default Form;
-export {SliderForm};
+export {Form, SliderForm};

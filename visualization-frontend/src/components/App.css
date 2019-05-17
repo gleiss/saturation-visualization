@@ -1,6 +1,10 @@
-import styled from 'styled-components';
+main {
+  background: #f8f9fb;
+  flex-grow: 1;
+  padding: 1rem;
+}
 
-const Aside = styled.aside`
+aside {
   flex-grow: 0;
   flex-shrink: 0;
   flex-direction: column;
@@ -8,6 +12,4 @@ const Aside = styled.aside`
   padding: 0 1.5rem;
   display: flex;
   width: 240px;
-`;
-
-export default Aside;
+}
