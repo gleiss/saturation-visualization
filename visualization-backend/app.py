@@ -3,6 +3,7 @@
 import os
 
 from flask import Flask, render_template, request, session
+from flask_cors import CORS
 from flask_session import Session
 
 from proof_visualization.controller import controller
@@ -16,6 +17,7 @@ SESSION_TYPE = 'filesystem'
 SESSION_FILE_THRESHOLD = 1
 app.config.from_object(__name__)
 Session(app)
+CORS(app)
 
 
 @app.route("/", methods=['GET'])
@@ -27,6 +29,7 @@ def home():
         'no_undo': True
     })
     return controller.get_layout()
+
 
 @app.before_first_request
 def clear_session():

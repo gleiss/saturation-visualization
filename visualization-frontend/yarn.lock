@@ -8324,6 +8324,10 @@ utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
 
+uuid@^2.0.1:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
+
 uuid@^3.0.1, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
@@ -8366,9 +8370,27 @@ vfile@^3.0.0, vfile@^3.0.1:
     unist-util-stringify-position "^1.0.0"
     vfile-message "^1.0.0"
 
+vis-react@^0.4.5:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/vis-react/-/vis-react-0.4.5.tgz#ea53212730c96796d12a3241b0d23249577545e8"
+  dependencies:
+    lodash "^4.17.4"
+    uuid "^2.0.1"
+    vis "https://github.com/anishmprasad/vis/archive/master.tar.gz"
+
 vis@^4.21.0:
   version "4.21.0"
   resolved "https://registry.yarnpkg.com/vis/-/vis-4.21.0.tgz#dd71638bff7f6495d00bc9f40c253526133ded6b"
+  dependencies:
+    emitter-component "^1.1.1"
+    hammerjs "^2.0.8"
+    keycharm "^0.2.0"
+    moment "^2.18.1"
+    propagating-hammerjs "^1.4.6"
+
+"vis@https://github.com/anishmprasad/vis/archive/master.tar.gz":
+  version "4.20.1"
+  resolved "https://github.com/anishmprasad/vis/archive/master.tar.gz#fff6a547277e5a16f0ca6c6c89f505b0b82006e8"
   dependencies:
     emitter-component "^1.1.1"
     hammerjs "^2.0.8"

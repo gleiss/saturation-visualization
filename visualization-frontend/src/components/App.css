@@ -4,6 +4,20 @@ main {
   padding: 1rem;
 }
 
+main > .placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: calc(100% - 4rem);
+  width: 100%;
+  border-radius: 2px;
+
+  background: #fff;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .05);
+  color: rgba(0,0,0,.5);
+}
+
 aside {
   flex-grow: 0;
   flex-shrink: 0;

@@ -10,8 +10,7 @@ export default class Main extends React.Component {
 
     this.state = {
       isLoaded: false,
-      error: false,
-      graph: null
+      error: false
     };
   }
 
@@ -22,7 +21,8 @@ export default class Main extends React.Component {
         (result) => {
           this.setState({
             isLoaded: true,
-            graph: result,
+            graph: result.graph,
+            order: result.order,
             error: false
           });
         },
@@ -37,11 +37,18 @@ export default class Main extends React.Component {
 
   render() {
     const {error, isLoaded, graph} = this.state;
-
     if (error) {
-      return <div>Error: {error.message}</div>;
+      return (
+        <main>
+          <section className="placeholder">Error: {error.message}</section>
+        </main>
+      );
     } else if (!isLoaded) {
-      return <div>Loading...</div>;
+      return (
+        <main>
+          <section className="placeholder">Loading...</section>
+        </main>
+      );
     } else {
       return (
         <main>
