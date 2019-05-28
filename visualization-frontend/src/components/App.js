@@ -8,16 +8,64 @@ import Aside from './Aside';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+
+    this.state = {
+      isLoaded: false,
+      error: false
+    };
+  }
+
+  componentWillMount() {
+    fetch('http://localhost:5000')
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            graph: result.graph,
+            selection: result.selection || [],
+            order: result.order,
+            error: false
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
   }
 
   render() {
-    return (
-      <div className="app">
-        <Main/>
-        <Aside/>
-      </div>
-    );
+    const {error, isLoaded, graph, selection} = this.state;
+
+    if (error) {
+      return (
+        <div className="app">
+          <main>
+            <section className="placeholder">Error: {error.message}</section>
+          </main>
+          <Aside/>
+        </div>
+      );
+    } else if (!isLoaded) {
+      return (
+        <div className="app">
+          <main>
+            <section className="placeholder">Loading...</section>
+          </main>
+          <Aside/>
+        </div>
+      );
+    } else {
+      return (
+        <div className="app">
+          <Main graph={graph} selection={selection}/>
+          <Aside/>
+        </div>
+      );
+    }
   }
 }
 
