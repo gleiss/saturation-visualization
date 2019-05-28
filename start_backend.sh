@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 # activate venv before executing!
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 cd visualization-backend
-python app.py
+python3 app.py
