@@ -3,7 +3,8 @@ import React, {Component} from 'react';
 import './App.css';
 import Main from './Main';
 import Aside from './Aside';
-
+import Node from '../model/node';
+import Dag from '../model/dag';
 
 class App extends Component {
   constructor(props) {
