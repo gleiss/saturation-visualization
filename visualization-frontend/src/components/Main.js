@@ -14,7 +14,7 @@ export default class Main extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     fetch('http://localhost:5000')
       .then(res => res.json())
       .then(
@@ -22,6 +22,7 @@ export default class Main extends React.Component {
           this.setState({
             isLoaded: true,
             graph: result.graph,
+            selection: result.selection || [],
             order: result.order,
             error: false
           });
@@ -36,7 +37,8 @@ export default class Main extends React.Component {
   }
 
   render() {
-    const {error, isLoaded, graph} = this.state;
+    const {error, isLoaded, graph, selection} = this.state;
+
     if (error) {
       return (
         <main>
@@ -52,7 +54,7 @@ export default class Main extends React.Component {
     } else {
       return (
         <main>
-          <Graph graph={graph}/>
+          <Graph graph={graph} selection={selection}/>
           <Slider/>
         </main>
       );

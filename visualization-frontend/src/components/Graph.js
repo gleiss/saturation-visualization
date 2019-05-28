@@ -9,13 +9,14 @@ export default class Graph extends React.Component {
     super(props);
 
     this.state = {
-      graph: props.graph
+      graph: props.graph,
+      selection: props.selection
     };
     this.network = {};
   }
 
   componentDidMount() {
-    const {graph} = this.state;
+    const {graph, selection} = this.state;
     const nodes = new DataSet(graph.nodes);
     const edges = new DataSet(graph.edges);
     const options = {
@@ -25,11 +26,12 @@ export default class Graph extends React.Component {
       }
     };
     this.network = new Network(this.graphContainer, {nodes, edges}, options);
+    this.network.selectNodes(selection);
   }
 
   render() {
     return (
-      <section id="graph" ref={ref => this.graphContainer = ref} >
+      <section id="graph" ref={ref => this.graphContainer = ref}>
         <canvas/>
       </section>
     );
