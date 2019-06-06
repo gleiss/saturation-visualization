@@ -1,5 +1,6 @@
 """Data structure for DAGs which is used to represent proofs."""
 
+import json
 import proof_visualization.model.util as util
 from proof_visualization.model.node import Node
 
@@ -41,6 +42,12 @@ class Dag:
             "\n".join(repr(node) for node in self.leaves),
             util.last_line()
         ))
+
+    def to_json(self):
+        return json.dumps({
+            'nodes': {key: value.__dict__ for key, value in self.nodes.items()},
+            'leaves': list(self.leaves)
+        })
 
     def number_of_history_steps(self):
         counter = 0

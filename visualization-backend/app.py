@@ -1,8 +1,9 @@
 """The application entry point."""
 
+import json
 import os
 
-from flask import Flask, render_template, request, session
+from flask import Flask, session
 from flask_cors import CORS
 from flask_session import Session
 
@@ -23,12 +24,10 @@ CORS(app)
 @app.route("/", methods=['GET'])
 def home():
     controller.init_controller()
-    template_values = _get_default_values()
-    template_values.update({
-        'reset': True,
-        'no_undo': True
+    return json.dumps({
+        'dag': session['dags'][0].to_json()
+        # 'positions': session['positions'][0]
     })
-    return controller.get_layout()
 
 
 @app.before_first_request
