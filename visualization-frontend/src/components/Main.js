@@ -9,17 +9,18 @@ export default class Main extends React.Component {
     super(props);
 
     this.state = {
-      graph: props.graph,
-      selection: props.selection
+      dag: props.dag,
+      positions: props.positions,
+      historyState: props.historyState
     }
   }
 
   render() {
-    const {graph, selection} = this.state;
+    const {dag, positions, historyState} = this.state;
 
     return (
       <main>
-        <Graph graph={graph} selection={selection}/>
+        <Graph dag={dag} positions={positions} historyState={historyState}/>
         <Slider/>
       </main>
     );

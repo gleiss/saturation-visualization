@@ -3,8 +3,6 @@ import React, {Component} from 'react';
 import './App.css';
 import Main from './Main';
 import Aside from './Aside';
-import Node from '../model/node';
-import Dag from '../model/dag';
 
 class App extends Component {
   constructor(props) {
@@ -23,9 +21,9 @@ class App extends Component {
         (result) => {
           this.setState({
             isLoaded: true,
-            graph: result.graph,
-            selection: result.selection || [],
-            order: result.order,
+            dag: result.dag,
+            positions: result.positions,
+            historyState: result.history_state,
             error: false
           });
         },
@@ -39,7 +37,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, graph, selection} = this.state;
+    const {error, isLoaded, dag, positions, historyState} = this.state;
 
     if (error) {
       return (
@@ -62,7 +60,7 @@ class App extends Component {
     } else {
       return (
         <div className="app">
-          <Main graph={graph} selection={selection}/>
+          <Main dag={dag} positions={positions} historyState={historyState}/>
           <Aside/>
         </div>
       );

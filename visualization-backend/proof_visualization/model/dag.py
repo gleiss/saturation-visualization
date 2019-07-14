@@ -44,10 +44,10 @@ class Dag:
         ))
 
     def to_json(self):
-        return json.dumps({
+        return {
             'nodes': {key: value.__dict__ for key, value in self.nodes.items()},
             'leaves': list(self.leaves)
-        })
+        }
 
     def number_of_history_steps(self):
         counter = 0

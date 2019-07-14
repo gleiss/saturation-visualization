@@ -26,7 +26,8 @@ def home():
     controller.init_controller()
     return json.dumps({
         'dag': session['dags'][0].to_json(),
-        'positions': session['positions'][0]
+        'positions': session['positions'][0],
+        'history_state': session['history_state']
     })
 
 

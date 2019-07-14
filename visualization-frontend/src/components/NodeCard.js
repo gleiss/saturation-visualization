@@ -21,7 +21,7 @@ export default class NodeCard extends React.Component {
         <section>
           <article id="nodeDetails" className="hidden">
             <h2>Node <span id="nodeDetailsId"/></h2>
-            <h3 id="nodeDetailsRule"/>
+            <h3 id="nodeDetailsRule">&nbsp;</h3>
             <p id="nodeDetailsClause"/>
           </article>
           <small id="nodeInfo"><strong id="nodeCount">0 nodes</strong> selected</small>
