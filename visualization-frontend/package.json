@@ -7,7 +7,8 @@
     "react-dom": "^16.8.5",
     "react-scripts": "2.1.8",
     "vis": "^4.21.0",
-    "vis-react": "^0.4.5"
+    "vis-react": "^0.4.5",
+    "viz.js": "^2.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

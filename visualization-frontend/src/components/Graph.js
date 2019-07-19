@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {DataSet, Network} from 'vis';
+import Viz from 'viz.js';
+import {Module, render} from 'viz.js/full.render.js';
 
 import './Graph.css';
 
@@ -171,6 +173,8 @@ export default class Graph extends React.Component {
   generateGraph() {
     const {dag, positions, historyState} = this.state;
 
+    this.computeLayout();
+
     const nodes = [];
     const edges = [];
 
@@ -194,6 +198,36 @@ export default class Graph extends React.Component {
     return {nodes, edges};
   }
 
+  computeLayout() {
+    const dotString = this.dotString();
+    let viz = new Viz({Module, render});
+
+    viz.renderString(dotString, { format: 'plain' })
+      .then(result => {
+        console.log(result);
+      })
+      .catch(error => {
+        // Create a new Viz instance (@see Caveats page for more info)
+        viz = new Viz({Module, render});
+
+        // Possibly display the error
+        console.error(error);
+      });
+  }
+
+  dotString() {
+    const {dag} = this.state;
+
+    const dotStrings = [];
+
+    Object.values(dag.nodes).forEach(node => {
+      dotStrings.push(`${node.number} [label="${node.clause}"]`);
+      node.parents.forEach(parent => dotStrings.push(`${parent} -> ${node.number}`));
+    });
+
+    return `digraph { ${dotStrings.join("; ")} }`;
+
+  }
 
   computeRepresentation(node, historyState) {
     if (node.inference_rule === 'theory axiom') {
