@@ -160,7 +160,33 @@ export default class Graph extends React.Component {
       }
     };
     this.network = new Network(this.graphContainer, {nodes, edges}, options);
-    //this.network.selectNodes(selection);
+
+    this.network.on('oncontext', (rightClickEvent) => {
+      rightClickEvent.event.preventDefault();
+      const clickedNodeNumber = this.network.getNodeAt({
+        x: rightClickEvent.event.layerX,
+        y: rightClickEvent.event.layerY
+      });
+      if (!clickedNodeNumber) {
+        return;
+      }
+
+      const clickedNode = nodes.get(clickedNodeNumber);
+      const marked = new Set(JSON.parse(sessionStorage.getItem('marked') || '[]'));
+      if (marked.has(clickedNodeNumber)) {
+        // remove marker
+        marked.delete(clickedNodeNumber);
+        clickedNode.color.background = clickedNode.color.default.background;
+        clickedNode.color.border = clickedNode.color.default.border;
+      } else {
+        // add marker
+        marked.add(clickedNodeNumber);
+        clickedNode.color.background = clickedNode.color.marked.background;
+        clickedNode.color.border = clickedNode.color.marked.border;
+      }
+      sessionStorage.setItem('marked', JSON.stringify(Array.from(marked)));
+      nodes.update(clickedNode);
+    });
   }
 
   render() {
@@ -208,11 +234,11 @@ export default class Graph extends React.Component {
       .map(line => line.matchAll(PLAIN_PATTERN).next().value)
       .filter(match => !!match)
       .map(match => {
-          return {
-            number: parseInt(match[1], 10),
-            x: parseFloat(match[2]),
-            y: parseFloat(match[3])
-          };
+        return {
+          number: parseInt(match[1], 10),
+          x: parseFloat(match[2]),
+          y: parseFloat(match[3])
+        };
       });
   }
 
