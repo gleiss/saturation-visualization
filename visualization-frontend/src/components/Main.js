@@ -10,17 +10,16 @@ export default class Main extends React.Component {
 
     this.state = {
       dag: props.dag,
-      positions: props.positions,
       historyState: props.historyState
     }
   }
 
   render() {
-    const {dag, positions, historyState} = this.state;
+    const {dag, historyState} = this.state;
 
     return (
       <main>
-        <Graph dag={dag} positions={positions} historyState={historyState}/>
+        <Graph dag={dag} historyState={historyState}/>
         <Slider/>
       </main>
     );

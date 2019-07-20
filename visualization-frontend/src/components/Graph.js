@@ -5,6 +5,8 @@ import {Module, render} from 'viz.js/full.render.js';
 
 import './Graph.css';
 
+const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
+
 const REPRESENTATIONS = {
   active: {
     defaultStyle: {
@@ -142,14 +144,13 @@ export default class Graph extends React.Component {
 
     this.state = {
       dag: props.dag,
-      positions: props.positions,
       historyState: props.historyState
     };
     this.network = {};
   }
 
-  componentDidMount() {
-    const graph = this.generateGraph();
+  async componentDidMount() {
+    const graph = await this.generateGraph();
     const nodes = new DataSet(graph.nodes);
     const edges = new DataSet(graph.edges);
     const options = {
@@ -170,16 +171,16 @@ export default class Graph extends React.Component {
     );
   }
 
-  generateGraph() {
-    const {dag, positions, historyState} = this.state;
+  async generateGraph() {
+    const {dag, historyState} = this.state;
 
-    this.computeLayout();
+    const positions = await this.generateNodePositions();
 
     const nodes = [];
     const edges = [];
 
     positions.forEach(position => {
-      const node = dag.nodes[parseInt(position[0], 10)];
+      const node = dag.nodes[position.number];
       if (node) {
         const representation = this.computeRepresentation(node, historyState);
         nodes.push(this.formatNode(node, position, representation));
@@ -198,19 +199,34 @@ export default class Graph extends React.Component {
     return {nodes, edges};
   }
 
+  async generateNodePositions() {
+    const layout = await this.computeLayout();
+
+    return layout
+      .split('\n')
+      .filter(line => line.startsWith('node'))
+      .map(line => line.matchAll(PLAIN_PATTERN).next().value)
+      .filter(match => !!match)
+      .map(match => {
+          return {
+            number: parseInt(match[1], 10),
+            x: parseFloat(match[2]),
+            y: parseFloat(match[3])
+          };
+      });
+  }
+
   computeLayout() {
     const dotString = this.dotString();
     let viz = new Viz({Module, render});
 
-    viz.renderString(dotString, { format: 'plain' })
+    return viz.renderString(dotString, {format: 'plain'})
       .then(result => {
-        console.log(result);
+        return result;
       })
       .catch(error => {
         // Create a new Viz instance (@see Caveats page for more info)
         viz = new Viz({Module, render});
-
-        // Possibly display the error
         console.error(error);
       });
   }
@@ -225,7 +241,7 @@ export default class Graph extends React.Component {
       node.parents.forEach(parent => dotStrings.push(`${parent} -> ${node.number}`));
     });
 
-    return `digraph { ${dotStrings.join("; ")} }`;
+    return `digraph { ${dotStrings.join('; ')} }`;
 
   }
 
@@ -276,8 +292,8 @@ export default class Graph extends React.Component {
       label: node.clause,
       rule: node.inference_rule,
       shape: representation.shape,
-      x: Math.round(parseFloat(position[1]) * -70),
-      y: Math.round(parseFloat(position[2]) * -120)
+      x: Math.round(position.x * -70),
+      y: Math.round(position.y * -120)
     }
   }
 

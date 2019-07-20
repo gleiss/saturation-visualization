@@ -22,7 +22,6 @@ class App extends Component {
           this.setState({
             isLoaded: true,
             dag: result.dag,
-            positions: result.positions,
             historyState: result.history_state,
             error: false
           });
@@ -37,7 +36,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, positions, historyState} = this.state;
+    const {error, isLoaded, dag, historyState} = this.state;
 
     if (error) {
       return (
@@ -60,7 +59,7 @@ class App extends Component {
     } else {
       return (
         <div className="app">
-          <Main dag={dag} positions={positions} historyState={historyState}/>
+          <Main dag={dag} historyState={historyState}/>
           <Aside/>
         </div>
       );
