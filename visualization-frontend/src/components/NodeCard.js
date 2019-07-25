@@ -5,12 +5,27 @@ import NodeMenu from './NodeMenu';
 
 
 export default class NodeCard extends React.Component {
+
+  state = {nodeSelection: []};
+
+  componentDidUpdate(prevProps) {
+    if (this.props.nodeSelection !== prevProps.nodeSelection) {
+      this.setState({
+        nodeSelection: this.props.nodeSelection
+      });
+    }
+  }
+
   render() {
+    const {nodeSelection} = this.state;
+
+    const nodeInfo = nodeSelection.length === 1 ? '1 node' : `${nodeSelection.length} nodes`;
+
     return (
       <section className="component-node-card">
         <article>
           <h2>Select Nodes</h2>
-          <NodeMenu/>
+          <NodeMenu nodeSelection={nodeSelection}/>
           <input type="text"
                  id="search"
                  className="sidebar-input spaced"
@@ -24,9 +39,10 @@ export default class NodeCard extends React.Component {
             <h3 id="nodeDetailsRule">&nbsp;</h3>
             <p id="nodeDetailsClause"/>
           </article>
-          <small id="nodeInfo"><strong id="nodeCount">0 nodes</strong> selected</small>
+          <small id="nodeInfo"><strong>{nodeInfo}</strong> selected</small>
         </section>
       </section>
     );
   }
+
 }

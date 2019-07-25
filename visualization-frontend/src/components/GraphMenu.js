@@ -4,6 +4,17 @@ import './GraphMenu.css';
 
 
 export default class GraphMenu extends React.Component {
+
+  state = {};
+
+  componentDidUpdate(prevProps) {
+    if (this.props.nodeSelection !== prevProps.nodeSelection) {
+      this.setState({
+        nodeSelection: this.props.nodeSelection
+      });
+    }
+  }
+
   render() {
     return (
       <section className="component-graph-menu">
@@ -43,4 +54,5 @@ export default class GraphMenu extends React.Component {
       </section>
     );
   }
+
 }

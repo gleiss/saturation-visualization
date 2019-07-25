@@ -4,6 +4,17 @@ import './NodeMenu.css';
 
 
 export default class NodeMenu extends React.Component {
+
+  state = {nodeSelection: []};
+
+  componentDidUpdate(prevProps) {
+    if (this.props.nodeSelection !== prevProps.nodeSelection) {
+      this.setState({
+        nodeSelection: this.props.nodeSelection
+      });
+    }
+  }
+
   render() {
     return (
       <section className="component-node-menu">
@@ -33,4 +44,5 @@ export default class NodeMenu extends React.Component {
       </section>
     );
   }
+
 }

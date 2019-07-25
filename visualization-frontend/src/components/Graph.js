@@ -144,12 +144,33 @@ export default class Graph extends React.Component {
 
     this.state = {
       dag: props.dag,
-      historyState: props.historyState
+      historyState: props.historyState,
+      nodeSelection: props.nodeSelection,
+      onNodeSelectionChange: props.onNodeSelectionChange
     };
-    this.network = {};
+  }
+
+  componentDidUpdate(prevProps) {
+    const changedProps = {};
+
+    if (this.props.dag !== prevProps.dag) {
+      changedProps['dag'] = this.props.dag;
+    }
+    if (this.props.historyState !== prevProps.historyState) {
+      changedProps['historyState'] = this.props.dag;
+    }
+    if (this.props.nodeSelection !== prevProps.nodeSelection) {
+      changedProps['nodeSelection'] = this.props.dag;
+    }
+
+    if (Object.keys(changedProps).length) {
+      this.setState(changedProps);
+    }
   }
 
   async componentDidMount() {
+    const {onNodeSelectionChange} = this.state;
+
     const graph = await this.generateGraph();
     const nodes = new DataSet(graph.nodes);
     const edges = new DataSet(graph.edges);
@@ -161,6 +182,9 @@ export default class Graph extends React.Component {
     };
     this.network = new Network(this.graphContainer, {nodes, edges}, options);
 
+    this.network.on('select', (change) => {
+      onNodeSelectionChange(change.nodes);
+    });
     this.network.on('oncontext', (rightClickEvent) => {
       rightClickEvent.event.preventDefault();
       const clickedNodeNumber = this.network.getNodeAt({

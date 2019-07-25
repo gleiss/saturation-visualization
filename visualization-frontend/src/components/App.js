@@ -5,14 +5,12 @@ import Main from './Main';
 import Aside from './Aside';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isLoaded: false,
-      error: false
-    };
-  }
+  state = {
+    isLoaded: false,
+    error: false,
+    nodeSelection: []
+  };
 
   componentWillMount() {
     fetch('http://localhost:5000')
@@ -36,7 +34,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, historyState} = this.state;
+    const {error, isLoaded, dag, historyState, nodeSelection} = this.state;
 
     if (error) {
       return (
@@ -44,7 +42,7 @@ class App extends Component {
           <main>
             <section className="placeholder">Error: {error.message}</section>
           </main>
-          <Aside/>
+          <Aside nodeSelection={nodeSelection}/>
         </div>
       );
     } else if (!isLoaded) {
@@ -53,18 +51,28 @@ class App extends Component {
           <main>
             <section className="placeholder">Loading...</section>
           </main>
-          <Aside/>
+          <Aside nodeSelection={nodeSelection}/>
         </div>
       );
     } else {
       return (
         <div className="app">
-          <Main dag={dag} historyState={historyState}/>
-          <Aside/>
+          <Main
+            dag={dag}
+            historyState={historyState}
+            nodeSelection={nodeSelection}
+            onNodeSelectionChange={this.updateNodeSelection.bind(this)}
+          />
+          <Aside nodeSelection={nodeSelection}/>
         </div>
       );
     }
   }
+
+  updateNodeSelection(nodeSelection) {
+    this.setState({nodeSelection});
+  }
+
 }
 
 export default App;
