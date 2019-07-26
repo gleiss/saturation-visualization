@@ -109,6 +109,43 @@ class App extends Component {
   }
 
   findCommonConsequences() {
+    const {nodeSelection} = this.state;
+
+    const newNodeSelection = nodeSelection
+      .map(node => this._findAllChildren(node))
+      .reduce((a, b) => a.filter(child => b.includes(child)));
+
+    this.updateNodeSelection(newNodeSelection);
+  }
+
+  _findAllChildren(node) {
+    const {edges, network} = this.state;
+    const selectionSet = new Set();
+
+    network
+      .getConnectedEdges(node)
+      .map(edgeId => edges.get(edgeId))
+      .filter(edge => edge.from === node)
+      .forEach(edge => {
+        selectionSet.add(edge.to);
+        this._addAllChildren(edge.to, selectionSet);
+      });
+    return [...selectionSet];
+  }
+
+  _addAllChildren(node, selectionSet) {
+    const {edges, network} = this.state;
+
+    network
+      .getConnectedEdges(node)
+      .map(edgeId => edges.get(edgeId))
+      .filter(edge => edge.from === node)
+      .forEach(edge => {
+        if (!selectionSet.has(edge.to)) {
+          selectionSet.add(edge.to);
+          this._addAllChildren(edge.to, selectionSet);
+        }
+      })
   }
 
 }

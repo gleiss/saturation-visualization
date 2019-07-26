@@ -34,7 +34,7 @@ export default class NodeMenu extends React.Component {
         </button>
         <button
           title="Find common consequences of selected nodes"
-          disabled={!nodeSelection.length}
+          disabled={nodeSelection.length < 2}
           onClick={this.props.onFindCommonConsequences}
         >
         </button>
