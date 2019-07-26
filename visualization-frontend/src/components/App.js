@@ -7,8 +7,6 @@ import Aside from './Aside';
 class App extends Component {
 
   state = {
-    isLoaded: false,
-    error: false,
     nodeSelection: []
   };
 
@@ -20,7 +18,6 @@ class App extends Component {
           this.setState({
             isLoaded: true,
             dag: result.dag,
-            historyState: result.history_state,
             error: false
           });
         },
@@ -34,7 +31,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, historyState, nodeSelection} = this.state;
+    const {error, isLoaded, dag, nodeSelection} = this.state;
 
     if (error) {
       return (
@@ -42,7 +39,12 @@ class App extends Component {
           <main>
             <section className="placeholder">Error: {error.message}</section>
           </main>
-          <Aside nodeSelection={nodeSelection}/>
+          <Aside
+            nodeSelection={nodeSelection}
+            onSelectParents={this.selectParents.bind(this)}
+            onSelectChildren={this.selectChildren.bind(this)}
+            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+          />
         </div>
       );
     } else if (!isLoaded) {
@@ -51,7 +53,12 @@ class App extends Component {
           <main>
             <section className="placeholder">Loading...</section>
           </main>
-          <Aside nodeSelection={nodeSelection}/>
+          <Aside
+            nodeSelection={nodeSelection}
+            onSelectParents={this.selectParents.bind(this)}
+            onSelectChildren={this.selectChildren.bind(this)}
+            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+          />
         </div>
       );
     } else {
@@ -59,18 +66,72 @@ class App extends Component {
         <div className="app">
           <Main
             dag={dag}
-            historyState={historyState}
             nodeSelection={nodeSelection}
             onNodeSelectionChange={this.updateNodeSelection.bind(this)}
+            onNetworkChange={this.setNetwork.bind(this)}
           />
-          <Aside nodeSelection={nodeSelection}/>
+          <Aside
+            nodeSelection={nodeSelection}
+            onSelectParents={this.selectParents.bind(this)}
+            onSelectChildren={this.selectChildren.bind(this)}
+            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+          />
         </div>
       );
     }
   }
 
+
+  // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setNetwork(network, nodes, edges) {
+    this.setState({network, nodes, edges});
+  }
+
   updateNodeSelection(nodeSelection) {
     this.setState({nodeSelection});
+  }
+
+
+  // NODE SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  selectParents() {
+    const {edges, network, nodeSelection} = this.state;
+    const selectionSet = new Set(nodeSelection);
+
+    nodeSelection.forEach(number => {
+      network
+        .getConnectedEdges(number)
+        .forEach(edgeId => {
+          const edge = edges.get(edgeId);
+          if (edge.to === number) {
+            selectionSet.add(edge.from);
+          }
+        })
+    });
+    const newNodeSelection = [...selectionSet];
+    this.updateNodeSelection(newNodeSelection);
+  }
+
+  selectChildren() {
+    const {edges, network, nodeSelection} = this.state;
+    const selectionSet = new Set(nodeSelection);
+
+    nodeSelection.forEach(number => {
+      network
+        .getConnectedEdges(number)
+        .forEach(edgeId => {
+          const edge = edges.get(edgeId);
+          if (edge.from === number) {
+            selectionSet.add(edge.to);
+          }
+        })
+    });
+    const newNodeSelection = [...selectionSet];
+    this.updateNodeSelection(newNodeSelection);
+  }
+
+  findCommonConsequences() {
   }
 
 }

@@ -25,7 +25,12 @@ export default class NodeCard extends React.Component {
       <section className="component-node-card">
         <article>
           <h2>Select Nodes</h2>
-          <NodeMenu nodeSelection={nodeSelection}/>
+          <NodeMenu
+            nodeSelection={nodeSelection}
+            onSelectParents={this.props.onSelectParents}
+            onSelectChildren={this.props.onSelectChildren}
+            onFindCommonConsequences={this.props.onFindCommonConsequences}
+          />
           <input type="text"
                  id="search"
                  className="sidebar-input spaced"

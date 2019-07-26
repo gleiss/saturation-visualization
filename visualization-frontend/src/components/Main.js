@@ -10,9 +10,7 @@ export default class Main extends React.Component {
 
     this.state = {
       dag: props.dag,
-      historyState: props.historyState,
-      nodeSelection: props.nodeSelection,
-      onNodeSelectionChange: props.onNodeSelectionChange
+      nodeSelection: props.nodeSelection
     }
   }
 
@@ -22,11 +20,8 @@ export default class Main extends React.Component {
     if (this.props.dag !== prevProps.dag) {
       changedProps['dag'] = this.props.dag;
     }
-    if (this.props.historyState !== prevProps.historyState) {
-      changedProps['historyState'] = this.props.dag;
-    }
     if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      changedProps['nodeSelection'] = this.props.dag;
+      changedProps['nodeSelection'] = this.props.nodeSelection;
     }
 
     if (Object.keys(changedProps).length) {
@@ -35,15 +30,15 @@ export default class Main extends React.Component {
   }
 
   render() {
-    const {dag, historyState, nodeSelection, onNodeSelectionChange} = this.state;
+    const {dag, nodeSelection} = this.state;
 
     return (
       <main>
         <Graph
           dag={dag}
-          historyState={historyState}
           nodeSelection={nodeSelection}
-          onNodeSelectionChange={onNodeSelectionChange}
+          onNodeSelectionChange={this.props.onNodeSelectionChange}
+          onNetworkChange={this.props.onNetworkChange}
         />
         <Slider/>
       </main>

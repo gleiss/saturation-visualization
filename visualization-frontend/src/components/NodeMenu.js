@@ -16,31 +16,28 @@ export default class NodeMenu extends React.Component {
   }
 
   render() {
+    const {nodeSelection} = this.state;
+
     return (
       <section className="component-node-menu">
-        <section className="fake-form">
-          <button id="selectParents"
-                  disabled
-                  title="Select parents"
-                  onClick="selectParents()">A
-          </button>
-          <button id="selectChildren"
-                  disabled
-                  title="Select children"
-                  onClick="selectChildren()">B
-          </button>
-        </section>
-
-        <form action="" method="post">
-          <input id="consequenceSelection" type="hidden" name="consequenceOrigins"/>
-          <input id="consequenceMarkers" type="hidden" name="marked"/>
-
-          <input type="submit"
-                 id="findCommonConsequences"
-                 disabled
-                 value="C"
-                 title="Find common consequences"/>
-        </form>
+        <button
+          title="Select parents of selected nodes"
+          disabled={!nodeSelection.length}
+          onClick={this.props.onSelectParents}
+        >
+        </button>
+        <button
+          title="Select children of selected nodes"
+          disabled={!nodeSelection.length}
+          onClick={this.props.onSelectChildren}
+        >
+        </button>
+        <button
+          title="Find common consequences of selected nodes"
+          disabled={!nodeSelection.length}
+          onClick={this.props.onFindCommonConsequences}
+        >
+        </button>
       </section>
     );
   }

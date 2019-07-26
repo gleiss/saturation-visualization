@@ -22,7 +22,12 @@ export default class Aside extends React.Component {
     return (
       <aside>
         <GraphMenu nodeSelection={nodeSelection}/>
-        <NodeCard nodeSelection={nodeSelection}/>
+        <NodeCard
+          nodeSelection={nodeSelection}
+          onSelectParents={this.props.onSelectParents}
+          onSelectChildren={this.props.onSelectChildren}
+          onFindCommonConsequences={this.props.onFindCommonConsequences}
+        />
       </aside>
     );
   }

@@ -144,9 +144,7 @@ export default class Graph extends React.Component {
 
     this.state = {
       dag: props.dag,
-      historyState: props.historyState,
-      nodeSelection: props.nodeSelection,
-      onNodeSelectionChange: props.onNodeSelectionChange
+      nodeSelection: props.nodeSelection || []
     };
   }
 
@@ -156,11 +154,9 @@ export default class Graph extends React.Component {
     if (this.props.dag !== prevProps.dag) {
       changedProps['dag'] = this.props.dag;
     }
-    if (this.props.historyState !== prevProps.historyState) {
-      changedProps['historyState'] = this.props.dag;
-    }
     if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      changedProps['nodeSelection'] = this.props.dag;
+      changedProps['nodeSelection'] = this.props.nodeSelection;
+      this.network.selectNodes(this.props.nodeSelection);
     }
 
     if (Object.keys(changedProps).length) {
@@ -169,7 +165,7 @@ export default class Graph extends React.Component {
   }
 
   async componentDidMount() {
-    const {onNodeSelectionChange} = this.state;
+    const onNodeSelectionChange = this.props.onNodeSelectionChange;
 
     const graph = await this.generateGraph();
     const nodes = new DataSet(graph.nodes);
@@ -211,6 +207,7 @@ export default class Graph extends React.Component {
       sessionStorage.setItem('marked', JSON.stringify(Array.from(marked)));
       nodes.update(clickedNode);
     });
+    this.props.onNetworkChange(this.network, nodes, edges);
   }
 
   render() {
@@ -222,7 +219,7 @@ export default class Graph extends React.Component {
   }
 
   async generateGraph() {
-    const {dag, historyState} = this.state;
+    const {dag} = this.state;
 
     const positions = await this.generateNodePositions();
 
@@ -232,10 +229,10 @@ export default class Graph extends React.Component {
     positions.forEach(position => {
       const node = dag.nodes[position.number];
       if (node) {
-        const representation = this.computeRepresentation(node, historyState);
+        const representation = this.computeRepresentation(node, 276);
         nodes.push(this.formatNode(node, position, representation));
 
-        const edgeVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= historyState);
+        const edgeVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= 276 /* TODO */);
 
         node.parents.forEach(parentNumber => {
           const parent = dag.nodes[parentNumber];
@@ -275,7 +272,6 @@ export default class Graph extends React.Component {
         return result;
       })
       .catch(error => {
-        // Create a new Viz instance (@see Caveats page for more info)
         viz = new Viz({Module, render});
         console.error(error);
       });
@@ -296,6 +292,7 @@ export default class Graph extends React.Component {
   }
 
   computeRepresentation(node, historyState) {
+
     if (node.inference_rule === 'theory axiom') {
       if (node.active_time && node.active_time <= historyState) {
         return REPRESENTATIONS['activeTheoryAxiom']
