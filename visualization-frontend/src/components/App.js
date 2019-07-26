@@ -91,8 +91,7 @@ class App extends Component {
         .filter(edge => edge.to === node)
         .forEach(edge => selectionSet.add(edge.from))
     });
-    const newNodeSelection = [...selectionSet];
-    this.updateNodeSelection(newNodeSelection);
+    this.updateNodeSelection([...selectionSet]);
   }
 
   selectChildren() {
@@ -106,8 +105,7 @@ class App extends Component {
         .filter(edge => edge.from === node)
         .forEach(edge => selectionSet.add(edge.to))
     });
-    const newNodeSelection = [...selectionSet];
-    this.updateNodeSelection(newNodeSelection);
+    this.updateNodeSelection([...selectionSet]);
   }
 
   findCommonConsequences() {
