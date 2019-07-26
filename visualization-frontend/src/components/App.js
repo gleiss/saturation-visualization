@@ -84,15 +84,12 @@ class App extends Component {
     const {edges, network, nodeSelection} = this.state;
     const selectionSet = new Set(nodeSelection);
 
-    nodeSelection.forEach(number => {
+    nodeSelection.forEach(node => {
       network
-        .getConnectedEdges(number)
-        .forEach(edgeId => {
-          const edge = edges.get(edgeId);
-          if (edge.to === number) {
-            selectionSet.add(edge.from);
-          }
-        })
+        .getConnectedEdges(node)
+        .map(edgeId => edges.get(edgeId))
+        .filter(edge => edge.to === node)
+        .forEach(edge => selectionSet.add(edge.from))
     });
     const newNodeSelection = [...selectionSet];
     this.updateNodeSelection(newNodeSelection);
@@ -102,15 +99,12 @@ class App extends Component {
     const {edges, network, nodeSelection} = this.state;
     const selectionSet = new Set(nodeSelection);
 
-    nodeSelection.forEach(number => {
+    nodeSelection.forEach(node => {
       network
-        .getConnectedEdges(number)
-        .forEach(edgeId => {
-          const edge = edges.get(edgeId);
-          if (edge.from === number) {
-            selectionSet.add(edge.to);
-          }
-        })
+        .getConnectedEdges(node)
+        .map(edgeId => edges.get(edgeId))
+        .filter(edge => edge.from === node)
+        .forEach(edge => selectionSet.add(edge.to))
     });
     const newNodeSelection = [...selectionSet];
     this.updateNodeSelection(newNodeSelection);
