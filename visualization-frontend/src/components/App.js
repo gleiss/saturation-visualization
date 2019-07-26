@@ -33,52 +33,37 @@ class App extends Component {
   render() {
     const {error, isLoaded, dag, nodeSelection} = this.state;
 
-    if (error) {
-      return (
-        <div className="app">
-          <main>
-            <section className="placeholder">Error: {error.message}</section>
-          </main>
-          <Aside
-            nodeSelection={nodeSelection}
-            onSelectParents={this.selectParents.bind(this)}
-            onSelectChildren={this.selectChildren.bind(this)}
-            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
-          />
-        </div>
-      );
-    } else if (!isLoaded) {
-      return (
-        <div className="app">
-          <main>
-            <section className="placeholder">Loading...</section>
-          </main>
-          <Aside
-            nodeSelection={nodeSelection}
-            onSelectParents={this.selectParents.bind(this)}
-            onSelectChildren={this.selectChildren.bind(this)}
-            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
-          />
-        </div>
+    let main;
+    if (isLoaded && dag) {
+      main = (
+        <Main
+          dag={dag}
+          nodeSelection={nodeSelection}
+          onNodeSelectionChange={this.updateNodeSelection.bind(this)}
+          onNetworkChange={this.setNetwork.bind(this)}
+        />
       );
     } else {
-      return (
-        <div className="app">
-          <Main
-            dag={dag}
-            nodeSelection={nodeSelection}
-            onNodeSelectionChange={this.updateNodeSelection.bind(this)}
-            onNetworkChange={this.setNetwork.bind(this)}
-          />
-          <Aside
-            nodeSelection={nodeSelection}
-            onSelectParents={this.selectParents.bind(this)}
-            onSelectChildren={this.selectChildren.bind(this)}
-            onFindCommonConsequences={this.findCommonConsequences.bind(this)}
-          />
-        </div>
+      const message = error ? `Error: ${error.message}` : 'Loading...';
+      main = (
+        <main>
+          <section className="placeholder">{message}</section>
+        </main>
       );
     }
+
+    return (
+      <div className="app">
+        {main}
+        <Aside
+          nodeSelection={nodeSelection}
+          onSelectParents={this.selectParents.bind(this)}
+          onSelectChildren={this.selectChildren.bind(this)}
+          onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+        />
+      </div>
+    );
+
   }
 
 
