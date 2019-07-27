@@ -139,75 +139,20 @@ const REPRESENTATIONS = {
 };
 
 export default class Graph extends React.Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      dag: props.dag,
-      nodeSelection: props.nodeSelection || []
-    };
+  state = {
+    nodeSelection: []
+  };
+
+  async componentDidMount() {
+    await this.generateNetwork();
   }
 
   componentDidUpdate(prevProps) {
-    const changedProps = {};
-
-    if (this.props.dag !== prevProps.dag) {
-      changedProps['dag'] = this.props.dag;
-    }
     if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      changedProps['nodeSelection'] = this.props.nodeSelection;
       this.network.selectNodes(this.props.nodeSelection);
+      this.setState({nodeSelection: this.props.nodeSelection})
     }
-
-    if (Object.keys(changedProps).length) {
-      this.setState(changedProps);
-    }
-  }
-
-  async componentDidMount() {
-    const onNodeSelectionChange = this.props.onNodeSelectionChange;
-
-    const graph = await this.generateGraph();
-    const nodes = new DataSet(graph.nodes);
-    const edges = new DataSet(graph.edges);
-    const options = {
-      physics: false,
-      interaction: {
-        multiselect: true
-      }
-    };
-    this.network = new Network(this.graphContainer, {nodes, edges}, options);
-
-    this.network.on('select', (change) => {
-      onNodeSelectionChange(change.nodes);
-    });
-    this.network.on('oncontext', (rightClickEvent) => {
-      rightClickEvent.event.preventDefault();
-      const clickedNodeNumber = this.network.getNodeAt({
-        x: rightClickEvent.event.layerX,
-        y: rightClickEvent.event.layerY
-      });
-      if (!clickedNodeNumber) {
-        return;
-      }
-
-      const clickedNode = nodes.get(clickedNodeNumber);
-      const marked = new Set(JSON.parse(sessionStorage.getItem('marked') || '[]'));
-      if (marked.has(clickedNodeNumber)) {
-        // remove marker
-        marked.delete(clickedNodeNumber);
-        clickedNode.color.background = clickedNode.color.default.background;
-        clickedNode.color.border = clickedNode.color.default.border;
-      } else {
-        // add marker
-        marked.add(clickedNodeNumber);
-        clickedNode.color.background = clickedNode.color.marked.background;
-        clickedNode.color.border = clickedNode.color.marked.border;
-      }
-      sessionStorage.setItem('marked', JSON.stringify(Array.from(marked)));
-      nodes.update(clickedNode);
-    });
-    this.props.onNetworkChange(this.network, nodes, edges);
   }
 
   render() {
@@ -218,56 +163,92 @@ export default class Graph extends React.Component {
     );
   }
 
-  async generateGraph() {
-    const {dag} = this.state;
 
-    const positions = await this.generateNodePositions();
+  // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    const nodes = [];
-    const edges = [];
+  async generateNetwork() {
+    const {onNetworkChange, onNodeSelectionChange} = this.props;
+    const graph = await this.generateNetworkData();
+    const networkNodes = new DataSet(graph.networkNodes);
+    const networkEdges = new DataSet(graph.networkEdges);
+
+    this.network = new Network(this.graphContainer, {
+      nodes: networkNodes,
+      edges: networkEdges
+    }, this.getNetworkOptions());
+    this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
+    this.network.on('oncontext', (rightClickEvent) => {
+      const nodeNumber = this.findNodeAt(rightClickEvent.event);
+      if (nodeNumber) {
+        const clickedNode = networkNodes.get(nodeNumber);
+        this.toggleMarker(clickedNode);
+        networkNodes.update(clickedNode);
+      }
+      rightClickEvent.event.preventDefault();
+    });
+
+    onNetworkChange(this.network, networkNodes, networkEdges);
+  }
+
+  async generateNetworkData() {
+    const {dag} = this.props;
+    const networkNodes = [];
+    const networkEdges = [];
+    const positions = await this.computePositions(Object.values(dag.nodes));
 
     positions.forEach(position => {
       const node = dag.nodes[position.number];
       if (node) {
-        const representation = this.computeRepresentation(node, 276);
-        nodes.push(this.formatNode(node, position, representation));
+        networkNodes.push(this.toNetworkNode(node, position, 276));
 
-        const edgeVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= 276 /* TODO */);
-
-        node.parents.forEach(parentNumber => {
-          const parent = dag.nodes[parentNumber];
-          if (parent) {
-            edges.push(this.formatEdge(parentNumber, node.number, edgeVisible));
-          }
-        });
+        const edgesVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= 276);
+        node
+          .parents
+          .filter(parentNumber => !!dag.nodes[parentNumber])
+          .forEach(parentNumber => networkEdges.push(this.toNetworkEdge(parentNumber, node.number, edgesVisible)));
       }
     });
 
-    return {nodes, edges};
+    return {networkNodes, networkEdges};
   }
 
-  async generateNodePositions() {
-    const layout = await this.computeLayout();
-
-    return layout
-      .split('\n')
-      .filter(line => line.startsWith('node'))
-      .map(line => line.matchAll(PLAIN_PATTERN).next().value)
-      .filter(match => !!match)
-      .map(match => {
-        return {
-          number: parseInt(match[1], 10),
-          x: parseFloat(match[2]),
-          y: parseFloat(match[3])
-        };
-      });
+  findNodeAt(clickPosition) {
+    return this.network.getNodeAt({
+      x: clickPosition.layerX,
+      y: clickPosition.layerY
+    });
   }
 
-  computeLayout() {
-    const dotString = this.dotString();
+  getNetworkOptions = () => {
+    return {
+      physics: false,
+      interaction: {
+        multiselect: true
+      }
+    };
+  };
+
+
+  // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  toDotString = (nodes) => {
+    const dotStrings = [];
+
+    nodes.forEach(node => {
+      dotStrings.push(`${node.number} [label="${node.clause}"]`);
+      node
+        .parents
+        .forEach(parent => dotStrings.push(`${parent} -> ${node.number}`));
+    });
+
+    return `digraph { ${dotStrings.join('; ')} }`;
+  };
+
+  toGraphLayout = async (nodes) => {
     let viz = new Viz({Module, render});
 
-    return viz.renderString(dotString, {format: 'plain'})
+    return viz
+      .renderString(this.toDotString(nodes), {format: 'plain'})
       .then(result => {
         return result;
       })
@@ -275,23 +256,31 @@ export default class Graph extends React.Component {
         viz = new Viz({Module, render});
         console.error(error);
       });
-  }
+  };
 
-  dotString() {
-    const {dag} = this.state;
+  computePositions = async (nodes) => {
+    const graphLayout = await this.toGraphLayout(nodes);
+    return graphLayout
+      .split('\n')
+      .filter(line => line.startsWith('node'))
+      .map(line => line.matchAll(PLAIN_PATTERN).next().value)
+      .filter(match => !!match)
+      .map(match => {
+        const [, number, x, y] = match;
+        return {
+          number: parseInt(number, 10),
+          x: parseFloat(x),
+          y: parseFloat(y)
+        };
+      });
+  };
 
-    const dotStrings = [];
 
-    Object.values(dag.nodes).forEach(node => {
-      dotStrings.push(`${node.number} [label="${node.clause}"]`);
-      node.parents.forEach(parent => dotStrings.push(`${parent} -> ${node.number}`));
-    });
+  // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    return `digraph { ${dotStrings.join('; ')} }`;
+  selectStyle = (node, historyState) => {
 
-  }
-
-  computeRepresentation(node, historyState) {
+    /* TODO clean up */
 
     if (node.inference_rule === 'theory axiom') {
       if (node.active_time && node.active_time <= historyState) {
@@ -312,49 +301,81 @@ export default class Graph extends React.Component {
     }
 
     return REPRESENTATIONS['hidden']
-  }
+  };
 
-  formatNode(node, position, representation) {
+  setStyle = (node, newStyleKey) => {
+    const newStyle = node.color[newStyleKey];
+
+    node.color.background = newStyle.background;
+    node.color.border = newStyle.border;
+  };
+
+  toggleMarker = (node) => {
+    const markers = new Set(this.getStoredMarkers());
+
+    if (markers.has(node.id)) {
+      markers.delete(node.id);
+      this.setStyle(node, 'default');
+    } else {
+      markers.add(node.id);
+      this.setStyle(node, 'marked');
+    }
+    this.storeMarkers(Array.from(markers));
+  };
+
+  toNetworkNode = (node, position, historyState) => {
+    const styleData = this.selectStyle(node, historyState);
+
     return {
+      id: node.number,
       color: {
-        background: representation.defaultStyle.background,
-        border: representation.defaultStyle.border,
+        background: styleData.defaultStyle.background,
+        border: styleData.defaultStyle.border,
+        default: {
+          background: styleData.defaultStyle.background,
+          border: styleData.defaultStyle.border
+        },
         highlight: {
-          background: representation.highlightStyle.background,
-          border: representation.highlightStyle.border
+          background: styleData.highlightStyle.background,
+          border: styleData.highlightStyle.border
         },
         marked: {
-          background: representation.markedStyle.background,
-          border: representation.markedStyle.border
-        },
-        default: {
-          background: representation.defaultStyle.background,
-          border: representation.defaultStyle.border
+          background: styleData.markedStyle.background,
+          border: styleData.markedStyle.border
         }
       },
       font: {
-        color: representation.text
+        color: styleData.text
       },
-      id: node.number,
       label: node.clause,
       rule: node.inference_rule,
-      shape: representation.shape,
+      shape: styleData.shape,
       x: Math.round(position.x * -70),
       y: Math.round(position.y * -120)
     }
-  }
+  };
 
-
-  formatEdge(parent, child, visible) {
+  toNetworkEdge = (fromNode, toNode, visible) => {
     return {
       arrows: 'to',
       color: {
         opacity: visible ? 1.0 : 0.0,
         color: '#dddddd'
       },
-      from: parent,
-      to: child
+      from: fromNode,
+      to: toNode
     }
-  }
+  };
+
+
+  // SESSION ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  getStoredMarkers = () => {
+    return JSON.parse(sessionStorage.getItem('marked') || '[]');
+  };
+
+  storeMarkers = (markers) => {
+    sessionStorage.setItem('marked', JSON.stringify(markers));
+  };
 
 }
