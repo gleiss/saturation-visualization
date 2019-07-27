@@ -21,7 +21,11 @@ export default class Aside extends React.Component {
 
     return (
       <aside>
-        <GraphMenu nodeSelection={nodeSelection}/>
+        <GraphMenu
+          nodeSelection={nodeSelection}
+          onRenderParentsOnly={this.props.onRenderParentsOnly}
+          onRenderChildrenOnly={this.props.onRenderChildrenOnly}
+        />
         <NodeCard
           nodeSelection={nodeSelection}
           onSelectParents={this.props.onSelectParents}

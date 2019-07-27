@@ -5,7 +5,7 @@ import './GraphMenu.css';
 
 export default class GraphMenu extends React.Component {
 
-  state = {};
+  state = {nodeSelection: []};
 
   componentDidUpdate(prevProps) {
     if (this.props.nodeSelection !== prevProps.nodeSelection) {
@@ -16,6 +16,8 @@ export default class GraphMenu extends React.Component {
   }
 
   render() {
+    const {nodeSelection} = this.state;
+
     return (
       <section className="component-graph-menu">
         <form id="fileForm" action="" method="post" encType="multipart/form-data">
@@ -38,19 +40,21 @@ export default class GraphMenu extends React.Component {
                  value="undo"
                  title="Undo last transformation"
                  name="undo"/>
-          <input type="submit"
-                 id="selectUp"
-                 disabled
-                 value="up"
-                 title="Render selection only (up)"
-                 name="up"/>
-          <input type="submit"
-                 id="selectDown"
-                 disabled
-                 value="down"
-                 title="Render selection only (down)"
-                 name="down"/>
         </form>
+
+        <button
+          title="Render selection only (up)"
+          disabled={!nodeSelection.length}
+          onClick={this.props.onRenderParentsOnly}
+        >
+        </button>
+
+        <button
+          title="Render selection only (down)"
+          disabled={!nodeSelection.length}
+          onClick={this.props.onRenderChildrenOnly}
+        >
+        </button>
       </section>
     );
   }

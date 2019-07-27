@@ -10,7 +10,7 @@ class App extends Component {
     nodeSelection: []
   };
 
-  componentWillMount() {
+  componentDidMount() {
     fetch('http://localhost:5000')
       .then(res => res.json())
       .then(
@@ -32,15 +32,15 @@ class App extends Component {
 
   render() {
     const {error, isLoaded, dag, nodeSelection} = this.state;
-
     let main;
+
     if (isLoaded && dag) {
       main = (
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
-          onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onNetworkChange={this.setNetwork.bind(this)}
+          onNodeSelectionChange={this.updateNodeSelection.bind(this)}
         />
       );
     } else {
@@ -60,6 +60,8 @@ class App extends Component {
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
           onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+          onRenderParentsOnly={this.renderParentsOnly.bind(this)}
+          onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
         />
       </div>
     );
@@ -75,6 +77,29 @@ class App extends Component {
 
   updateNodeSelection(nodeSelection) {
     this.setState({nodeSelection});
+  }
+
+
+  // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  renderParentsOnly() {
+    const {nodeSelection} = this.state;
+
+    const listsOfParents = nodeSelection.map(node => this._findAllParents(node));
+    const parentNodesIncludingDuplicates = [].concat(...listsOfParents, ...nodeSelection);
+    const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
+
+    this._cutDag(parentNodes);
+  }
+
+  renderChildrenOnly() {
+    const {nodeSelection} = this.state;
+
+    const listsOfChildren = nodeSelection.map(node => this._findAllChildren(node));
+    const childNodesIncludingDuplicates = [].concat(...listsOfChildren, ...nodeSelection);
+    const childNodes = [...new Set(childNodesIncludingDuplicates)];
+
+    this._cutDag(childNodes);
   }
 
 
@@ -118,6 +143,39 @@ class App extends Component {
     this.updateNodeSelection(newNodeSelection);
   }
 
+
+  // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  _findAllParents(node) {
+    const {edges, network} = this.state;
+    const selectionSet = new Set();
+
+    network
+      .getConnectedEdges(node)
+      .map(edgeId => edges.get(edgeId))
+      .filter(edge => edge.to === node)
+      .forEach(edge => {
+        selectionSet.add(edge.from);
+        this._addAllParents(edge.from, selectionSet);
+      });
+    return [...selectionSet];
+  }
+
+  _addAllParents(node, selectionSet) {
+    const {edges, network} = this.state;
+
+    network
+      .getConnectedEdges(node)
+      .map(edgeId => edges.get(edgeId))
+      .filter(edge => edge.to === node)
+      .forEach(edge => {
+        if (!selectionSet.has(edge.from)) {
+          selectionSet.add(edge.from);
+          this._addAllParents(edge.from, selectionSet);
+        }
+      })
+  }
+
   _findAllChildren(node) {
     const {edges, network} = this.state;
     const selectionSet = new Set();
@@ -146,6 +204,15 @@ class App extends Component {
           this._addAllChildren(edge.to, selectionSet);
         }
       })
+  }
+
+  _cutDag(remainingNodeNumbers) {
+    const {dag} = this.state;
+    const remainingNodes = {};
+
+    remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
+    dag.nodes = remainingNodes;
+    this.setState({dag});
   }
 
 }
