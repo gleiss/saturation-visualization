@@ -10,24 +10,8 @@ class App extends Component {
     nodeSelection: []
   };
 
-  componentDidMount() {
-    fetch('http://localhost:5000')
-      .then(res => res.json())
-      .then(
-        (result) => {
-          this.setState({
-            isLoaded: true,
-            dag: result.dag,
-            error: false
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
-        }
-      )
+  async componentDidMount() {
+    await this.fetchDag();
   }
 
   render() {
@@ -57,11 +41,12 @@ class App extends Component {
         {main}
         <Aside
           nodeSelection={nodeSelection}
+          onUploadFile={this.uploadFile.bind(this)}
+          onRenderParentsOnly={this.renderParentsOnly.bind(this)}
+          onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
           onFindCommonConsequences={this.findCommonConsequences.bind(this)}
-          onRenderParentsOnly={this.renderParentsOnly.bind(this)}
-          onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
         />
       </div>
     );
@@ -77,6 +62,57 @@ class App extends Component {
 
   updateNodeSelection(nodeSelection) {
     this.setState({nodeSelection});
+  }
+
+
+  // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  fetchDag() {
+    fetch('http://localhost:5000')
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            dag: result.dag,
+            error: false
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+  }
+
+  uploadFile(file) {
+    fetch('http://localhost:5000', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({file}),
+    })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            dag: result.dag,
+            error: false
+          });
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
   }
 
 

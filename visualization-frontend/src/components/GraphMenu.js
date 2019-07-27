@@ -21,16 +21,17 @@ export default class GraphMenu extends React.Component {
 
     return (
       <section className="component-graph-menu">
-        <form id="fileForm" action="" method="post" encType="multipart/form-data">
-          <input type="hidden" id="fileUpload" name="file"/>
-          <input type="file" id="fileSelector" className="hidden" onChange="uploadFile(this.files)"/>
-
-          <input type="button"
-                 id="uploadFileButton"
-                 value="file"
-                 title="Pick a new file"
-                 onClick="chooseFile()"/>
-        </form>
+        <input
+          className="hidden"
+          ref={ref => this.fileUpload = ref}
+          type="file"
+          onChange={(event) => this.updateProofFile(event.target.files[0])}
+        />
+        <button
+          title="Pick a new file"
+          onClick={this.chooseFile.bind(this)}
+        >
+        </button>
 
         <form action="" method="post">
           <input type="hidden" id="transformationSelection" name="selection"/>
@@ -58,6 +59,23 @@ export default class GraphMenu extends React.Component {
         </button>
       </section>
     );
+  }
+
+
+  // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  chooseFile() {
+    this.fileUpload.click();
+  }
+
+  updateProofFile(file) {
+    const {onUploadFile} = this.props;
+    const reader = new FileReader();
+
+    reader.readAsText(file);
+    reader.onloadend = () => {
+      onUploadFile(reader.result);
+    };
   }
 
 }

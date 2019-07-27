@@ -19,6 +19,7 @@ export default class Aside extends React.Component {
   render() {
     const {nodeSelection} = this.state;
     const {
+      onUploadFile,
       onRenderParentsOnly,
       onRenderChildrenOnly,
       onSelectParents,
@@ -30,6 +31,7 @@ export default class Aside extends React.Component {
       <aside>
         <GraphMenu
           nodeSelection={nodeSelection}
+          onUploadFile={onUploadFile}
           onRenderParentsOnly={onRenderParentsOnly}
           onRenderChildrenOnly={onRenderChildrenOnly}
         />

@@ -3,7 +3,7 @@
 import json
 import os
 
-from flask import Flask, session
+from flask import Flask, session, request
 from flask_cors import CORS
 from flask_session import Session
 
@@ -26,8 +26,19 @@ def home():
     controller.init_controller()
     return json.dumps({
         'dag': session['dags'][0].to_json(),
-        'positions': session['positions'][0],
         'history_state': session['history_state']
+    })
+
+
+@app.route("/", methods=['POST'])
+def handle_post_request():
+    request_params = request.get_json()
+
+    if request_params.get('file'):
+        controller.init_dag(request_params['file'])
+    return json.dumps({
+        'dag': session['dags'][0].to_json(),
+        'history_state': 276
     })
 
 
