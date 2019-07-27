@@ -17,25 +17,26 @@ export default class NodeMenu extends React.Component {
 
   render() {
     const {nodeSelection} = this.state;
+    const {onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
 
     return (
       <section className="component-node-menu">
         <button
           title="Select parents of selected nodes"
           disabled={!nodeSelection.length}
-          onClick={this.props.onSelectParents}
+          onClick={onSelectParents}
         >
         </button>
         <button
           title="Select children of selected nodes"
           disabled={!nodeSelection.length}
-          onClick={this.props.onSelectChildren}
+          onClick={onSelectChildren}
         >
         </button>
         <button
           title="Find common consequences of selected nodes"
           disabled={nodeSelection.length < 2}
-          onClick={this.props.onFindCommonConsequences}
+          onClick={onFindCommonConsequences}
         >
         </button>
       </section>

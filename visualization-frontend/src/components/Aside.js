@@ -18,19 +18,26 @@ export default class Aside extends React.Component {
 
   render() {
     const {nodeSelection} = this.state;
+    const {
+      onRenderParentsOnly,
+      onRenderChildrenOnly,
+      onSelectParents,
+      onSelectChildren,
+      onFindCommonConsequences
+    } = this.props;
 
     return (
       <aside>
         <GraphMenu
           nodeSelection={nodeSelection}
-          onRenderParentsOnly={this.props.onRenderParentsOnly}
-          onRenderChildrenOnly={this.props.onRenderChildrenOnly}
+          onRenderParentsOnly={onRenderParentsOnly}
+          onRenderChildrenOnly={onRenderChildrenOnly}
         />
         <NodeCard
           nodeSelection={nodeSelection}
-          onSelectParents={this.props.onSelectParents}
-          onSelectChildren={this.props.onSelectChildren}
-          onFindCommonConsequences={this.props.onFindCommonConsequences}
+          onSelectParents={onSelectParents}
+          onSelectChildren={onSelectChildren}
+          onFindCommonConsequences={onFindCommonConsequences}
         />
       </aside>
     );

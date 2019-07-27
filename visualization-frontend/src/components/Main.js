@@ -31,14 +31,15 @@ export default class Main extends React.Component {
 
   render() {
     const {dag, nodeSelection} = this.state;
+    const {onNetworkChange, onNodeSelectionChange} = this.props;
 
     return (
       <main>
         <Graph
           dag={dag}
           nodeSelection={nodeSelection}
-          onNodeSelectionChange={this.props.onNodeSelectionChange}
-          onNetworkChange={this.props.onNetworkChange}
+          onNodeSelectionChange={onNodeSelectionChange}
+          onNetworkChange={onNetworkChange}
         />
         <Slider/>
       </main>

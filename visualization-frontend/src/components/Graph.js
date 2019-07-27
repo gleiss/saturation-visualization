@@ -151,7 +151,6 @@ export default class Graph extends React.Component {
   async componentDidUpdate(prevProps) {
     if (this.props.dag !== prevProps.dag) {
       await this.generateNetwork();
-      this.applyStoredMarkers();
     } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
       this.network.selectNodes(this.props.nodeSelection);
       this.setState({nodeSelection: this.props.nodeSelection})

@@ -18,7 +18,7 @@ export default class NodeCard extends React.Component {
 
   render() {
     const {nodeSelection} = this.state;
-
+    const {onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
     const nodeInfo = nodeSelection.length === 1 ? '1 node' : `${nodeSelection.length} nodes`;
 
     return (
@@ -27,9 +27,9 @@ export default class NodeCard extends React.Component {
           <h2>Select Nodes</h2>
           <NodeMenu
             nodeSelection={nodeSelection}
-            onSelectParents={this.props.onSelectParents}
-            onSelectChildren={this.props.onSelectChildren}
-            onFindCommonConsequences={this.props.onFindCommonConsequences}
+            onSelectParents={onSelectParents}
+            onSelectChildren={onSelectChildren}
+            onFindCommonConsequences={onFindCommonConsequences}
           />
           <input type="text"
                  id="search"

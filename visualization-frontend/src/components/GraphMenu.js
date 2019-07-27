@@ -17,6 +17,7 @@ export default class GraphMenu extends React.Component {
 
   render() {
     const {nodeSelection} = this.state;
+    const {onRenderParentsOnly, onRenderChildrenOnly} = this.props;
 
     return (
       <section className="component-graph-menu">
@@ -45,14 +46,14 @@ export default class GraphMenu extends React.Component {
         <button
           title="Render selection only (up)"
           disabled={!nodeSelection.length}
-          onClick={this.props.onRenderParentsOnly}
+          onClick={onRenderParentsOnly}
         >
         </button>
 
         <button
           title="Render selection only (down)"
           disabled={!nodeSelection.length}
-          onClick={this.props.onRenderChildrenOnly}
+          onClick={onRenderChildrenOnly}
         >
         </button>
       </section>
