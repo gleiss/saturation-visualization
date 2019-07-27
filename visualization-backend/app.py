@@ -25,8 +25,7 @@ CORS(app)
 def home():
     controller.init_controller()
     return json.dumps({
-        'dag': session['dags'][0].to_json(),
-        'history_state': session['history_state']
+        'dag': session['dags'][0].to_json()
     })
 
 
@@ -37,8 +36,7 @@ def handle_post_request():
     if request_params.get('file'):
         controller.init_dag(request_params['file'])
     return json.dumps({
-        'dag': session['dags'][0].to_json(),
-        'history_state': 276
+        'dag': session['dags'][0].to_json()
     })
 
 

@@ -154,6 +154,9 @@ export default class Graph extends React.Component {
     } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
       this.network.selectNodes(this.props.nodeSelection);
       this.setState({nodeSelection: this.props.nodeSelection})
+    } else if (this.props.historyState !== prevProps.historyState) {
+      this.setHistoryStyles(this.props.historyState);
+      this.setState({historyState: this.props.historyState})
     }
   }
 
@@ -171,33 +174,33 @@ export default class Graph extends React.Component {
   async generateNetwork() {
     const {onNetworkChange, onNodeSelectionChange} = this.props;
     const graph = await this.generateNetworkData();
-    const networkNodes = new DataSet(graph.networkNodes);
+    this.networkNodes = new DataSet(graph.networkNodes);
     const networkEdges = new DataSet(graph.networkEdges);
 
     if (this.network) {
       this.network.destroy();
     }
     this.network = new Network(this.graphContainer, {
-      nodes: networkNodes,
+      nodes: this.networkNodes,
       edges: networkEdges
     }, this.getNetworkOptions());
     this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
     this.network.on('oncontext', (rightClickEvent) => {
       const nodeId = this.findNodeAt(rightClickEvent.event);
       if (nodeId) {
-        const node = networkNodes.get(nodeId);
+        const node = this.networkNodes.get(nodeId);
         this.toggleMarker(node);
-        networkNodes.update(node);
+        this.networkNodes.update(node);
       }
       rightClickEvent.event.preventDefault();
     });
-    this.applyStoredMarkers(networkNodes);
+    this.applyStoredMarkers(this.networkNodes);
 
-    onNetworkChange(this.network, networkNodes, networkEdges);
+    onNetworkChange(this.network, this.networkNodes, networkEdges);
   }
 
   async generateNetworkData() {
-    const {dag} = this.props;
+    const {dag, historyState} = this.props;
     const networkNodes = [];
     const networkEdges = [];
     const positions = await this.computePositions(Object.values(dag.nodes));
@@ -205,9 +208,9 @@ export default class Graph extends React.Component {
     positions.forEach(position => {
       const node = dag.nodes[position.number];
       if (node) {
-        networkNodes.push(this.toNetworkNode(node, position, 276));
+        networkNodes.push(this.toNetworkNode(node, position, historyState));
 
-        const edgesVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= 276);
+        const edgesVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= historyState);
         node
           .parents
           .filter(parentNumber => !!dag.nodes[parentNumber])
@@ -283,6 +286,38 @@ export default class Graph extends React.Component {
 
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setHistoryStyles(historyState) {
+    const {dag} = this.props;
+    const networkNodesToUpdate = [];
+
+    Object.values(dag.nodes)
+      .filter(node => !!this.networkNodes.get(node.number))
+      .forEach(node => {
+        const styleData = this.selectStyle(node, historyState);
+        const networkNode = this.networkNodes.get(node.number);
+        networkNode.color = {
+          background: styleData.defaultStyle.background,
+          border: styleData.defaultStyle.border,
+          default: {
+            background: styleData.defaultStyle.background,
+            border: styleData.defaultStyle.border
+          },
+          highlight: {
+            background: styleData.highlightStyle.background,
+            border: styleData.highlightStyle.border
+          },
+          marked: {
+            background: styleData.markedStyle.background,
+            border: styleData.markedStyle.border
+          }
+        };
+        networkNode.font.color = styleData.text;
+        networkNode.shape = styleData.shape;
+        networkNodesToUpdate.push(networkNode);
+      });
+    this.networkNodes.update(networkNodesToUpdate);
+  }
 
   selectStyle = (node, historyState) => {
 
@@ -369,7 +404,7 @@ export default class Graph extends React.Component {
     markers
       .map(nodeId => availableNodes.get(nodeId))
       .filter(node => !!node)
-      .forEach(node =>  {
+      .forEach(node => {
         this.setStyle(node, 'marked');
         availableNodes.update(node);
       });

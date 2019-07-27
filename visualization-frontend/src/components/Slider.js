@@ -4,20 +4,55 @@ import './Slider.css';
 
 
 export default class Slider extends React.Component {
+
+  state = {};
+
+  componentDidUpdate(prevProps) {
+    const changedProps = {};
+
+    if (this.props.dag !== prevProps.dag) {
+      changedProps.dag = this.props.dag;
+    }
+    if (this.props.historyState !== prevProps.historyState) {
+      changedProps.historyState = this.props.historyState;
+    }
+
+    if (Object.keys(changedProps).length) {
+      this.setState(changedProps);
+    }
+  }
+
   render() {
+    const {dag, historyState, onHistoryStateChange} = this.props;
+    const historyLength = Object.keys(dag.nodes).length;
+
     return (
       <section className="component-slider">
-        <form id="sliderForm" action="" method="post">
-          <input id="historySelection" type="hidden" name="historySelection"/>
-          <input id="historyMarkers" type="hidden" name="marked"/>
-          <input id="showPreviousStep" type="submit" name="decrease" value="-"/>
-          <section className="wrapper">
-            <small id="slideValue"/>
-            <section id="slideContainer"/>
-          </section>
-          <input id="showNextStep" type="submit" name="increase" value="+"/>
-        </form>
+        <button
+          disabled={historyState <= 0}
+          onClick={() => onHistoryStateChange(historyState - 1)}>
+        </button>
+
+        <section className="wrapper">
+          <small style={{left: `${historyState * 100 / (historyLength - 1)}%`}}>
+            {historyState}
+          </small>
+          <input
+            ref={ref => this.slider = ref}
+            type="range"
+            min={0}
+            max={historyLength - 1}
+            value={historyState}
+            onChange={() => onHistoryStateChange(this.slider.value)}
+          />
+        </section>
+
+        <button
+          disabled={historyState >= historyLength - 1}
+          onClick={() => onHistoryStateChange(historyState + 1)}>
+        </button>
       </section>
     );
   }
+
 }

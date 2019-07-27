@@ -15,7 +15,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, nodeSelection} = this.state;
+    const {error, isLoaded, dag, nodeSelection, historyState} = this.state;
     let main;
 
     if (isLoaded && dag) {
@@ -23,8 +23,10 @@ class App extends Component {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
+          historyState={historyState}
           onNetworkChange={this.setNetwork.bind(this)}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
+          onHistoryStateChange={this.updateHistoryState.bind(this)}
         />
       );
     } else {
@@ -64,6 +66,10 @@ class App extends Component {
     this.setState({nodeSelection});
   }
 
+  updateHistoryState(historyState) {
+    this.setState({historyState: parseInt(historyState, 10)});
+  }
+
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +81,7 @@ class App extends Component {
           this.setState({
             isLoaded: true,
             dag: result.dag,
+            historyState: Object.keys(result.dag.nodes).length,
             error: false
           });
         },
@@ -103,6 +110,7 @@ class App extends Component {
           this.setState({
             isLoaded: true,
             dag: result.dag,
+            historyState: Object.keys(result.dag.nodes).length,
             error: false
           });
         },
