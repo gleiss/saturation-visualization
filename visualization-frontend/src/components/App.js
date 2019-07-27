@@ -211,8 +211,7 @@ class App extends Component {
     const remainingNodes = {};
 
     remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
-    dag.nodes = remainingNodes;
-    this.setState({dag});
+    this.setState({dag: {nodes: remainingNodes}});
   }
 
 }

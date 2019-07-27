@@ -148,8 +148,11 @@ export default class Graph extends React.Component {
     await this.generateNetwork();
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.nodeSelection !== prevProps.nodeSelection) {
+  async componentDidUpdate(prevProps) {
+    if (this.props.dag !== prevProps.dag) {
+      await this.generateNetwork();
+      this.applyStoredMarkers();
+    } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
       this.network.selectNodes(this.props.nodeSelection);
       this.setState({nodeSelection: this.props.nodeSelection})
     }
@@ -172,20 +175,24 @@ export default class Graph extends React.Component {
     const networkNodes = new DataSet(graph.networkNodes);
     const networkEdges = new DataSet(graph.networkEdges);
 
+    if (this.network) {
+      this.network.destroy();
+    }
     this.network = new Network(this.graphContainer, {
       nodes: networkNodes,
       edges: networkEdges
     }, this.getNetworkOptions());
     this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
     this.network.on('oncontext', (rightClickEvent) => {
-      const nodeNumber = this.findNodeAt(rightClickEvent.event);
-      if (nodeNumber) {
-        const clickedNode = networkNodes.get(nodeNumber);
-        this.toggleMarker(clickedNode);
-        networkNodes.update(clickedNode);
+      const nodeId = this.findNodeAt(rightClickEvent.event);
+      if (nodeId) {
+        const node = networkNodes.get(nodeId);
+        this.toggleMarker(node);
+        networkNodes.update(node);
       }
       rightClickEvent.event.preventDefault();
     });
+    this.applyStoredMarkers(networkNodes);
 
     onNetworkChange(this.network, networkNodes, networkEdges);
   }
@@ -231,7 +238,7 @@ export default class Graph extends React.Component {
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  toDotString = (nodes) => {
+  toDotString(nodes) {
     const dotStrings = [];
 
     nodes.forEach(node => {
@@ -244,7 +251,7 @@ export default class Graph extends React.Component {
     return `digraph { ${dotStrings.join('; ')} }`;
   };
 
-  toGraphLayout = async (nodes) => {
+  async toGraphLayout(nodes) {
     let viz = new Viz({Module, render});
 
     return viz
@@ -258,7 +265,7 @@ export default class Graph extends React.Component {
       });
   };
 
-  computePositions = async (nodes) => {
+  async computePositions(nodes) {
     const graphLayout = await this.toGraphLayout(nodes);
     return graphLayout
       .split('\n')
@@ -310,19 +317,6 @@ export default class Graph extends React.Component {
     node.color.border = newStyle.border;
   };
 
-  toggleMarker = (node) => {
-    const markers = new Set(this.getStoredMarkers());
-
-    if (markers.has(node.id)) {
-      markers.delete(node.id);
-      this.setStyle(node, 'default');
-    } else {
-      markers.add(node.id);
-      this.setStyle(node, 'marked');
-    }
-    this.storeMarkers(Array.from(markers));
-  };
-
   toNetworkNode = (node, position, historyState) => {
     const styleData = this.selectStyle(node, historyState);
 
@@ -368,7 +362,32 @@ export default class Graph extends React.Component {
   };
 
 
-  // SESSION ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  applyStoredMarkers(availableNodes) {
+    const markers = this.getStoredMarkers();
+
+    markers
+      .map(nodeId => availableNodes.get(nodeId))
+      .filter(node => !!node)
+      .forEach(node =>  {
+        this.setStyle(node, 'marked');
+        availableNodes.update(node);
+      });
+  };
+
+  toggleMarker(node) {
+    const markers = new Set(this.getStoredMarkers());
+
+    if (markers.has(node.id)) {
+      markers.delete(node.id);
+      this.setStyle(node, 'default');
+    } else {
+      markers.add(node.id);
+      this.setStyle(node, 'marked');
+    }
+    this.storeMarkers(Array.from(markers));
+  };
 
   getStoredMarkers = () => {
     return JSON.parse(sessionStorage.getItem('marked') || '[]');
