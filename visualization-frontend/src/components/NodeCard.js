@@ -24,7 +24,6 @@ export default class NodeCard extends React.Component {
   render() {
     const {nodes, nodeSelection} = this.state;
     const {onUpdateNodeSelection, onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
-    const nodeInfo = nodeSelection.length === 1 ? '1 node' : `${nodeSelection.length} nodes`;
 
     return (
       <section className="component-node-card">
@@ -41,14 +40,6 @@ export default class NodeCard extends React.Component {
             onUpdateNodeSelection={onUpdateNodeSelection}
           />
         </article>
-        <section>
-          <article id="nodeDetails" className="hidden">
-            <h2>Node <span id="nodeDetailsId"/></h2>
-            <h3 id="nodeDetailsRule">&nbsp;</h3>
-            <p id="nodeDetailsClause"/>
-          </article>
-          <small id="nodeInfo"><strong>{nodeInfo}</strong> selected</small>
-        </section>
       </section>
     );
   }

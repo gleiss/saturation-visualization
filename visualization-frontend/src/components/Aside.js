@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
+import NodeDetails from './NodeDetails';
 
 
 export default class Aside extends React.Component {
@@ -47,6 +48,10 @@ export default class Aside extends React.Component {
           onSelectParents={onSelectParents}
           onSelectChildren={onSelectChildren}
           onFindCommonConsequences={onFindCommonConsequences}
+        />
+        <NodeDetails
+          nodes={nodes}
+          nodeSelection={nodeSelection}
         />
       </aside>
     );
