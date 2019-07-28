@@ -15,7 +15,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, nodeSelection, historyState} = this.state;
+    const {error, isLoaded, dag, nodes, nodeSelection, historyState} = this.state;
     let main;
 
     if (isLoaded && dag) {
@@ -42,7 +42,9 @@ class App extends Component {
       <div className="app">
         {main}
         <Aside
+          nodes={nodes}
           nodeSelection={nodeSelection}
+          onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUploadFile={this.uploadFile.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}

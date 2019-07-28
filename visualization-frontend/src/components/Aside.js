@@ -13,12 +13,17 @@ export default class Aside extends React.Component {
       this.setState({
         nodeSelection: this.props.nodeSelection
       });
+    } else if (this.props.nodes !== prevProps.nodes) {
+      this.setState({
+        nodes: this.props.nodes
+      });
     }
   }
 
   render() {
-    const {nodeSelection} = this.state;
+    const {nodes, nodeSelection} = this.state;
     const {
+      onUpdateNodeSelection,
       onUploadFile,
       onRenderParentsOnly,
       onRenderChildrenOnly,
@@ -36,7 +41,9 @@ export default class Aside extends React.Component {
           onRenderChildrenOnly={onRenderChildrenOnly}
         />
         <NodeCard
+          nodes={nodes}
           nodeSelection={nodeSelection}
+          onUpdateNodeSelection={onUpdateNodeSelection}
           onSelectParents={onSelectParents}
           onSelectChildren={onSelectChildren}
           onFindCommonConsequences={onFindCommonConsequences}

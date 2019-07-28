@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import './NodeCard.css';
 import NodeMenu from './NodeMenu';
+import Search from './Search';
 
 
 export default class NodeCard extends React.Component {
@@ -13,12 +14,16 @@ export default class NodeCard extends React.Component {
       this.setState({
         nodeSelection: this.props.nodeSelection
       });
+    } else if (this.props.nodes !== prevProps.nodes) {
+      this.setState({
+        nodes: this.props.nodes
+      });
     }
   }
 
   render() {
-    const {nodeSelection} = this.state;
-    const {onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
+    const {nodes, nodeSelection} = this.state;
+    const {onUpdateNodeSelection, onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
     const nodeInfo = nodeSelection.length === 1 ? '1 node' : `${nodeSelection.length} nodes`;
 
     return (
@@ -31,12 +36,10 @@ export default class NodeCard extends React.Component {
             onSelectChildren={onSelectChildren}
             onFindCommonConsequences={onFindCommonConsequences}
           />
-          <input type="text"
-                 id="search"
-                 className="sidebar-input spaced"
-                 placeholder="Search for a node ..."
-                 onKeyUp="search(this.value)"/>
-          <ul id="searchResults"/>
+          <Search
+            nodes={nodes}
+            onUpdateNodeSelection={onUpdateNodeSelection}
+          />
         </article>
         <section>
           <article id="nodeDetails" className="hidden">
