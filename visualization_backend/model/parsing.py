@@ -4,11 +4,11 @@ import logging
 import re
 from collections import namedtuple
 
-import proof_visualization.model.util as util
-from proof_visualization.model.dag import Dag
-from proof_visualization.model.node import Node
-from proof_visualization.model.transformations import filter_non_active_deriving_nodes
-from proof_visualization.model.transformations import merge_preprocessing
+from visualization_backend.model import util
+from visualization_backend.model.dag import Dag
+from visualization_backend.model.node import Node
+from visualization_backend.model.transformations import filter_non_active_deriving_nodes, \
+    merge_preprocessing
 
 __all__ = 'process', 'parse', 'analyse'
 
@@ -85,7 +85,7 @@ def analyse(parsed_lines):
                 current_node.set_new_time(index)
 
                 # hack: pretend that empty clause was added to passive and then activated
-                if(line.clause == "$false"):
+                if line.clause == "$false":
                     current_node.set_passive_time(index)
                     index = index + 1
                     current_node.set_active_time(index)

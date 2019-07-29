@@ -1,21 +1,9 @@
 """Data object representing a line of proof output"""
 
-import proof_visualization.model.util as util
+from visualization_backend.model import util
 
 
 class Node:
-    __slots__ = [
-        'number',
-        'clause',
-        'inference_rule',
-        'parents',
-        'statistics',
-        'is_from_preprocessing',
-        'new_time',
-        'passive_time',
-        'active_time'
-    ]
-
     def __init__(self, number, clause, inference_rule, parents, statistics, is_from_preprocessing):
         self._check_assertions(number, clause, inference_rule, parents, statistics, is_from_preprocessing)
 

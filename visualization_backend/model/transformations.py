@@ -1,7 +1,6 @@
-from proof_visualization.model.dag import Dag
-from proof_visualization.model.node import Node
-from proof_visualization.model.traversal import DFPostOrderTraversal
-from proof_visualization.model.traversal import ReversePostOrderTraversal
+from visualization_backend.model.dag import Dag
+from visualization_backend.model.node import Node
+from visualization_backend.model.traversal import ReversePostOrderTraversal, DFPostOrderTraversal
 
 
 # returns a new dag containing only the nodes which either
