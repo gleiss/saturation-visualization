@@ -22,15 +22,11 @@ export default class GraphMenu extends React.Component {
     return (
       <section className="component-graph-menu">
         <input
-          className="hidden"
           ref={ref => this.fileUpload = ref}
           type="file"
           onChange={(event) => this.updateProofFile(event.target.files[0])}
         />
-        <button
-          title="Pick a new file"
-          onClick={this.chooseFile.bind(this)}
-        >
+        <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
         </button>
 
         <form action="" method="post">
@@ -44,18 +40,10 @@ export default class GraphMenu extends React.Component {
                  name="undo"/>
         </form>
 
-        <button
-          title="Render selection only (up)"
-          disabled={!nodeSelection.length}
-          onClick={onRenderParentsOnly}
-        >
+        <button title="Render selection only (up)" disabled={!nodeSelection.length} onClick={onRenderParentsOnly}>
         </button>
 
-        <button
-          title="Render selection only (down)"
-          disabled={!nodeSelection.length}
-          onClick={onRenderChildrenOnly}
-        >
+        <button title="Render selection only (down)" disabled={!nodeSelection.length} onClick={onRenderChildrenOnly}>
         </button>
       </section>
     );

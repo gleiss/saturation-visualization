@@ -1,0 +1,56 @@
+.component-node-details {
+  margin: 0.5rem -0.5rem 0;
+  padding: 0 0.5rem 0.5rem;
+  overflow: hidden;
+
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+
+  border-radius: 2px;
+  transition: all ease-in 330ms;
+}
+.component-node-details.details {
+  background: #f8f9fb;
+}
+.component-node-details.overview {
+  background: #fff;
+}
+
+.component-node-details article {
+  padding: 0.5rem 0;
+}
+
+.component-node-details article h2 {
+  margin: 1rem 5px calc(1rem - 5px);
+  font-size: 1.3rem;
+  font-weight: 100;
+}
+
+.component-node-details strong {
+  color: #343539;
+  font-weight: bold;
+}
+
+.component-node-details h3 {
+  margin: -0.5rem 0 1rem;
+  padding: 0 5px;
+  font-size: 0.833rem;
+  font-weight: normal;
+  opacity: 0.5;
+  text-transform: capitalize;
+}
+
+.component-node-details p {
+  margin: 0.5rem 0 0;
+  padding: 1rem;
+  background: #fff;
+
+  font-family: monospace;
+  word-break: break-word;
+}
+
+.component-node-details small {
+  display: block;
+  padding: 1rem 5px 0.5rem;
+  opacity: 0.5;
+}
+

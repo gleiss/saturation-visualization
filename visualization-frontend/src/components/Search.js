@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import './Search.css';
+
 
 export default class Search extends React.Component {
 
@@ -20,12 +22,10 @@ export default class Search extends React.Component {
     const {foundNodes} = this.state;
 
     return (
-      <section className="component-node-card">
+      <section className="component-search">
         <input
           ref={ref => this.searchField = ref}
-          id="search"
           type="text"
-          className="sidebar-input spaced"
           placeholder="Search for a node ..."
           onKeyUp={this.search.bind(this)}
         />
@@ -47,7 +47,6 @@ export default class Search extends React.Component {
   search() {
     const {nodes} = this.state;
     const {onUpdateNodeSelection} = this.props;
-
     const searchValue = this.searchField.value;
 
     if (searchValue) {
@@ -56,12 +55,15 @@ export default class Search extends React.Component {
         .filter(node => node.label.includes(searchValue));
       foundNodes.sort((a, b) => a.label.length - b.label.length);
 
-      const selectedIds = foundNodes.map(node => node.id);
+      onUpdateNodeSelection(foundNodes.map(node => node.id));
 
-      foundNodes = foundNodes.filter(node => node.label !== 'Preproc');
-      this.setState({foundNodes});
-
-      onUpdateNodeSelection(selectedIds);
+      this.setState({
+        foundNodes: foundNodes.filter(node => node.label !== 'Preproc')
+      });
+    } else {
+      this.setState({
+        foundNodes: []
+      });
     }
   }
 

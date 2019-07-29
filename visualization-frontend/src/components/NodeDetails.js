@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import './NodeCard.css';
+import './NodeDetails.css';
 
 
 export default class NodeDetails extends React.Component {
@@ -27,13 +27,13 @@ export default class NodeDetails extends React.Component {
       `${nodeSelection.length} nodes`;
 
     return (
-      <section className="component-node-card">
+      <section className={`component-node-details ${oneNodeSelected ? 'details' : 'overview'}`}>
         {
           oneNodeSelected && (
-            <article id="nodeDetails">
-              <h2>Node <span id="nodeDetailsId">{selectedNode.id}</span></h2>
-              <h3 id="nodeDetailsRule">{selectedNode.rule}</h3>
-              <p id="nodeDetailsClause">{selectedNode.label}</p>
+            <article>
+              <h2>Node <strong>{selectedNode.id}</strong></h2>
+              <h3>{selectedNode.rule}</h3>
+              <p>{selectedNode.label}</p>
             </article>
           )
         }
