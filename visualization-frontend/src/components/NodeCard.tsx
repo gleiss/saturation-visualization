@@ -1,13 +1,28 @@
 import * as React from 'react';
+import {DataSet} from 'vis';
+
+import {NetworkNode} from '../model/networkNode';
 
 import './NodeCard.css';
 import NodeMenu from './NodeMenu';
 import Search from './Search';
 
 
-export default class NodeCard extends React.Component {
+type Props = {
+  nodes: DataSet<NetworkNode>,
+  nodeSelection: number[],
+  onUpdateNodeSelection,
+  onSelectParents,
+  onSelectChildren,
+  onFindCommonConsequences
+};
+type State = {
+  nodes: DataSet<NetworkNode>,
+  nodeSelection: number[]
+};
+export default class NodeCard extends React.Component<Props, State> {
 
-  state = {nodeSelection: []};
+  state = {nodes: [], nodeSelection: []};
 
   componentDidUpdate(prevProps) {
     if (this.props.nodeSelection !== prevProps.nodeSelection) {

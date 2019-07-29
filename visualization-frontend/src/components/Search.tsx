@@ -1,14 +1,26 @@
 import * as React from 'react';
+import {DataSet} from 'vis';
+
+import {NetworkNode} from '../model/networkNode';
 
 import './Search.css';
 
 
-export default class Search extends React.Component {
+type Props = {
+  nodes: DataSet<NetworkNode>,
+  onUpdateNodeSelection
+};
+type State = {
+  nodes: DataSet<NetworkNode>,
+  foundNodes: NetworkNode[]
+};
+export default class Search extends React.Component<Props, State> {
 
   state = {
     nodes: {},
     foundNodes: []
   };
+  private searchField;
 
   componentDidUpdate(prevProps) {
     if (this.props.nodes !== prevProps.nodes) {

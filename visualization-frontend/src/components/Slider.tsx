@@ -1,25 +1,39 @@
 import * as React from 'react';
 
 import './Slider.css';
-import icons from '../resources/icons/all.svg';
 
 
-export default class Slider extends React.Component {
+const icons = require('../resources/icons/all.svg') as string;
 
-  state = {};
+type Props = {
+  dag: any,
+  historyState: number,
+  onHistoryStateChange,
+};
+type State = {
+  dag: any,
+  nodeSelection: number[],
+  historyState: number
+};
+export default class Slider extends React.Component<Props, State> {
+
+  state = {
+    dag: {},
+    nodeSelection: [],
+    historyState: 0
+  };
+  private slider;
 
   componentDidUpdate(prevProps) {
-    const changedProps = {};
-
     if (this.props.dag !== prevProps.dag) {
-      changedProps.dag = this.props.dag;
-    }
-    if (this.props.historyState !== prevProps.historyState) {
-      changedProps.historyState = this.props.historyState;
-    }
-
-    if (Object.keys(changedProps).length) {
-      this.setState(changedProps);
+      this.setState({
+        dag: this.props.dag,
+        historyState: this.props.historyState
+      });
+    } else if (this.props.historyState !== prevProps.historyState) {
+      this.setState({
+        historyState: this.props.historyState
+      });
     }
   }
 

@@ -1,20 +1,37 @@
 import * as React from 'react';
-import {DataSet, Network} from 'vis';
-import Viz from 'viz.js';
+import * as Viz from 'viz.js';
 import {Module, render} from 'viz.js/full.render.js';
+import {DataSet, Network} from 'vis';
 
-import styleTemplates from '../resources/styleTemplates';
+import {Node} from '../model/node';
 import './Graph.css';
 
 
+const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
 
-
-export default class Graph extends React.Component {
+type Props = {
+  dag: {nodes: {key: Node}},
+  nodeSelection: number[],
+  historyState: number,
+  onNetworkChange,
+  onNodeSelectionChange
+};
+type State = {
+  dag: {nodes: {key: Node}},
+  nodeSelection: number[],
+  historyState: number
+};
+export default class Graph extends React.Component<Props, State> {
 
   state = {
-    nodeSelection: []
+    dag: null,
+    nodeSelection: [],
+    historyState: 0
   };
+  private network;
+  private networkNodes;
+  private graphContainer;
 
   async componentDidMount() {
     await this.generateNetwork();
@@ -110,7 +127,7 @@ export default class Graph extends React.Component {
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  toDotString(nodes) {
+  toDotString(nodes: Node[]) {
     const dotStrings = [];
 
     nodes.forEach(node => {
@@ -176,9 +193,6 @@ export default class Graph extends React.Component {
   }
 
   selectStyle = (node, historyState) => {
-
-    /* TODO clean up */
-
     if (node.inference_rule === 'theory axiom') {
       if (node.active_time && node.active_time <= historyState) {
         return styleTemplates.activeTheoryAxiom;
@@ -260,7 +274,7 @@ export default class Graph extends React.Component {
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  applyStoredMarkers(availableNodes) {
+  private applyStoredMarkers(availableNodes) {
     const markers = this.getStoredMarkers();
 
     markers
@@ -272,7 +286,7 @@ export default class Graph extends React.Component {
       });
   };
 
-  toggleMarker(nodeId) {
+  private toggleMarker(nodeId) {
     const node = this.networkNodes.get(nodeId);
     const markers = new Set(this.getStoredMarkers());
 
@@ -287,11 +301,11 @@ export default class Graph extends React.Component {
     this.networkNodes.update(node);
   };
 
-  getStoredMarkers = () => {
+  private getStoredMarkers = () => {
     return JSON.parse(sessionStorage.getItem('marked') || '[]');
   };
 
-  storeMarkers = (markers) => {
+  private storeMarkers = (markers) => {
     sessionStorage.setItem('marked', JSON.stringify(markers));
   };
 

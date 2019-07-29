@@ -1,13 +1,37 @@
-import React, {Component} from 'react';
+import * as React from 'react';
+import {Component} from 'react';
+import {DataSet, Network} from 'vis';
 
-import './App.css';
+import {NetworkNode} from '../model/networkNode';
 import Main from './Main';
 import Aside from './Aside';
+import './App.css';
 
-class App extends Component {
+
+type State = {
+  dag: { nodes: {} },
+  network: Network,
+  nodes: DataSet<NetworkNode>,
+  edges: DataSet<any>,
+  nodeSelection: number[],
+  historyState: number,
+  versionCount: number,
+  error: any,
+  isLoaded: boolean
+};
+
+class App extends Component<{}, State> {
 
   state = {
-    nodeSelection: []
+    dag: {nodes: {}},
+    network: null,
+    nodes: [],
+    edges: [],
+    nodeSelection: [],
+    historyState: 0,
+    versionCount: 0,
+    error: null,
+    isLoaded: false
   };
 
   async componentDidMount() {
@@ -63,7 +87,7 @@ class App extends Component {
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  setNetwork(network, nodes, edges) {
+  setNetwork(network: Network, nodes, edges) {
     this.setState({network, nodes, edges});
   }
 
@@ -137,7 +161,7 @@ class App extends Component {
 
   undoLastStep() {
     const {versionCount} = this.state;
-    const latestDag = this._unstoreLatestVersion();
+    const latestDag = this.unstoreLatestVersion();
 
     if (latestDag) {
       this.setState({
@@ -151,23 +175,23 @@ class App extends Component {
   renderParentsOnly() {
     const {dag, nodeSelection} = this.state;
 
-    const listsOfParents = nodeSelection.map(node => this._findAllParents(node));
+    const listsOfParents = nodeSelection.map(node => this.findAllParents(node));
     const parentNodesIncludingDuplicates = [].concat(...listsOfParents, ...nodeSelection);
     const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
 
-    this._storeVersion(dag);
-    this._cutDag(parentNodes);
+    this.storeVersion(dag);
+    this.cutDag(parentNodes);
   }
 
   renderChildrenOnly() {
     const {dag, nodeSelection} = this.state;
 
-    const listsOfChildren = nodeSelection.map(node => this._findAllChildren(node));
+    const listsOfChildren = nodeSelection.map(node => this.findAllChildren(node));
     const childNodesIncludingDuplicates = [].concat(...listsOfChildren, ...nodeSelection);
     const childNodes = [...new Set(childNodesIncludingDuplicates)];
 
-    this._storeVersion(dag);
-    this._cutDag(childNodes);
+    this.storeVersion(dag);
+    this.cutDag(childNodes);
   }
 
 
@@ -205,7 +229,7 @@ class App extends Component {
     const {nodeSelection} = this.state;
 
     const newNodeSelection = nodeSelection
-      .map(node => this._findAllChildren(node))
+      .map(node => this.findAllChildren(node))
       .reduce((a, b) => a.filter(child => b.includes(child)));
 
     this.updateNodeSelection(newNodeSelection);
@@ -214,7 +238,7 @@ class App extends Component {
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  _findAllParents(node) {
+  private findAllParents(node) {
     const {edges, network} = this.state;
     const selectionSet = new Set();
 
@@ -224,12 +248,12 @@ class App extends Component {
       .filter(edge => edge.to === node)
       .forEach(edge => {
         selectionSet.add(edge.from);
-        this._addAllParents(edge.from, selectionSet);
+        this.addAllParents(edge.from, selectionSet);
       });
     return [...selectionSet];
   }
 
-  _addAllParents(node, selectionSet) {
+  private addAllParents(node, selectionSet) {
     const {edges, network} = this.state;
 
     network
@@ -239,12 +263,12 @@ class App extends Component {
       .forEach(edge => {
         if (!selectionSet.has(edge.from)) {
           selectionSet.add(edge.from);
-          this._addAllParents(edge.from, selectionSet);
+          this.addAllParents(edge.from, selectionSet);
         }
       })
   }
 
-  _findAllChildren(node) {
+  private findAllChildren(node) {
     const {edges, network} = this.state;
     const selectionSet = new Set();
 
@@ -254,12 +278,12 @@ class App extends Component {
       .filter(edge => edge.from === node)
       .forEach(edge => {
         selectionSet.add(edge.to);
-        this._addAllChildren(edge.to, selectionSet);
+        this.addAllChildren(edge.to, selectionSet);
       });
     return [...selectionSet];
   }
 
-  _addAllChildren(node, selectionSet) {
+  private addAllChildren(node, selectionSet) {
     const {edges, network} = this.state;
 
     network
@@ -269,12 +293,12 @@ class App extends Component {
       .forEach(edge => {
         if (!selectionSet.has(edge.to)) {
           selectionSet.add(edge.to);
-          this._addAllChildren(edge.to, selectionSet);
+          this.addAllChildren(edge.to, selectionSet);
         }
       })
   }
 
-  _cutDag(remainingNodeNumbers) {
+  private cutDag(remainingNodeNumbers) {
     const {dag, versionCount} = this.state;
     const remainingNodes = {};
 
@@ -286,14 +310,14 @@ class App extends Component {
     });
   }
 
-  _storeVersion = (dag) => {
+  private storeVersion = (dag) => {
     const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
 
     versions.push(dag);
     sessionStorage.setItem('versions', JSON.stringify(versions));
   };
 
-  _unstoreLatestVersion = () => {
+  private unstoreLatestVersion = () => {
     const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
     let latestVersion;
 

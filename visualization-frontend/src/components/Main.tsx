@@ -4,7 +4,20 @@ import Slider from './Slider';
 import Graph from './Graph';
 
 
-export default class Main extends React.Component {
+type Props = {
+  dag: any,
+  nodeSelection: number[],
+  historyState: number,
+  onNetworkChange,
+  onNodeSelectionChange,
+  onHistoryStateChange
+};
+type State = {
+  dag: any,
+  nodeSelection: number[],
+  historyState: number
+};
+export default class Main extends React.Component<Props, State> {
   constructor(props) {
     super(props);
 
@@ -16,20 +29,20 @@ export default class Main extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const changedProps = {};
-
     if (this.props.dag !== prevProps.dag) {
-      changedProps.dag = this.props.dag;
-    }
-    if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      changedProps.nodeSelection = this.props.nodeSelection;
-    }
-    if (this.props.historyState !== prevProps.historyState) {
-      changedProps.historyState = this.props.historyState;
-    }
-
-    if (Object.keys(changedProps).length) {
-      this.setState(changedProps);
+      this.setState({
+        dag: this.props.dag,
+        nodeSelection: this.props.nodeSelection,
+        historyState: this.props.historyState
+      });
+    } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
+      this.setState({
+        nodeSelection: this.props.nodeSelection
+      });
+    } else if (this.props.historyState !== prevProps.historyState) {
+      this.setState({
+        historyState: this.props.historyState
+      });
     }
   }
 
@@ -54,4 +67,5 @@ export default class Main extends React.Component {
       </main>
     );
   }
+
 }

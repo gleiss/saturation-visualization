@@ -1,9 +1,19 @@
 import * as React from 'react';
+import {DataSet} from 'vis';
+
+import {NetworkNode} from '../model/networkNode';
 
 import './NodeDetails.css';
 
 
-export default class NodeDetails extends React.Component {
+type Props = {
+  nodes: DataSet<NetworkNode>,
+  nodeSelection: number[]
+};
+type State = {
+  nodeSelection: number[]
+};
+export default class NodeDetails extends React.Component<Props, State> {
 
   state = {nodeSelection: []};
 

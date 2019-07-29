@@ -1,10 +1,19 @@
 import * as React from 'react';
-
-import icons from '../resources/icons/all.svg';
 import './NodeMenu.css';
 
 
-export default class NodeMenu extends React.Component {
+const icons = require('../resources/icons/all.svg') as string;
+
+type Props = {
+  nodeSelection: number[],
+  onSelectParents,
+  onSelectChildren,
+  onFindCommonConsequences
+};
+type State = {
+  nodeSelection: number[]
+};
+export default class NodeMenu extends React.Component<Props, State> {
 
   state = {nodeSelection: []};
 
