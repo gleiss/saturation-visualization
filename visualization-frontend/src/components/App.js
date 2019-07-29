@@ -15,7 +15,7 @@ class App extends Component {
   }
 
   render() {
-    const {error, isLoaded, dag, nodes, nodeSelection, historyState} = this.state;
+    const {error, isLoaded, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
     let main;
 
     if (isLoaded && dag) {
@@ -45,8 +45,10 @@ class App extends Component {
         <Aside
           nodes={nodes}
           nodeSelection={nodeSelection}
+          versionCount={versionCount}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUploadFile={this.uploadFile.bind(this)}
+          onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
           onSelectParents={this.selectParents.bind(this)}
@@ -81,10 +83,12 @@ class App extends Component {
       .then(res => res.json())
       .then(
         (result) => {
+          sessionStorage.setItem('versions', '[]');
           this.setState({
             isLoaded: true,
             dag: result.dag,
             historyState: Object.keys(result.dag.nodes).length,
+            versionCount: 0,
             error: false
           });
         },
@@ -110,10 +114,12 @@ class App extends Component {
       .then(res => res.json())
       .then(
         (result) => {
+          sessionStorage.setItem('versions', '[]');
           this.setState({
             isLoaded: true,
             dag: result.dag,
             historyState: Object.keys(result.dag.nodes).length,
+            versionCount: 0,
             error: false
           });
         },
@@ -129,23 +135,38 @@ class App extends Component {
 
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
+  undoLastStep() {
+    const {versionCount} = this.state;
+    const latestDag = this._unstoreLatestVersion();
+
+    if (latestDag) {
+      this.setState({
+        dag: latestDag,
+        historyState: Object.keys(latestDag.nodes).length,
+        versionCount: versionCount - 1
+      });
+    }
+  }
+
   renderParentsOnly() {
-    const {nodeSelection} = this.state;
+    const {dag, nodeSelection} = this.state;
 
     const listsOfParents = nodeSelection.map(node => this._findAllParents(node));
     const parentNodesIncludingDuplicates = [].concat(...listsOfParents, ...nodeSelection);
     const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
 
+    this._storeVersion(dag);
     this._cutDag(parentNodes);
   }
 
   renderChildrenOnly() {
-    const {nodeSelection} = this.state;
+    const {dag, nodeSelection} = this.state;
 
     const listsOfChildren = nodeSelection.map(node => this._findAllChildren(node));
     const childNodesIncludingDuplicates = [].concat(...listsOfChildren, ...nodeSelection);
     const childNodes = [...new Set(childNodesIncludingDuplicates)];
 
+    this._storeVersion(dag);
     this._cutDag(childNodes);
   }
 
@@ -254,12 +275,34 @@ class App extends Component {
   }
 
   _cutDag(remainingNodeNumbers) {
-    const {dag} = this.state;
+    const {dag, versionCount} = this.state;
     const remainingNodes = {};
 
     remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
-    this.setState({dag: {nodes: remainingNodes}});
+    this.setState({
+      dag: {nodes: remainingNodes},
+      historyState: Object.keys(remainingNodes).length,
+      versionCount: versionCount + 1
+    });
   }
+
+  _storeVersion = (dag) => {
+    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
+
+    versions.push(dag);
+    sessionStorage.setItem('versions', JSON.stringify(versions));
+  };
+
+  _unstoreLatestVersion = () => {
+    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
+    let latestVersion;
+
+    if (versions.length) {
+      latestVersion = versions.pop();
+      sessionStorage.setItem('versions', JSON.stringify(versions));
+    }
+    return latestVersion;
+  };
 
 }
 

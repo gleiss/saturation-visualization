@@ -18,14 +18,19 @@ export default class Aside extends React.Component {
       this.setState({
         nodes: this.props.nodes
       });
+    } else if (this.props.versionCount !== prevProps.versionCount) {
+      this.setState({
+        versionCount: this.props.versionCount
+      });
     }
   }
 
   render() {
-    const {nodes, nodeSelection} = this.state;
+    const {nodes, nodeSelection, versionCount} = this.state;
     const {
       onUpdateNodeSelection,
       onUploadFile,
+      onUndo,
       onRenderParentsOnly,
       onRenderChildrenOnly,
       onSelectParents,
@@ -37,7 +42,9 @@ export default class Aside extends React.Component {
       <aside>
         <GraphMenu
           nodeSelection={nodeSelection}
+          versionCount={versionCount}
           onUploadFile={onUploadFile}
+          onUndo={onUndo}
           onRenderParentsOnly={onRenderParentsOnly}
           onRenderChildrenOnly={onRenderChildrenOnly}
         />

@@ -12,12 +12,16 @@ export default class GraphMenu extends React.Component {
       this.setState({
         nodeSelection: this.props.nodeSelection
       });
+    } else if (this.props.versionCount !== prevProps.versionCount) {
+      this.setState({
+        versionCount: this.props.versionCount
+      });
     }
   }
 
   render() {
-    const {nodeSelection} = this.state;
-    const {onRenderParentsOnly, onRenderChildrenOnly} = this.props;
+    const {nodeSelection, versionCount} = this.state;
+    const {onUndo, onRenderParentsOnly, onRenderChildrenOnly} = this.props;
 
     return (
       <section className="component-graph-menu">
@@ -29,16 +33,8 @@ export default class GraphMenu extends React.Component {
         <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
         </button>
 
-        <form action="" method="post">
-          <input type="hidden" id="transformationSelection" name="selection"/>
-          <input type="hidden" id="transformationMarkers" name="marked"/>
-
-          <input type="submit"
-                 id="undoLastStep"
-                 value="undo"
-                 title="Undo last transformation"
-                 name="undo"/>
-        </form>
+        <button title="Undo last graph transformation" disabled={!versionCount} onClick={onUndo}>
+        </button>
 
         <button title="Render selection only (up)" disabled={!nodeSelection.length} onClick={onRenderParentsOnly}>
         </button>
