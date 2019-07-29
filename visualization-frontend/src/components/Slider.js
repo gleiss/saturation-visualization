@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import './Slider.css';
+import icons from '../resources/icons/all.svg';
 
 
 export default class Slider extends React.Component {
@@ -28,9 +29,11 @@ export default class Slider extends React.Component {
 
     return (
       <section className="component-slider">
-        <button
-          disabled={historyState <= 0}
-          onClick={() => onHistoryStateChange(historyState - 1)}>
+
+        <button disabled={historyState <= 0} onClick={() => onHistoryStateChange(historyState - 1)}>
+          <svg viewBox="0 0 24 24" className="icon">
+            <use xlinkHref={`${icons}#history-back`}/>
+          </svg>
         </button>
 
         <section className="wrapper">
@@ -44,10 +47,12 @@ export default class Slider extends React.Component {
           />
         </section>
 
-        <button
-          disabled={historyState >= historyLength - 1}
-          onClick={() => onHistoryStateChange(historyState + 1)}>
+        <button disabled={historyState >= historyLength - 1} onClick={() => onHistoryStateChange(historyState + 1)}>
+          <svg viewBox="0 0 24 24" className="icon">
+            <use xlinkHref={`${icons}#history-forward`}/>
+          </svg>
         </button>
+
       </section>
     );
   }
