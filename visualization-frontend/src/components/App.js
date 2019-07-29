@@ -33,7 +33,8 @@ class App extends Component {
       const message = error ? `Error: ${error.message}` : 'Loading...';
       main = (
         <main>
-          <section className="placeholder">{message}</section>
+          <section className="graph-placeholder">{message}</section>
+          <section className="slider-placeholder"/>
         </main>
       );
     }

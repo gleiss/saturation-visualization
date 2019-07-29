@@ -1,0 +1,130 @@
+{
+  "active": {
+    "defaultStyle": {
+      "background": "#dddddd",
+      "border": "#bbbbbb"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    }
+  },
+  "passive": {
+    "defaultStyle": {
+      "background": "#f1f1f1",
+      "border": "#e3e3e3"
+    },
+    "text": "#999999",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#f8cfc1",
+      "border": "#f8cfc1"
+    },
+    "markedStyle": {
+      "background": "#ffdde3",
+      "border": "#f8adc8"
+    }
+  },
+  "new": {
+    "defaultStyle": {
+      "background": "#f8f8f8",
+      "border": "#f1f1f1"
+    },
+    "text": "#999999",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#f8cfc1",
+      "border": "#f8cfc1"
+    },
+    "markedStyle": {
+      "background": "#ffdde3",
+      "border": "#f8adc8"
+    }
+  },
+  "activeTheoryAxiom": {
+    "defaultStyle": {
+      "background": "#77aadd",
+      "border": "#4477aa"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    }
+  },
+  "passiveTheoryAxiom": {
+    "defaultStyle": {
+      "background": "#c8ddf1",
+      "border": "#b4c8dd"
+    },
+    "text": "#999999",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#f8cfc1",
+      "border": "#f8cfc1"
+    },
+    "markedStyle": {
+      "background": "#ffdde3",
+      "border": "#f8adc8"
+    }
+  },
+  "input": {
+    "defaultStyle": {
+      "background": "#44bb99",
+      "border": "#009988"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    }
+  },
+  "preprocessing": {
+    "defaultStyle": {
+      "background": "#abe0d1",
+      "border": "#8cd1c9"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    }
+  },
+  "hidden": {
+    "defaultStyle": {
+      "background": "#ffffff00",
+      "border": "#ffffff00"
+    },
+    "text": "#ffffff00",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ffffff00",
+      "border": "#ffffff00"
+    },
+    "markedStyle": {
+      "background": "#ffffff00",
+      "border": "#ffffff00"
+    }
+  }
+}

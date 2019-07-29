@@ -3,140 +3,12 @@ import {DataSet, Network} from 'vis';
 import Viz from 'viz.js';
 import {Module, render} from 'viz.js/full.render.js';
 
+import styleTemplates from '../resources/styleTemplates';
 import './Graph.css';
+
 
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
 
-const REPRESENTATIONS = {
-  active: {
-    defaultStyle: {
-      background: '#dddddd',
-      border: '#bbbbbb'
-    },
-    text: '#000000',
-    shape: 'box',
-    highlightStyle: {
-      background: '#ee8866',
-      border: '#ee8866'
-    },
-    markedStyle: {
-      background: '#ffaabb',
-      border: '#ee3377'
-    }
-  },
-  passive: {
-    defaultStyle: {
-      background: '#f1f1f1',
-      border: '#e3e3e3'
-    },
-    text: '#999999',
-    shape: 'box',
-    highlightStyle: {
-      background: '#f8cfc1',
-      border: '#f8cfc1'
-    },
-    markedStyle: {
-      background: '#ffdde3',
-      border: '#f8adc8'
-    }
-  },
-  new: {
-    defaultStyle: {
-      background: '#f8f8f8',
-      border: '#f1f1f1'
-    },
-    text: '#999999',
-    shape: 'box',
-    highlightStyle: {
-      background: '#f8cfc1',
-      border: '#f8cfc1'
-    },
-    markedStyle: {
-      background: '#ffdde3',
-      border: '#f8adc8'
-    }
-  },
-  activeTheoryAxiom: {
-    defaultStyle: {
-      background: '#77aadd',
-      border: '#4477aa'
-    },
-    text: '#000000',
-    shape: 'box',
-    highlightStyle: {
-      background: '#ee8866',
-      border: '#ee8866'
-    },
-    markedStyle: {
-      background: '#ffaabb',
-      border: '#ee3377'
-    }
-  },
-  passiveTheoryAxiom: {
-    defaultStyle: {
-      background: '#c8ddf1',
-      border: '#b4c8dd'
-    },
-    text: '#999999',
-    shape: 'box',
-    highlightStyle: {
-      background: '#f8cfc1',
-      border: '#f8cfc1'
-    },
-    markedStyle: {
-      background: '#ffdde3',
-      border: '#f8adc8'
-    }
-  },
-  input: {
-    defaultStyle: {
-      background: '#44bb99',
-      border: '#009988'
-    },
-    text: '#000000',
-    shape: 'box',
-    highlightStyle: {
-      background: '#ee8866',
-      border: '#ee8866'
-    },
-    markedStyle: {
-      background: '#ffaabb',
-      border: '#ee3377'
-    }
-  },
-  preprocessing: {
-    defaultStyle: {
-      background: '#abe0d1',
-      border: '#8cd1c9'
-    },
-    text: '#000000',
-    shape: 'box',
-    highlightStyle: {
-      background: '#ee8866',
-      border: '#ee8866'
-    },
-    markedStyle: {
-      background: '#ffaabb',
-      border: '#ee3377'
-    }
-  },
-  hidden: {
-    defaultStyle: {
-      background: '#ffffff00',
-      border: '#ffffff00'
-    },
-    text: '#ffffff00',
-    shape: 'box',
-    highlightStyle: {
-      background: '#ffffff00',
-      border: '#ffffff00'
-    },
-    markedStyle: {
-      background: '#ffffff00',
-      border: '#ffffff00'
-    }
-  }
-};
 
 export default class Graph extends React.Component {
 
@@ -162,7 +34,7 @@ export default class Graph extends React.Component {
 
   render() {
     return (
-      <section id="graph" ref={ref => this.graphContainer = ref}>
+      <section className="component-graph" ref={ref => this.graphContainer = ref}>
         <canvas/>
       </section>
     );
@@ -188,9 +60,7 @@ export default class Graph extends React.Component {
     this.network.on('oncontext', (rightClickEvent) => {
       const nodeId = this.findNodeAt(rightClickEvent.event);
       if (nodeId) {
-        const node = this.networkNodes.get(nodeId);
-        this.toggleMarker(node);
-        this.networkNodes.update(node);
+        this.toggleMarker(nodeId);
       }
       rightClickEvent.event.preventDefault();
     });
@@ -294,24 +164,10 @@ export default class Graph extends React.Component {
     Object.values(dag.nodes)
       .filter(node => !!this.networkNodes.get(node.number))
       .forEach(node => {
-        const styleData = this.selectStyle(node, historyState);
         const networkNode = this.networkNodes.get(node.number);
-        networkNode.color = {
-          background: styleData.defaultStyle.background,
-          border: styleData.defaultStyle.border,
-          default: {
-            background: styleData.defaultStyle.background,
-            border: styleData.defaultStyle.border
-          },
-          highlight: {
-            background: styleData.highlightStyle.background,
-            border: styleData.highlightStyle.border
-          },
-          marked: {
-            background: styleData.markedStyle.background,
-            border: styleData.markedStyle.border
-          }
-        };
+        const styleData = this.selectStyle(node, historyState);
+
+        networkNode.color = this.getColorStyle(styleData);
         networkNode.font.color = styleData.text;
         networkNode.shape = styleData.shape;
         networkNodesToUpdate.push(networkNode);
@@ -325,23 +181,25 @@ export default class Graph extends React.Component {
 
     if (node.inference_rule === 'theory axiom') {
       if (node.active_time && node.active_time <= historyState) {
-        return REPRESENTATIONS['activeTheoryAxiom']
+        return styleTemplates.activeTheoryAxiom;
       } else if (node.passive_time && node.passive_time <= historyState) {
-        return REPRESENTATIONS['passiveTheoryAxiom']
+        return styleTemplates.passiveTheoryAxiom;
       }
     }
+
     if (node.is_from_preprocessing) {
-      return node.parents ? REPRESENTATIONS['preprocessing'] : REPRESENTATIONS['input'];
-    }
-    if (node.active_time && node.active_time <= historyState) {
-      return REPRESENTATIONS['active'];
-    } else if (node.passive_time && node.passive_time <= historyState) {
-      return REPRESENTATIONS['passive'];
-    } else if (node.new_time && node.new_time < historyState) {
-      return REPRESENTATIONS['new'];
+      return node.parents ? styleTemplates.preprocessing : styleTemplates.input;
     }
 
-    return REPRESENTATIONS['hidden']
+    if (node.active_time && node.active_time <= historyState) {
+      return styleTemplates.active;
+    } else if (node.passive_time && node.passive_time <= historyState) {
+      return styleTemplates.passive;
+    } else if (node.new_time && node.new_time < historyState) {
+      return styleTemplates.new;
+    }
+
+    return styleTemplates.hidden;
   };
 
   setStyle = (node, newStyleKey) => {
@@ -356,22 +214,7 @@ export default class Graph extends React.Component {
 
     return {
       id: node.number,
-      color: {
-        background: styleData.defaultStyle.background,
-        border: styleData.defaultStyle.border,
-        default: {
-          background: styleData.defaultStyle.background,
-          border: styleData.defaultStyle.border
-        },
-        highlight: {
-          background: styleData.highlightStyle.background,
-          border: styleData.highlightStyle.border
-        },
-        marked: {
-          background: styleData.markedStyle.background,
-          border: styleData.markedStyle.border
-        }
-      },
+      color: this.getColorStyle(styleData),
       font: {
         color: styleData.text
       },
@@ -395,6 +238,25 @@ export default class Graph extends React.Component {
     }
   };
 
+  getColorStyle = (styleData) => {
+    return {
+      background: styleData.defaultStyle.background,
+      border: styleData.defaultStyle.border,
+      default: {
+        background: styleData.defaultStyle.background,
+        border: styleData.defaultStyle.border
+      },
+      highlight: {
+        background: styleData.highlightStyle.background,
+        border: styleData.highlightStyle.border
+      },
+      marked: {
+        background: styleData.markedStyle.background,
+        border: styleData.markedStyle.border
+      }
+    }
+  };
+
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -410,7 +272,8 @@ export default class Graph extends React.Component {
       });
   };
 
-  toggleMarker(node) {
+  toggleMarker(nodeId) {
+    const node = this.networkNodes.get(nodeId);
     const markers = new Set(this.getStoredMarkers());
 
     if (markers.has(node.id)) {
@@ -421,6 +284,7 @@ export default class Graph extends React.Component {
       this.setStyle(node, 'marked');
     }
     this.storeMarkers(Array.from(markers));
+    this.networkNodes.update(node);
   };
 
   getStoredMarkers = () => {

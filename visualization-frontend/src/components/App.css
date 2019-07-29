@@ -1,21 +1,33 @@
 main {
-  background: #f8f9fb;
+  flex-direction: column;
   flex-grow: 1;
   padding: 1rem;
+
+  background: #f8f9fb;
 }
 
-main > .placeholder {
+main > .graph-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  height: calc(100% - 4rem);
+  height: calc(100% - 2.5rem);
   width: 100%;
   border-radius: 2px;
 
   background: #fff;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .05);
-  color: rgba(0,0,0,.5);
+  color: rgba(0, 0, 0, .5);
+}
+
+main > .slider-placeholder {
+  margin-top: 0.5rem;
+  height: 2rem;
+  width: 100%;
+
+  background: #f4f5f7;
+
+  border-radius: 2px;
 }
 
 aside {

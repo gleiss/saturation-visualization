@@ -34,9 +34,6 @@ export default class Slider extends React.Component {
         </button>
 
         <section className="wrapper">
-          <small style={{left: `${historyState * 100 / (historyLength - 1)}%`}}>
-            {historyState}
-          </small>
           <input
             ref={ref => this.slider = ref}
             type="range"

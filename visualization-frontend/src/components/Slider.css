@@ -1,43 +1,34 @@
 .component-slider {
-  display: flex;
   align-items: center;
+  display: flex;
+  height: 2rem;
+  margin-top: 0.5rem;
 }
 
 .component-slider .wrapper {
-  margin-bottom: 1rem;
+  display: flex;
   flex-grow: 1;
 }
 
 .component-slider input[type=range] {
-  width: 100%;
-}
-
-.component-slider #slideValue {
-  display: inline-block;
-  position: relative;
-
-  height: 1.5rem;
-  width: 3rem;
-  margin-left: -1.5rem;
-  line-height: 1.5rem;
-  text-align: center;
-}
-
-.component-slider #slideContainer {
   flex-grow: 1;
-  padding: 0.5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  width: 100%;
 }
 
 .component-slider button {
   height: 25px;
   width: 25px;
   margin: 0;
-  border: none;
-  border-radius: 2px;
+
   background-color: #d4d8d9;
   background-repeat: no-repeat;
   background-position: center;
+  border: none;
   color: transparent;
+
+  border-radius: 2px;
 }
 
 .component-slider button:hover {
@@ -58,4 +49,3 @@
   box-shadow: none;
   color: transparent;
 }
-
