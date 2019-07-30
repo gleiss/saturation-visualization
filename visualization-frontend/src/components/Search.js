@@ -44,7 +44,7 @@ export default class Search extends React.Component {
         .filter(node => node.label.includes(searchValue));
       foundNodes.sort((a, b) => a.label.length - b.label.length);
 
-      this.props.childrenonUpdateNodeSelection(foundNodes.map(node => node.id));
+      this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
 
       this.setState({
         foundNodes: foundNodes.filter(node => node.label !== 'Preproc')
