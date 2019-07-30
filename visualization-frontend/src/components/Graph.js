@@ -12,10 +12,6 @@ const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-z
 
 export default class Graph extends React.Component {
 
-  state = {
-    nodeSelection: []
-  };
-
   async componentDidMount() {
     await this.generateNetwork();
   }
@@ -25,10 +21,8 @@ export default class Graph extends React.Component {
       await this.generateNetwork();
     } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
       this.network.selectNodes(this.props.nodeSelection);
-      this.setState({nodeSelection: this.props.nodeSelection})
     } else if (this.props.historyState !== prevProps.historyState) {
       this.setHistoryStyles(this.props.historyState);
-      this.setState({historyState: this.props.historyState})
     }
   }
 

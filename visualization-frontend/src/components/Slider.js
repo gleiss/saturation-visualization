@@ -6,26 +6,10 @@ import icons from '../resources/icons/all.svg';
 
 export default class Slider extends React.Component {
 
-  state = {};
-
-  componentDidUpdate(prevProps) {
-    const changedProps = {};
-
-    if (this.props.dag !== prevProps.dag) {
-      changedProps.dag = this.props.dag;
-    }
-    if (this.props.historyState !== prevProps.historyState) {
-      changedProps.historyState = this.props.historyState;
-    }
-
-    if (Object.keys(changedProps).length) {
-      this.setState(changedProps);
-    }
-  }
-
   render() {
-    const {dag, historyState, onHistoryStateChange} = this.props;
-    const historyLength = Object.keys(dag.nodes).length;
+    const {historyState, onHistoryStateChange} = this.props;
+    
+    const historyLength = Object.keys(this.props.dag.nodes).length;
 
     return (
       <section className="component-slider">
