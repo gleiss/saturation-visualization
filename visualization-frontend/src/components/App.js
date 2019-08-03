@@ -10,6 +10,8 @@ class App extends Component {
     nodeSelection: []
   };
 
+  versions = [];
+
   render() {
     const {error, isLoading, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
     let main;
@@ -100,7 +102,7 @@ class App extends Component {
       .then(res => res.json())
       .then(
         (result) => {
-          sessionStorage.setItem('versions', '[]');
+          this.versions = [];
           this.setState({
             isLoading: false,
             dag: result.dag,
@@ -273,21 +275,11 @@ class App extends Component {
   }
 
   _storeVersion = (dag) => {
-    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
-
-    versions.push(dag);
-    sessionStorage.setItem('versions', JSON.stringify(versions));
+    this.versions.push(dag);
   };
 
   _unstoreLatestVersion = () => {
-    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
-    let latestVersion;
-
-    if (versions.length) {
-      latestVersion = versions.pop();
-      sessionStorage.setItem('versions', JSON.stringify(versions));
-    }
-    return latestVersion;
+    return this.versions.pop();
   };
 
 }
