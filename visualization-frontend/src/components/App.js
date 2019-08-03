@@ -13,7 +13,7 @@ class App extends Component {
   versions = [];
 
   render() {
-    const {error, isLoading, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
+    const {error, isLoading, dag, nodes, nodeSelection, historyLength, historyState, versionCount} = this.state;
     let main;
 
     if (dag) {
@@ -21,6 +21,7 @@ class App extends Component {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
+          historyLength={historyLength}
           historyState={historyState}
           onNetworkChange={this.setNetwork.bind(this)}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
@@ -78,7 +79,7 @@ class App extends Component {
   }
 
   updateHistoryState(historyState) {
-    this.setState({historyState: parseInt(historyState, 10)});
+    this.setState({historyState});
   }
 
 
@@ -106,7 +107,8 @@ class App extends Component {
           this.setState({
             isLoading: false,
             dag: result.dag,
-            historyState: Object.keys(result.dag.nodes).length,
+            historyLength: Object.keys(result.dag.nodes).length - 1,
+            historyState: Object.keys(result.dag.nodes).length - 1,
             versionCount: 0,
             error: false
           });
@@ -130,7 +132,8 @@ class App extends Component {
     if (latestDag) {
       this.setState({
         dag: latestDag,
-        historyState: Object.keys(latestDag.nodes).length,
+        historyLength: Object.keys(latestDag.nodes).length - 1,
+        historyState: Object.keys(latestDag.nodes).length - 1,
         versionCount: versionCount - 1
       });
     }
@@ -263,14 +266,15 @@ class App extends Component {
   }
 
   _cutDag(remainingNodeNumbers) {
-    const {dag, versionCount} = this.state;
+    const {dag, historyLength, historyState, versionCount} = this.state;
     const remainingNodes = {};
 
     remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
     this.setState({
       dag: {nodes: remainingNodes},
-      historyState: Object.keys(remainingNodes).length,
-      versionCount: versionCount + 1
+      versionCount: versionCount + 1,
+      historyLength: historyLength,
+      historyState: historyState
     });
   }
 

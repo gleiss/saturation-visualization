@@ -18,6 +18,7 @@ export default class Main extends React.Component {
         />
         <Slider
           dag={this.props.dag}
+          historyLength={this.props.historyLength}
           historyState={this.props.historyState}
           onHistoryStateChange={this.props.onHistoryStateChange}
         />
