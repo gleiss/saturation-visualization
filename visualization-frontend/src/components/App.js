@@ -10,15 +10,11 @@ class App extends Component {
     nodeSelection: []
   };
 
-  async componentDidMount() {
-    await this.fetchDag();
-  }
-
   render() {
-    const {error, isLoaded, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
+    const {error, isLoading, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
     let main;
 
-    if (isLoaded && dag) {
+    if (dag) {
       main = (
         <Main
           dag={dag}
@@ -29,11 +25,19 @@ class App extends Component {
           onHistoryStateChange={this.updateHistoryState.bind(this)}
         />
       );
-    } else {
+    } else if (isLoading || error) {
       const message = error ? `Error: ${error.message}` : 'Loading...';
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
+          <section className="slider-placeholder"/>
+        </main>
+      );
+    } else {
+      const message = 'Upload file →';
+      main = (
+        <main>
+          <section className="graph-placeholder upload-info">{message}</section>
           <section className="slider-placeholder"/>
         </main>
       );
@@ -78,30 +82,12 @@ class App extends Component {
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  fetchDag() {
-    fetch('http://localhost:5000')
-      .then(res => res.json())
-      .then(
-        (result) => {
-          sessionStorage.setItem('versions', '[]');
-          this.setState({
-            isLoaded: true,
-            dag: result.dag,
-            historyState: Object.keys(result.dag.nodes).length,
-            versionCount: 0,
-            error: false
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
-        }
-      )
-  }
-
   uploadFile(file) {
+    this.setState({
+      isLoading: true,
+      error: false
+    });
+
     fetch('http://localhost:5000', {
       method: 'POST',
       mode: 'cors',
@@ -116,7 +102,7 @@ class App extends Component {
         (result) => {
           sessionStorage.setItem('versions', '[]');
           this.setState({
-            isLoaded: true,
+            isLoading: false,
             dag: result.dag,
             historyState: Object.keys(result.dag.nodes).length,
             versionCount: 0,
@@ -125,7 +111,7 @@ class App extends Component {
         },
         (error) => {
           this.setState({
-            isLoaded: true,
+            isLoading: false,
             error
           });
         }

@@ -20,6 +20,15 @@ main > .graph-placeholder {
   color: rgba(0, 0, 0, .5);
 }
 
+main > .upload-info {
+  align-items: start;
+  justify-content: right;
+  padding: 1rem 1.5rem;
+  box-sizing: border-box;
+
+  color: #343539;
+}
+
 main > .slider-placeholder {
   margin-top: 0.5rem;
   height: 2rem;
