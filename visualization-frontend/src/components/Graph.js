@@ -12,7 +12,7 @@ const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-z
 
 export default class Graph extends React.Component {
 
-  markedNodes = [];
+  markers = [];
 
   async componentDidMount() {
     await this.generateNetwork();
