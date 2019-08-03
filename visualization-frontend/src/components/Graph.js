@@ -12,6 +12,8 @@ const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-z
 
 export default class Graph extends React.Component {
 
+  markedNodes = [];
+
   async componentDidMount() {
     await this.generateNetwork();
   }
@@ -255,9 +257,7 @@ export default class Graph extends React.Component {
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   applyStoredMarkers(availableNodes) {
-    const markers = this.getStoredMarkers();
-
-    markers
+    this.markers
       .map(nodeId => availableNodes.get(nodeId))
       .filter(node => !!node)
       .forEach(node => {
@@ -268,25 +268,17 @@ export default class Graph extends React.Component {
 
   toggleMarker(nodeId) {
     const node = this.networkNodes.get(nodeId);
-    const markers = new Set(this.getStoredMarkers());
+    const markerSet = new Set(this.markers);
 
-    if (markers.has(node.id)) {
-      markers.delete(node.id);
+    if (markerSet.has(node.id)) {
+      markerSet.delete(node.id);
       this.setStyle(node, 'default');
     } else {
-      markers.add(node.id);
+      markerSet.add(node.id);
       this.setStyle(node, 'marked');
     }
-    this.storeMarkers(Array.from(markers));
+    this.markers = Array.from(markerSet);
     this.networkNodes.update(node);
-  };
-
-  getStoredMarkers = () => {
-    return JSON.parse(sessionStorage.getItem('marked') || '[]');
-  };
-
-  storeMarkers = (markers) => {
-    sessionStorage.setItem('marked', JSON.stringify(markers));
   };
 
 }
