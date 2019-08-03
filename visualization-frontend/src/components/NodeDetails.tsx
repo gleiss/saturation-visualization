@@ -15,26 +15,14 @@ type State = {
 };
 export default class NodeDetails extends React.Component<Props, State> {
 
-  state = {nodeSelection: []};
-
-  componentDidUpdate(prevProps) {
-    if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      this.setState({
-        nodeSelection: this.props.nodeSelection
-      });
-    }
-  }
-
   render() {
-    const {nodeSelection} = this.state;
-    const {nodes} = this.props;
-    const oneNodeSelected = nodeSelection.length === 1;
+    const oneNodeSelected = this.props.nodeSelection.length === 1;
     const selectedNode = oneNodeSelected ?
-      nodes.get(nodeSelection[0]) :
+      this.props.nodes.get(this.props.nodeSelection[0]) :
       undefined;
     const nodeInfo = oneNodeSelected ?
       '1 node' :
-      `${nodeSelection.length} nodes`;
+      `${this.props.nodeSelection.length} nodes`;
 
     return (
       <section className={`component-node-details ${oneNodeSelected ? 'details' : 'overview'}`}>
@@ -51,5 +39,4 @@ export default class NodeDetails extends React.Component<Props, State> {
       </section>
     );
   }
-
 }

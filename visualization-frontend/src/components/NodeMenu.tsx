@@ -15,26 +15,13 @@ type State = {
 };
 export default class NodeMenu extends React.Component<Props, State> {
 
-  state = {nodeSelection: []};
-
-  componentDidUpdate(prevProps) {
-    if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      this.setState({
-        nodeSelection: this.props.nodeSelection
-      });
-    }
-  }
-
   render() {
-    const {nodeSelection} = this.state;
-    const {onSelectParents, onSelectChildren, onFindCommonConsequences} = this.props;
-
     return (
       <section className="component-node-menu">
         <button
           title="Select parents of selected nodes"
-          disabled={!nodeSelection.length}
-          onClick={onSelectParents}
+          disabled={!this.props.nodeSelection.length}
+          onClick={this.props.onSelectParents}
         >
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#node-parents`}/>
@@ -42,8 +29,8 @@ export default class NodeMenu extends React.Component<Props, State> {
         </button>
         <button
           title="Select children of selected nodes"
-          disabled={!nodeSelection.length}
-          onClick={onSelectChildren}
+          disabled={!this.props.nodeSelection.length}
+          onClick={this.props.onSelectChildren}
         >
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#node-children`}/>
@@ -51,8 +38,8 @@ export default class NodeMenu extends React.Component<Props, State> {
         </button>
         <button
           title="Find common consequences of selected nodes"
-          disabled={nodeSelection.length < 2}
-          onClick={onFindCommonConsequences}
+          disabled={this.props.nodeSelection.length < 2}
+          onClick={this.props.onFindCommonConsequences}
         >
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#node-consequences`}/>

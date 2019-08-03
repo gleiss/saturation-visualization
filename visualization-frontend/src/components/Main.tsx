@@ -28,41 +28,21 @@ export default class Main extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.dag !== prevProps.dag) {
-      this.setState({
-        dag: this.props.dag,
-        nodeSelection: this.props.nodeSelection,
-        historyState: this.props.historyState
-      });
-    } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      this.setState({
-        nodeSelection: this.props.nodeSelection
-      });
-    } else if (this.props.historyState !== prevProps.historyState) {
-      this.setState({
-        historyState: this.props.historyState
-      });
-    }
-  }
-
   render() {
-    const {dag, nodeSelection, historyState} = this.state;
-    const {onNetworkChange, onNodeSelectionChange, onHistoryStateChange} = this.props;
-
     return (
       <main>
         <Graph
-          dag={dag}
-          nodeSelection={nodeSelection}
-          historyState={historyState}
-          onNodeSelectionChange={onNodeSelectionChange}
-          onNetworkChange={onNetworkChange}
+          dag={this.props.dag}
+          nodeSelection={this.props.nodeSelection}
+          historyState={this.props.historyState}
+          onNodeSelectionChange={this.props.onNodeSelectionChange}
+          onNetworkChange={this.props.onNetworkChange}
         />
         <Slider
-          dag={dag}
-          historyState={historyState}
-          onHistoryStateChange={onHistoryStateChange}
+          dag={this.props.dag}
+          historyLength={this.props.historyLength}
+          historyState={this.props.historyState}
+          onHistoryStateChange={this.props.onHistoryStateChange}
         />
       </main>
     );

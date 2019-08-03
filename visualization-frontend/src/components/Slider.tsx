@@ -24,22 +24,8 @@ export default class Slider extends React.Component<Props, State> {
   };
   private slider;
 
-  componentDidUpdate(prevProps) {
-    if (this.props.dag !== prevProps.dag) {
-      this.setState({
-        dag: this.props.dag,
-        historyState: this.props.historyState
-      });
-    } else if (this.props.historyState !== prevProps.historyState) {
-      this.setState({
-        historyState: this.props.historyState
-      });
-    }
-  }
-
   render() {
-    const {dag, historyState, onHistoryStateChange} = this.props;
-    const historyLength = Object.keys(dag.nodes).length;
+    const {historyLength, historyState, onHistoryStateChange} = this.props;
 
     return (
       <section className="component-slider">
@@ -55,13 +41,13 @@ export default class Slider extends React.Component<Props, State> {
             ref={ref => this.slider = ref}
             type="range"
             min={0}
-            max={historyLength - 1}
+            max={historyLength}
             value={historyState}
-            onChange={() => onHistoryStateChange(this.slider.value)}
+            onChange={() => onHistoryStateChange(parseInt(this.slider.value, 10))}
           />
         </section>
 
-        <button disabled={historyState >= historyLength - 1} onClick={() => onHistoryStateChange(historyState + 1)}>
+        <button disabled={historyState >= historyLength} onClick={() => onHistoryStateChange(historyState + 1)}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#history-forward`}/>
           </svg>

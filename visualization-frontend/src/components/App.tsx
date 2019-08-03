@@ -34,30 +34,37 @@ class App extends Component<{}, State> {
     isLoaded: false
   };
 
-  async componentDidMount() {
-    await this.fetchDag();
-  }
+  versions = [];
 
   render() {
-    const {error, isLoaded, dag, nodes, nodeSelection, historyState, versionCount} = this.state;
+    const {error, isLoading, dag, nodes, nodeSelection, historyLength, historyState, versionCount} = this.state;
     let main;
 
-    if (isLoaded && dag) {
+    if (dag) {
       main = (
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
+          historyLength={historyLength}
           historyState={historyState}
           onNetworkChange={this.setNetwork.bind(this)}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
         />
       );
-    } else {
+    } else if (isLoading || error) {
       const message = error ? `Error: ${error.message}` : 'Loading...';
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
+          <section className="slider-placeholder"/>
+        </main>
+      );
+    } else {
+      const message = 'Upload file →';
+      main = (
+        <main>
+          <section className="graph-placeholder upload-info">{message}</section>
           <section className="slider-placeholder"/>
         </main>
       );
@@ -96,36 +103,18 @@ class App extends Component<{}, State> {
   }
 
   updateHistoryState(historyState) {
-    this.setState({historyState: parseInt(historyState, 10)});
+    this.setState({historyState});
   }
 
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  fetchDag() {
-    fetch('http://localhost:5000')
-      .then(res => res.json())
-      .then(
-        (result) => {
-          sessionStorage.setItem('versions', '[]');
-          this.setState({
-            isLoaded: true,
-            dag: result.dag,
-            historyState: Object.keys(result.dag.nodes).length,
-            versionCount: 0,
-            error: false
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
-        }
-      )
-  }
-
   uploadFile(file) {
+    this.setState({
+      isLoading: true,
+      error: false
+    });
+
     fetch('http://localhost:5000', {
       method: 'POST',
       mode: 'cors',
@@ -138,18 +127,19 @@ class App extends Component<{}, State> {
       .then(res => res.json())
       .then(
         (result) => {
-          sessionStorage.setItem('versions', '[]');
+          this.versions = [];
           this.setState({
-            isLoaded: true,
+            isLoading: false,
             dag: result.dag,
-            historyState: Object.keys(result.dag.nodes).length,
+            historyLength: Object.keys(result.dag.nodes).length - 1,
+            historyState: Object.keys(result.dag.nodes).length - 1,
             versionCount: 0,
             error: false
           });
         },
         (error) => {
           this.setState({
-            isLoaded: true,
+            isLoading: false,
             error
           });
         }
@@ -166,7 +156,8 @@ class App extends Component<{}, State> {
     if (latestDag) {
       this.setState({
         dag: latestDag,
-        historyState: Object.keys(latestDag.nodes).length,
+        historyLength: Object.keys(latestDag.nodes).length - 1,
+        historyState: Object.keys(latestDag.nodes).length - 1,
         versionCount: versionCount - 1
       });
     }
@@ -299,33 +290,24 @@ class App extends Component<{}, State> {
   }
 
   private cutDag(remainingNodeNumbers) {
-    const {dag, versionCount} = this.state;
+    const {dag, historyLength, historyState, versionCount} = this.state;
     const remainingNodes = {};
 
     remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
     this.setState({
       dag: {nodes: remainingNodes},
-      historyState: Object.keys(remainingNodes).length,
-      versionCount: versionCount + 1
+      versionCount: versionCount + 1,
+      historyLength: historyLength,
+      historyState: historyState
     });
   }
 
   private storeVersion = (dag) => {
-    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
-
-    versions.push(dag);
-    sessionStorage.setItem('versions', JSON.stringify(versions));
+    this.versions.push(dag);
   };
 
   private unstoreLatestVersion = () => {
-    const versions = JSON.parse(sessionStorage.getItem('versions') || '[]');
-    let latestVersion;
-
-    if (versions.length) {
-      latestVersion = versions.pop();
-      sessionStorage.setItem('versions', JSON.stringify(versions));
-    }
-    return latestVersion;
+    return this.versions.pop();
   };
 
 }

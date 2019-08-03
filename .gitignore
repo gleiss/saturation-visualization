@@ -116,3 +116,6 @@ node_modules/
 gen/
 graph.plain
 yarn.lock
+
+# examples
+*.proof

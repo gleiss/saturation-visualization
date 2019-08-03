@@ -29,6 +29,7 @@ export default class Graph extends React.Component<Props, State> {
     nodeSelection: [],
     historyState: 0
   };
+  markers = [];
   private network;
   private networkNodes;
   private graphContainer;
@@ -42,10 +43,8 @@ export default class Graph extends React.Component<Props, State> {
       await this.generateNetwork();
     } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
       this.network.selectNodes(this.props.nodeSelection);
-      this.setState({nodeSelection: this.props.nodeSelection})
     } else if (this.props.historyState !== prevProps.historyState) {
       this.setHistoryStyles(this.props.historyState);
-      this.setState({historyState: this.props.historyState})
     }
   }
 
@@ -275,9 +274,7 @@ export default class Graph extends React.Component<Props, State> {
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   private applyStoredMarkers(availableNodes) {
-    const markers = this.getStoredMarkers();
-
-    markers
+    this.markers
       .map(nodeId => availableNodes.get(nodeId))
       .filter(node => !!node)
       .forEach(node => {
@@ -288,25 +285,17 @@ export default class Graph extends React.Component<Props, State> {
 
   private toggleMarker(nodeId) {
     const node = this.networkNodes.get(nodeId);
-    const markers = new Set(this.getStoredMarkers());
+    const markerSet = new Set(this.markers);
 
-    if (markers.has(node.id)) {
-      markers.delete(node.id);
+    if (markerSet.has(node.id)) {
+      markerSet.delete(node.id);
       this.setStyle(node, 'default');
     } else {
-      markers.add(node.id);
+      markerSet.add(node.id);
       this.setStyle(node, 'marked');
     }
-    this.storeMarkers(Array.from(markers));
+    this.markers = Array.from(markerSet);
     this.networkNodes.update(node);
-  };
-
-  private getStoredMarkers = () => {
-    return JSON.parse(sessionStorage.getItem('marked') || '[]');
-  };
-
-  private storeMarkers = (markers) => {
-    sessionStorage.setItem('marked', JSON.stringify(markers));
   };
 
 }

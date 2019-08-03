@@ -17,18 +17,9 @@ type State = {
 export default class Search extends React.Component<Props, State> {
 
   state = {
-    nodes: {},
     foundNodes: []
   };
   private searchField;
-
-  componentDidUpdate(prevProps) {
-    if (this.props.nodes !== prevProps.nodes) {
-      this.setState({
-        nodes: this.props.nodes
-      });
-    }
-  }
 
   render() {
     const {foundNodes} = this.state;
@@ -57,17 +48,15 @@ export default class Search extends React.Component<Props, State> {
   // SEARCH ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   search() {
-    const {nodes} = this.state;
-    const {onUpdateNodeSelection} = this.props;
     const searchValue = this.searchField.value;
 
     if (searchValue) {
       let foundNodes = Object
-        .values(nodes._data)
+        .values(this.props.nodes._data)
         .filter(node => node.label.includes(searchValue));
       foundNodes.sort((a, b) => a.label.length - b.label.length);
 
-      onUpdateNodeSelection(foundNodes.map(node => node.id));
+      this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
 
       this.setState({
         foundNodes: foundNodes.filter(node => node.label !== 'Preproc')
@@ -80,10 +69,8 @@ export default class Search extends React.Component<Props, State> {
   }
 
   toListItem = (node) => {
-    const {onUpdateNodeSelection} = this.props;
-
     return (
-      <li key={node.id} onClick={() => onUpdateNodeSelection([node.id])}>
+      <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>
         ${node.label}
       </li>
     );
