@@ -1,7 +1,5 @@
 import * as React from 'react';
 import {DataSet, IdType, Network} from 'vis'
-import * as Viz from 'viz.js';
-import {Module, render} from 'viz.js/full.render.js';
 
 import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
@@ -10,6 +8,9 @@ import NetworkEdge from '../model/network/network-edge';
 import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css'
 
+
+const Viz = require('viz.js');
+const {Module, render} = require('viz.js/full.render.js');
 
 const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
