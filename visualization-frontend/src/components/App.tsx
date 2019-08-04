@@ -1,22 +1,22 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {DataSet, Edge, IdType, Network} from 'vis';
+import {DataSet, Network} from 'vis';
 
+import NetworkEdge from '../model/network/network-edge';
 import NetworkNode from '../model/network/network-node';
 import Main from './Main';
 import Aside from './Aside';
 import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
-import NetworkEdge from '../model/network/network-edge';
 
 
 type State = {
   dag: Dag,
   network: Network | null,
   nodes: DataSet<NetworkNode>,
-  edges: DataSet<Edge>,
-  nodeSelection: IdType[],
+  edges: DataSet<NetworkEdge>,
+  nodeSelection: number[],
   historyLength: number,
   historyState: number,
   versionCount: number,
@@ -110,11 +110,11 @@ class App extends Component<{}, State> {
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<Edge>) {
+  setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) {
     this.setState({network, nodes, edges});
   }
 
-  updateNodeSelection(nodeSelection: IdType[]) {
+  updateNodeSelection(nodeSelection: number[]) {
     this.setState({nodeSelection});
   }
 
@@ -149,8 +149,8 @@ class App extends Component<{}, State> {
           this.setState({
             dag,
             nodeSelection: [],
-            historyLength: Object.keys(dag.nodes).length - 1,
-            historyState: Object.keys(dag.nodes).length - 1,
+            historyLength: dag.numberOfHistorySteps() - 1,
+            historyState: dag.numberOfHistorySteps() - 1,
             versionCount: 0,
             error: false,
             isLoaded: true,

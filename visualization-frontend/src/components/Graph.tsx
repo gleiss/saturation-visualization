@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {DataSet, IdType, Network} from 'vis'
+import * as Viz from 'viz.js';
+import {Module, render} from 'viz.js/full.render.js';
 
 import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
@@ -9,34 +11,35 @@ import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-
 import './Graph.css'
 
 
-const Viz = require('viz.js');
-const {Module, render} = require('viz.js/full.render.js');
-
 const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
 
 type Props = {
-  dag: Dag | null,
-  nodeSelection: IdType[],
+  dag: Dag,
+  nodeSelection: number[],
   historyState: number,
   onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<any>) => void,
-  onNodeSelectionChange: (selection: IdType[]) => void
+  onNodeSelectionChange: (selection: number[]) => void
 };
 type State = {
-  dag: null,
-  nodeSelection: IdType[],
+  dag: Dag,
+  nodeSelection: number[],
   historyState: number
 };
 export default class Graph extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
 
-  state = {
-    dag: null,
-    nodeSelection: [],
-    historyState: 0
-  };
+    this.state = {
+      dag: props.dag,
+      nodeSelection: props.nodeSelection,
+      historyState: props.historyState
+    }
+  }
+
   private markers: IdType[] = [];
   private network: Network | null = null;
-  private networkNodes: DataSet<NetworkNode> | null = null;
+  private networkNodes: DataSet<NetworkNode> = new DataSet([]);
   private graphContainer = React.createRef<HTMLDivElement>();
 
   async componentDidMount() {
@@ -70,10 +73,12 @@ export default class Graph extends React.Component<Props, State> {
       if (this.network) {
         this.network.destroy();
       }
+
       this.network = new Network(this.graphContainer.current, {
         nodes: this.networkNodes,
         edges: networkEdges
       }, this.getNetworkOptions());
+
       this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
       this.network.on('oncontext', (rightClickEvent) => {
         const nodeId = this.findNodeAt(rightClickEvent.event);
@@ -82,6 +87,7 @@ export default class Graph extends React.Component<Props, State> {
         }
         rightClickEvent.event.preventDefault();
       });
+
       this.applyStoredMarkers(this.networkNodes);
 
       onNetworkChange(this.network, this.networkNodes, networkEdges);
@@ -114,10 +120,7 @@ export default class Graph extends React.Component<Props, State> {
   }
 
   findNodeAt(clickPosition: { layerX: number, layerY: number }): IdType {
-    if (!this.network) {
-      return '';
-    }
-    return this.network.getNodeAt({
+    return this.network!.getNodeAt({
       x: clickPosition.layerX,
       y: clickPosition.layerY
     });

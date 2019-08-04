@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DataSet, IdType} from 'vis';
+import {DataSet} from 'vis';
 
 import NetworkNode from '../model/network/network-node';
 import './NodeDetails.css';
@@ -7,7 +7,7 @@ import './NodeDetails.css';
 
 type Props = {
   nodes: DataSet<NetworkNode> | null,
-  nodeSelection: IdType[]
+  nodeSelection: number[]
 };
 export default class NodeDetails extends React.Component<Props, {}> {
 

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {IdType} from 'vis';
 
 import './GraphMenu.css';
 
@@ -7,7 +6,7 @@ import './GraphMenu.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
-  nodeSelection: IdType[],
+  nodeSelection: number[],
   versionCount: number,
   onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
@@ -24,7 +23,7 @@ export default class GraphMenu extends React.Component<Props, {}> {
         <input
           ref={this.fileUpload}
           type="file"
-          onChange={this.updateProofFile}
+          onChange={this.updateProofFile.bind(this)}
         />
         <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
           <svg viewBox="0 0 24 24" className="icon big">

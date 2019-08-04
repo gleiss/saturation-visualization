@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DataSet, IdType} from 'vis';
+import {DataSet} from 'vis';
 
 import NetworkNode from '../model/network/network-node';
 import GraphMenu from './GraphMenu';
@@ -9,9 +9,9 @@ import NodeDetails from './NodeDetails';
 
 type Props = {
   nodes: DataSet<NetworkNode> | null,
-  nodeSelection: IdType[],
+  nodeSelection: number[],
   versionCount: number,
-  onUpdateNodeSelection: (selection: IdType[]) => void,
+  onUpdateNodeSelection: (selection: number[]) => void,
   onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,

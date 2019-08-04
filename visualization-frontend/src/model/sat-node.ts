@@ -1,4 +1,5 @@
 export default class SatNode {
+
   id: number;
   clause: string;
   inferenceRule: string;

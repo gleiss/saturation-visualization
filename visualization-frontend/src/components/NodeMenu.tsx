@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {IdType} from 'vis';
 
 import './NodeMenu.css';
 
@@ -7,7 +6,7 @@ import './NodeMenu.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
-  nodeSelection: IdType[],
+  nodeSelection: number[],
   onSelectParents: () => void,
   onSelectChildren: () => void,
   onFindCommonConsequences: () => void

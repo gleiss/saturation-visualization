@@ -1,6 +1,7 @@
 import SatNode from './sat-node';
 
 export default class Dag {
+
   nodes: { [key: number]: SatNode };
 
   constructor(nodes: { [key: number]: SatNode }) {

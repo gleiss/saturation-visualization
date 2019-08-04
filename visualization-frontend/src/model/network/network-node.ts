@@ -1,10 +1,9 @@
-import {IdType} from 'vis';
 import {ColorStyle, FontStyle} from './network-style';
 
 
 export default class NetworkNode {
 
-  id: IdType;
+  id: number;
   color: ColorStyle;
   font: FontStyle;
   label: string;
@@ -14,7 +13,7 @@ export default class NetworkNode {
   y: number;
 
   constructor(
-    id: IdType,
+    id: number,
     color: ColorStyle,
     font: FontStyle,
     label: string,

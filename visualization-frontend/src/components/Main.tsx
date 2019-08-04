@@ -1,23 +1,25 @@
 import * as React from 'react';
-import {DataSet, Edge, IdType, Network} from 'vis';
+import {DataSet, Network} from 'vis';
 
+import NetworkEdge from '../model/network/network-edge';
 import NetworkNode from '../model/network/network-node';
+import Dag from '../model/dag';
 import Slider from './Slider';
 import Graph from './Graph';
 
 
 type Props = {
-  dag: any,
-  nodeSelection: IdType[],
+  dag: Dag,
+  nodeSelection: number[],
   historyLength: number,
   historyState: number,
-  onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<Edge>) => void,
-  onNodeSelectionChange: (selection: IdType[]) => void,
+  onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) => void,
+  onNodeSelectionChange: (selection: number[]) => void,
   onHistoryStateChange: (newState: number) => void
 };
 type State = {
-  dag: any,
-  nodeSelection: IdType[],
+  dag: Dag,
+  nodeSelection: number[],
   historyLength: number,
   historyState: number
 };

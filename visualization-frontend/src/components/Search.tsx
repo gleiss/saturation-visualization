@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DataSet, IdType} from 'vis';
+import {DataSet} from 'vis';
 
 import NetworkNode from '../model/network/network-node';
 import './Search.css';
@@ -7,7 +7,7 @@ import './Search.css';
 
 type Props = {
   nodes: DataSet<NetworkNode> | null,
-  onUpdateNodeSelection: (selection: IdType[]) => void
+  onUpdateNodeSelection: (selection: number[]) => void
 };
 type State = {
   foundNodes: NetworkNode[]

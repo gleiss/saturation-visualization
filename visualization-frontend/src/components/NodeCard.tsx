@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DataSet, IdType} from 'vis';
+import {DataSet} from 'vis';
 
 import NetworkNode from '../model/network/network-node';
 import NodeMenu from './NodeMenu';
@@ -9,8 +9,8 @@ import './NodeCard.css';
 
 type Props = {
   nodes: DataSet<NetworkNode> | null,
-  nodeSelection: IdType[],
-  onUpdateNodeSelection: (selection: IdType[]) => void,
+  nodeSelection: number[],
+  onUpdateNodeSelection: (selection: number[]) => void,
   onSelectParents: () => void,
   onSelectChildren: () => void,
   onFindCommonConsequences: () => void
