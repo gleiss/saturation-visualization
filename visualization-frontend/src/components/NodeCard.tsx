@@ -1,28 +1,21 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
+import {DataSet, IdType} from 'vis';
 
-import {NetworkNode} from '../model/networkNode';
-
-import './NodeCard.css';
+import NetworkNode from '../model/network/network-node';
 import NodeMenu from './NodeMenu';
 import Search from './Search';
+import './NodeCard.css';
 
 
 type Props = {
-  nodes: DataSet<NetworkNode>,
-  nodeSelection: number[],
-  onUpdateNodeSelection,
-  onSelectParents,
-  onSelectChildren,
-  onFindCommonConsequences
+  nodes: DataSet<NetworkNode> | null,
+  nodeSelection: IdType[],
+  onUpdateNodeSelection: (selection: IdType[]) => void,
+  onSelectParents: () => void,
+  onSelectChildren: () => void,
+  onFindCommonConsequences: () => void
 };
-type State = {
-  nodes: DataSet<NetworkNode>,
-  nodeSelection: number[]
-};
-export default class NodeCard extends React.Component<Props, State> {
-
-  state = {nodes: [], nodeSelection: []};
+export default class NodeCard extends React.Component<Props, {}> {
 
   render() {
     return (

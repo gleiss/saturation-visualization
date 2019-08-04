@@ -1,9 +1,13 @@
 import * as React from 'react';
+import {DataSet, IdType, Network} from 'vis'
 import * as Viz from 'viz.js';
 import {Module, render} from 'viz.js/full.render.js';
-import {DataSet, Network} from 'vis';
 
-import {Node} from '../model/node';
+import Dag from '../model/dag';
+import SatNode from '../model/sat-node';
+import NetworkNode from '../model/network/network-node';
+import NetworkEdge from '../model/network/network-edge';
+import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css';
 
 
@@ -11,15 +15,15 @@ const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
 
 type Props = {
-  dag: {nodes: {key: Node}},
-  nodeSelection: number[],
+  dag: Dag | null,
+  nodeSelection: IdType[],
   historyState: number,
-  onNetworkChange,
-  onNodeSelectionChange
+  onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<any>) => void,
+  onNodeSelectionChange: (selection: IdType[]) => void
 };
 type State = {
-  dag: {nodes: {key: Node}},
-  nodeSelection: number[],
+  dag: null,
+  nodeSelection: IdType[],
   historyState: number
 };
 export default class Graph extends React.Component<Props, State> {
@@ -29,28 +33,24 @@ export default class Graph extends React.Component<Props, State> {
     nodeSelection: [],
     historyState: 0
   };
-  markers = [];
-  private network;
-  private networkNodes;
-  private graphContainer;
+  private markers: IdType[] = [];
+  private network: Network | null = null;
+  private networkNodes: DataSet<NetworkNode> | null = null;
+  private graphContainer = React.createRef<HTMLDivElement>();
 
   async componentDidMount() {
     await this.generateNetwork();
   }
 
-  async componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
       await this.generateNetwork();
-    } else if (this.props.nodeSelection !== prevProps.nodeSelection) {
-      this.network.selectNodes(this.props.nodeSelection);
-    } else if (this.props.historyState !== prevProps.historyState) {
-      this.setHistoryStyles(this.props.historyState);
     }
   }
 
   render() {
     return (
-      <section className="component-graph" ref={ref => this.graphContainer = ref}>
+      <section className="component-graph" ref={this.graphContainer}>
         <canvas/>
       </section>
     );
@@ -65,56 +65,64 @@ export default class Graph extends React.Component<Props, State> {
     this.networkNodes = new DataSet(graph.networkNodes);
     const networkEdges = new DataSet(graph.networkEdges);
 
-    if (this.network) {
-      this.network.destroy();
-    }
-    this.network = new Network(this.graphContainer, {
-      nodes: this.networkNodes,
-      edges: networkEdges
-    }, this.getNetworkOptions());
-    this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
-    this.network.on('oncontext', (rightClickEvent) => {
-      const nodeId = this.findNodeAt(rightClickEvent.event);
-      if (nodeId) {
-        this.toggleMarker(nodeId);
+    if (this.graphContainer.current) {
+      if (this.network) {
+        this.network.destroy();
       }
-      rightClickEvent.event.preventDefault();
-    });
-    this.applyStoredMarkers(this.networkNodes);
+      this.network = new Network(this.graphContainer.current, {
+        nodes: this.networkNodes,
+        edges: networkEdges
+      }, this.getNetworkOptions());
+      this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
+      this.network.on('oncontext', (rightClickEvent) => {
+        const nodeId = this.findNodeAt(rightClickEvent.event);
+        if (nodeId) {
+          this.toggleMarker(nodeId);
+        }
+        rightClickEvent.event.preventDefault();
+      });
+      this.applyStoredMarkers(this.networkNodes);
 
-    onNetworkChange(this.network, this.networkNodes, networkEdges);
+      onNetworkChange(this.network, this.networkNodes, networkEdges);
+    }
   }
 
-  async generateNetworkData() {
+  async generateNetworkData(): Promise<{ networkNodes: NetworkNode[], networkEdges: NetworkEdge[] }> {
     const {dag, historyState} = this.props;
-    const networkNodes = [];
-    const networkEdges = [];
-    const positions = await this.computePositions(Object.values(dag.nodes));
+    const networkNodes: NetworkNode[] = [];
+    const networkEdges: NetworkEdge[] = [];
+    const positions = await this.computePositions(dag ? Object.values(dag.nodes) : []);
 
     positions.forEach(position => {
-      const node = dag.nodes[position.number];
+      const node = dag ? dag.get(position.id) : null;
       if (node) {
         networkNodes.push(this.toNetworkNode(node, position, historyState));
 
-        const edgesVisible = node.is_from_preprocessing || (node.new_time && node.new_time <= historyState);
+        const edgesVisible = node.isFromPreprocessing || !!(node.newTime && node.newTime <= historyState);
         node
           .parents
-          .filter(parentNumber => !!dag.nodes[parentNumber])
-          .forEach(parentNumber => networkEdges.push(this.toNetworkEdge(parentNumber, node.number, edgesVisible)));
+          .forEach(parentId => {
+            if (dag && dag.get(parentId)) {
+              networkEdges.push(this.toNetworkEdge(parentId, node.id, edgesVisible))
+            }
+          });
       }
     });
 
     return {networkNodes, networkEdges};
   }
 
-  findNodeAt(clickPosition) {
+  findNodeAt(clickPosition: { layerX: number, layerY: number }): IdType {
+    if (!this.network) {
+      return '';
+    }
     return this.network.getNodeAt({
       x: clickPosition.layerX,
       y: clickPosition.layerY
     });
   }
 
-  getNetworkOptions = () => {
+  getNetworkOptions = (): any => {
     return {
       physics: false,
       interaction: {
@@ -126,44 +134,44 @@ export default class Graph extends React.Component<Props, State> {
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  toDotString(nodes: Node[]) {
-    const dotStrings = [];
+  toDotString(nodes: SatNode[]): string {
+    const dotStrings: string[] = [];
 
     nodes.forEach(node => {
-      dotStrings.push(`${node.number} [label="${node.clause}"]`);
+      dotStrings.push(`${node.id} [label="${node.clause}"]`);
       node
         .parents
-        .forEach(parent => dotStrings.push(`${parent} -> ${node.number}`));
+        .forEach(parent => dotStrings.push(`${parent} -> ${node.id}`));
     });
 
     return `digraph { ${dotStrings.join('; ')} }`;
   };
 
-  async toGraphLayout(nodes) {
+  async toGraphLayout(nodes: SatNode[]) {
     let viz = new Viz({Module, render});
 
     return viz
       .renderString(this.toDotString(nodes), {format: 'plain'})
-      .then(result => {
+      .then((result: any) => {
         return result;
       })
-      .catch(error => {
+      .catch((error: any) => {
         viz = new Viz({Module, render});
         console.error(error);
       });
   };
 
-  async computePositions(nodes) {
+  async computePositions(nodes: SatNode[]): Promise<{ id: number, x: number, y: number }[]> {
     const graphLayout = await this.toGraphLayout(nodes);
     return graphLayout
       .split('\n')
-      .filter(line => line.startsWith('node'))
-      .map(line => line.matchAll(PLAIN_PATTERN).next().value)
-      .filter(match => !!match)
-      .map(match => {
+      .filter((line: string) => line.startsWith('node'))
+      .map((line: string) => line.matchAll(PLAIN_PATTERN).next().value)
+      .filter((match: any[]) => !!match)
+      .map((match: any[]) => {
         const [, number, x, y] = match;
         return {
-          number: parseInt(number, 10),
+          id: parseInt(number, 10),
           x: parseFloat(x),
           y: parseFloat(y)
         };
@@ -173,129 +181,103 @@ export default class Graph extends React.Component<Props, State> {
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  setHistoryStyles(historyState) {
-    const {dag} = this.props;
-    const networkNodesToUpdate = [];
-
-    Object.values(dag.nodes)
-      .filter(node => !!this.networkNodes.get(node.number))
-      .forEach(node => {
-        const networkNode = this.networkNodes.get(node.number);
-        const styleData = this.selectStyle(node, historyState);
-
-        networkNode.color = this.getColorStyle(styleData);
-        networkNode.font.color = styleData.text;
-        networkNode.shape = styleData.shape;
-        networkNodesToUpdate.push(networkNode);
-      });
-    this.networkNodes.update(networkNodesToUpdate);
-  }
-
-  selectStyle = (node, historyState) => {
-    if (node.inference_rule === 'theory axiom') {
-      if (node.active_time && node.active_time <= historyState) {
+  selectStyle = (node: SatNode, historyState: number): any => {
+    if (node.inferenceRule === 'theory axiom') {
+      if (node.activeTime && node.activeTime <= historyState) {
         return styleTemplates.activeTheoryAxiom;
-      } else if (node.passive_time && node.passive_time <= historyState) {
+      } else if (node.passiveTime && node.passiveTime <= historyState) {
         return styleTemplates.passiveTheoryAxiom;
       }
     }
 
-    if (node.is_from_preprocessing) {
+    if (node.isFromPreprocessing) {
       return node.parents ? styleTemplates.preprocessing : styleTemplates.input;
     }
 
-    if (node.active_time && node.active_time <= historyState) {
+    if (node.activeTime && node.activeTime <= historyState) {
       return styleTemplates.active;
-    } else if (node.passive_time && node.passive_time <= historyState) {
+    } else if (node.passiveTime && node.passiveTime <= historyState) {
       return styleTemplates.passive;
-    } else if (node.new_time && node.new_time < historyState) {
+    } else if (node.newTime && node.newTime < historyState) {
       return styleTemplates.new;
     }
 
     return styleTemplates.hidden;
   };
 
-  setStyle = (node, newStyleKey) => {
-    const newStyle = node.color[newStyleKey];
+  setStyle = (node: NetworkNode, newStyleKey: string) => {
+    const newStyle = node.color.get(newStyleKey);
 
     node.color.background = newStyle.background;
     node.color.border = newStyle.border;
   };
 
-  toNetworkNode = (node, position, historyState) => {
+  toNetworkNode = (node: SatNode, position: { x: number, y: number }, historyState: number): NetworkNode => {
     const styleData = this.selectStyle(node, historyState);
 
     return {
-      id: node.number,
+      id: node.id,
       color: this.getColorStyle(styleData),
-      font: {
-        color: styleData.text
-      },
+      font: new FontStyle(styleData.text),
       label: node.clause,
-      rule: node.inference_rule,
+      rule: node.inferenceRule,
       shape: styleData.shape,
       x: Math.round(position.x * -70),
       y: Math.round(position.y * -120)
     }
   };
 
-  toNetworkEdge = (fromNode, toNode, visible) => {
+  toNetworkEdge = (fromNode: number, toNode: number, visible: boolean): NetworkEdge => {
     return {
       arrows: 'to',
-      color: {
-        opacity: visible ? 1.0 : 0.0,
-        color: '#dddddd'
-      },
+      color: new EdgeColor(visible ? 1.0 : 0.0, '#dddddd'),
       from: fromNode,
       to: toNode
     }
   };
 
-  getColorStyle = (styleData) => {
-    return {
-      background: styleData.defaultStyle.background,
-      border: styleData.defaultStyle.border,
-      default: {
-        background: styleData.defaultStyle.background,
-        border: styleData.defaultStyle.border
-      },
-      highlight: {
-        background: styleData.highlightStyle.background,
-        border: styleData.highlightStyle.border
-      },
-      marked: {
-        background: styleData.markedStyle.background,
-        border: styleData.markedStyle.border
-      }
-    }
+  getColorStyle = (styleData: any): ColorStyle => {
+    return new ColorStyle(
+      styleData.defaultStyle.background,
+      styleData.defaultStyle.border,
+      new Color(styleData.defaultStyle.background, styleData.defaultStyle.border),
+      new Color(styleData.highlightStyle.background, styleData.highlightStyle.border),
+      new Color(styleData.markedStyle.background, styleData.markedStyle.border)
+    )
   };
 
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private applyStoredMarkers(availableNodes) {
+  private applyStoredMarkers(availableNodes: DataSet<NetworkNode>) {
     this.markers
       .map(nodeId => availableNodes.get(nodeId))
-      .filter(node => !!node)
       .forEach(node => {
-        this.setStyle(node, 'marked');
-        availableNodes.update(node);
+        if (node) {
+          this.setStyle(node, 'markedStyle');
+          availableNodes.update(node);
+        }
       });
   };
 
-  private toggleMarker(nodeId) {
-    const node = this.networkNodes.get(nodeId);
-    const markerSet = new Set(this.markers);
-
-    if (markerSet.has(node.id)) {
-      markerSet.delete(node.id);
-      this.setStyle(node, 'default');
-    } else {
-      markerSet.add(node.id);
-      this.setStyle(node, 'marked');
+  private toggleMarker(nodeId: IdType) {
+    if (!this.networkNodes) {
+      return;
     }
-    this.markers = Array.from(markerSet);
-    this.networkNodes.update(node);
+    const node = this.networkNodes.get(nodeId);
+    const markerSet: Set<IdType> = new Set(this.markers);
+
+    if (node) {
+      if (markerSet.has(node.id)) {
+        markerSet.delete(node.id);
+        this.setStyle(node, 'defaultStyle');
+      } else {
+        markerSet.add(node.id);
+        this.setStyle(node, 'markedStyle');
+      }
+      this.markers = Array.from(markerSet);
+      this.networkNodes.update(node);
+    }
   };
 
 }

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {IdType} from 'vis';
 
 import './GraphMenu.css';
 
@@ -6,29 +7,24 @@ import './GraphMenu.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
-  nodeSelection: number[],
+  nodeSelection: IdType[],
   versionCount: number,
-  onUploadFile,
-  onUndo,
-  onRenderParentsOnly,
-  onRenderChildrenOnly
+  onUploadFile: (fileContent: string | ArrayBuffer) => void,
+  onUndo: () => void,
+  onRenderParentsOnly: () => void,
+  onRenderChildrenOnly: () => void
 };
-type State = {
-  nodeSelection: number[],
-  versionCount: number
-};
-export default class GraphMenu extends React.Component<Props, State> {
+export default class GraphMenu extends React.Component<Props, {}> {
 
-  state = {nodeSelection: [], versionCount: 0};
-  fileUpload;
+  private fileUpload = React.createRef<HTMLInputElement>();
 
   render() {
     return (
       <section className="component-graph-menu">
         <input
-          ref={ref => this.fileUpload = ref}
+          ref={this.fileUpload}
           type="file"
-          onChange={(event) => this.updateProofFile(event.target.files[0])}
+          onChange={this.updateProofFile}
         />
         <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
           <svg viewBox="0 0 24 24" className="icon big">
@@ -63,16 +59,22 @@ export default class GraphMenu extends React.Component<Props, State> {
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
   chooseFile() {
-    this.fileUpload.click();
+    if (this.fileUpload.current) {
+      this.fileUpload.current.click();
+    }
   }
 
-  updateProofFile(file) {
-    const reader = new FileReader();
+  updateProofFile(event: React.ChangeEvent<HTMLInputElement>) {
+    if (event.target.files) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
 
-    reader.readAsText(file);
-    reader.onloadend = () => {
-      this.props.onUploadFile(reader.result);
-    };
+      reader.readAsText(file);
+      reader.onloadend = () => {
+        const text = reader.result ? reader.result : '';
+        this.props.onUploadFile(text);
+      };
+    }
   }
 
 }

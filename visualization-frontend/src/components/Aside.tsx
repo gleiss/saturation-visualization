@@ -1,34 +1,26 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
+import {DataSet, IdType} from 'vis';
 
-import {NetworkNode} from '../model/networkNode';
-
+import NetworkNode from '../model/network/network-node';
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
 
 
 type Props = {
-  nodes: DataSet<NetworkNode>,
-  nodeSelection: number[],
+  nodes: DataSet<NetworkNode> | null,
+  nodeSelection: IdType[],
   versionCount: number,
-  onUpdateNodeSelection,
-  onUploadFile,
-  onUndo,
-  onRenderParentsOnly,
-  onRenderChildrenOnly,
-  onSelectParents,
-  onSelectChildren,
-  onFindCommonConsequences
+  onUpdateNodeSelection: (selection: IdType[]) => void,
+  onUploadFile: (fileContent: string | ArrayBuffer) => void,
+  onUndo: () => void,
+  onRenderParentsOnly: () => void,
+  onRenderChildrenOnly: () => void,
+  onSelectParents: () => void,
+  onSelectChildren: () => void,
+  onFindCommonConsequences: () => void
 };
-type State = {
-  nodes: DataSet<NetworkNode>,
-  nodeSelection: number[],
-  versionCount: number
-};
-export default class Aside extends React.Component<Props, State> {
-
-  state = {nodes: [], nodeSelection: [], versionCount: 0};
+export default class Aside extends React.Component<Props, {}> {
 
   render() {
     return (

@@ -1,33 +1,27 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
+import {DataSet, IdType} from 'vis';
 
-import {NetworkNode} from '../model/networkNode';
-
+import NetworkNode from '../model/network/network-node';
 import './NodeDetails.css';
 
 
 type Props = {
-  nodes: DataSet<NetworkNode>,
-  nodeSelection: number[]
+  nodes: DataSet<NetworkNode> | null,
+  nodeSelection: IdType[]
 };
-type State = {
-  nodeSelection: number[]
-};
-export default class NodeDetails extends React.Component<Props, State> {
+export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
     const oneNodeSelected = this.props.nodeSelection.length === 1;
-    const selectedNode = oneNodeSelected ?
+    const selectedNode = oneNodeSelected && this.props.nodes ?
       this.props.nodes.get(this.props.nodeSelection[0]) :
       undefined;
-    const nodeInfo = oneNodeSelected ?
-      '1 node' :
-      `${this.props.nodeSelection.length} nodes`;
+    const nodeInfo = oneNodeSelected ? '1 node' : `${this.props.nodeSelection.length} nodes`;
 
     return (
       <section className={`component-node-details ${oneNodeSelected ? 'details' : 'overview'}`}>
         {
-          oneNodeSelected && (
+          selectedNode && (
             <article>
               <h2>Node <strong>{selectedNode.id}</strong></h2>
               <h3>{selectedNode.rule}</h3>
@@ -39,4 +33,5 @@ export default class NodeDetails extends React.Component<Props, State> {
       </section>
     );
   }
+
 }

@@ -6,23 +6,13 @@ import './Slider.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
-  dag: any,
+  historyLength: number,
   historyState: number,
-  onHistoryStateChange,
+  onHistoryStateChange: (newState: number) => void,
 };
-type State = {
-  dag: any,
-  nodeSelection: number[],
-  historyState: number
-};
-export default class Slider extends React.Component<Props, State> {
+export default class Slider extends React.Component<Props, {}> {
 
-  state = {
-    dag: {},
-    nodeSelection: [],
-    historyState: 0
-  };
-  private slider;
+  private slider = React.createRef<HTMLInputElement>();
 
   render() {
     const {historyLength, historyState, onHistoryStateChange} = this.props;
@@ -38,12 +28,12 @@ export default class Slider extends React.Component<Props, State> {
 
         <section className="wrapper">
           <input
-            ref={ref => this.slider = ref}
+            ref={this.slider}
             type="range"
             min={0}
             max={historyLength}
             value={historyState}
-            onChange={() => onHistoryStateChange(parseInt(this.slider.value, 10))}
+            onChange={() => onHistoryStateChange(this.getSliderValue())}
           />
         </section>
 
@@ -55,6 +45,12 @@ export default class Slider extends React.Component<Props, State> {
 
       </section>
     );
+  }
+
+  // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  getSliderValue(): number {
+    return this.slider.current ? parseInt(this.slider.current.value, 10) : 0;
   }
 
 }

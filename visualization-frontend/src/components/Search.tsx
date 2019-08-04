@@ -1,17 +1,15 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
+import {DataSet, IdType} from 'vis';
 
-import {NetworkNode} from '../model/networkNode';
-
+import NetworkNode from '../model/network/network-node';
 import './Search.css';
 
 
 type Props = {
-  nodes: DataSet<NetworkNode>,
-  onUpdateNodeSelection
+  nodes: DataSet<NetworkNode> | null,
+  onUpdateNodeSelection: (selection: IdType[]) => void
 };
 type State = {
-  nodes: DataSet<NetworkNode>,
   foundNodes: NetworkNode[]
 };
 export default class Search extends React.Component<Props, State> {
@@ -19,7 +17,7 @@ export default class Search extends React.Component<Props, State> {
   state = {
     foundNodes: []
   };
-  private searchField;
+  private searchField = React.createRef<HTMLInputElement>();
 
   render() {
     const {foundNodes} = this.state;
@@ -27,7 +25,7 @@ export default class Search extends React.Component<Props, State> {
     return (
       <section className="component-search">
         <input
-          ref={ref => this.searchField = ref}
+          ref={this.searchField}
           type="text"
           placeholder="Search for a node ..."
           onKeyUp={this.search.bind(this)}
@@ -48,32 +46,26 @@ export default class Search extends React.Component<Props, State> {
   // SEARCH ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   search() {
-    const searchValue = this.searchField.value;
+    const searchValue = this.searchField.current ? this.searchField.current.value : '';
+    let foundNodes: NetworkNode[] = [];
 
-    if (searchValue) {
-      let foundNodes = Object
-        .values(this.props.nodes._data)
+    if (searchValue && this.props.nodes) {
+      foundNodes = this.props.nodes
+        .map(node => node)
         .filter(node => node.label.includes(searchValue));
       foundNodes.sort((a, b) => a.label.length - b.label.length);
 
       this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
-
-      this.setState({
-        foundNodes: foundNodes.filter(node => node.label !== 'Preproc')
-      });
-    } else {
-      this.setState({
-        foundNodes: []
-      });
+      foundNodes = foundNodes.filter(node => node.label !== 'Preproc');
     }
+    this.setState({
+      foundNodes
+    });
+
   }
 
-  toListItem = (node) => {
-    return (
-      <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>
-        ${node.label}
-      </li>
-    );
+  toListItem = (node: NetworkNode) => {
+    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.label}</li>;
   };
 
   getDisabledListItem = () => {

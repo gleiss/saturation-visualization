@@ -1,46 +1,52 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {DataSet, Network} from 'vis';
+import {DataSet, Edge, IdType, Network} from 'vis';
 
-import {NetworkNode} from '../model/networkNode';
+import NetworkNode from '../model/network/network-node';
 import Main from './Main';
 import Aside from './Aside';
+import Dag from '../model/dag';
+import SatNode from '../model/sat-node';
 import './App.css';
 
 
 type State = {
-  dag: { nodes: {} },
-  network: Network,
-  nodes: DataSet<NetworkNode>,
-  edges: DataSet<any>,
-  nodeSelection: number[],
+  dag: Dag | null,
+  network: Network | null,
+  nodes: DataSet<NetworkNode> | null,
+  edges: DataSet<Edge> | null,
+  nodeSelection: IdType[],
+  historyLength: number,
   historyState: number,
   versionCount: number,
   error: any,
-  isLoaded: boolean
+  isLoaded: boolean,
+  isLoading: boolean
 };
 
 class App extends Component<{}, State> {
 
   state = {
-    dag: {nodes: {}},
+    dag: null,
     network: null,
-    nodes: [],
-    edges: [],
+    nodes: null,
+    edges: null,
     nodeSelection: [],
+    historyLength: 0,
     historyState: 0,
     versionCount: 0,
     error: null,
-    isLoaded: false
+    isLoaded: false,
+    isLoading: false
   };
 
-  versions = [];
+  private versions: (Dag | null)[] = [];
 
   render() {
-    const {error, isLoading, dag, nodes, nodeSelection, historyLength, historyState, versionCount} = this.state;
+    const {error, isLoaded, isLoading, dag, nodes, nodeSelection, historyLength, historyState, versionCount} = this.state;
     let main;
 
-    if (dag) {
+    if (isLoaded && dag) {
       main = (
         <Main
           dag={dag}
@@ -94,22 +100,22 @@ class App extends Component<{}, State> {
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  setNetwork(network: Network, nodes, edges) {
+  setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<Edge>) {
     this.setState({network, nodes, edges});
   }
 
-  updateNodeSelection(nodeSelection) {
+  updateNodeSelection(nodeSelection: IdType[]) {
     this.setState({nodeSelection});
   }
 
-  updateHistoryState(historyState) {
+  updateHistoryState(historyState: number) {
     this.setState({historyState});
   }
 
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  uploadFile(file) {
+  uploadFile(fileContent: string | ArrayBuffer) {
     this.setState({
       isLoading: true,
       error: false
@@ -120,9 +126,9 @@ class App extends Component<{}, State> {
       mode: 'cors',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({file}),
+      body: JSON.stringify({file: fileContent})
     })
       .then(res => res.json())
       .then(
@@ -130,6 +136,7 @@ class App extends Component<{}, State> {
           this.versions = [];
           this.setState({
             isLoading: false,
+            isLoaded: true,
             dag: result.dag,
             historyLength: Object.keys(result.dag.nodes).length - 1,
             historyState: Object.keys(result.dag.nodes).length - 1,
@@ -140,6 +147,7 @@ class App extends Component<{}, State> {
         (error) => {
           this.setState({
             isLoading: false,
+            isLoaded: true,
             error
           });
         }
@@ -151,7 +159,7 @@ class App extends Component<{}, State> {
 
   undoLastStep() {
     const {versionCount} = this.state;
-    const latestDag = this.unstoreLatestVersion();
+    const latestDag = this.versions.pop();
 
     if (latestDag) {
       this.setState({
@@ -170,7 +178,7 @@ class App extends Component<{}, State> {
     const parentNodesIncludingDuplicates = [].concat(...listsOfParents, ...nodeSelection);
     const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
 
-    this.storeVersion(dag);
+    this.versions.push(dag);
     this.cutDag(parentNodes);
   }
 
@@ -181,7 +189,7 @@ class App extends Component<{}, State> {
     const childNodesIncludingDuplicates = [].concat(...listsOfChildren, ...nodeSelection);
     const childNodes = [...new Set(childNodesIncludingDuplicates)];
 
-    this.storeVersion(dag);
+    this.versions.push(dag);
     this.cutDag(childNodes);
   }
 
@@ -229,7 +237,7 @@ class App extends Component<{}, State> {
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private findAllParents(node) {
+  private findAllParents(node: NetworkNode) {
     const {edges, network} = this.state;
     const selectionSet = new Set();
 
@@ -244,7 +252,7 @@ class App extends Component<{}, State> {
     return [...selectionSet];
   }
 
-  private addAllParents(node, selectionSet) {
+  private addAllParents(node: NetworkNode, selectionSet: Set<number>) {
     const {edges, network} = this.state;
 
     network
@@ -259,7 +267,7 @@ class App extends Component<{}, State> {
       })
   }
 
-  private findAllChildren(node) {
+  private findAllChildren(node: NetworkNode) {
     const {edges, network} = this.state;
     const selectionSet = new Set();
 
@@ -274,7 +282,7 @@ class App extends Component<{}, State> {
     return [...selectionSet];
   }
 
-  private addAllChildren(node, selectionSet) {
+  private addAllChildren(node: NetworkNode, selectionSet: Set<number>) {
     const {edges, network} = this.state;
 
     network
@@ -289,26 +297,19 @@ class App extends Component<{}, State> {
       })
   }
 
-  private cutDag(remainingNodeNumbers) {
+  private cutDag(remainingNodeNumbers: IdType[]) {
     const {dag, historyLength, historyState, versionCount} = this.state;
-    const remainingNodes = {};
+    const remainingNodes: { [key: number]: SatNode } = {};
 
-    remainingNodeNumbers.forEach(number => remainingNodes[number] = dag.nodes[number]);
+    remainingNodeNumbers.forEach(n => remainingNodes[n] = dag.get(n));
     this.setState({
-      dag: {nodes: remainingNodes},
+      dag: new Dag(remainingNodes),
       versionCount: versionCount + 1,
       historyLength: historyLength,
       historyState: historyState
     });
+
   }
-
-  private storeVersion = (dag) => {
-    this.versions.push(dag);
-  };
-
-  private unstoreLatestVersion = () => {
-    return this.versions.pop();
-  };
 
 }
 
