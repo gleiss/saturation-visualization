@@ -22,4 +22,14 @@ export default class Dag {
     return counter;
   }
 
+  hasNodes(): boolean {
+    return Object.keys(this.nodes).length > 0;
+  }
+
+  static fromDto(dto: any): Dag {
+    const nodes: { [key: number]: SatNode } = {};
+    Object.values(dto.nodes).forEach((node: any) => nodes[node.number] = SatNode.fromDto(node));
+    return new Dag(nodes);
+  }
+
 }

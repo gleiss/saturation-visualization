@@ -8,9 +8,11 @@
   border-radius: 2px;
   transition: all ease-in 330ms;
 }
+
 .component-node-details.details {
   background: #f8f9fb;
 }
+
 .component-node-details.overview {
   background: #fff;
 }

@@ -35,4 +35,18 @@ export default class SatNode {
     return this.clause;
   }
 
+  static fromDto(dto: any): SatNode {
+    return new SatNode(
+      dto.number,
+      dto.clause,
+      dto.inference_rule,
+      dto.parents,
+      dto.statistics,
+      dto.is_from_preprocessing,
+      dto.new_time,
+      dto.passive_time,
+      dto.active_time
+    );
+  }
+
 }

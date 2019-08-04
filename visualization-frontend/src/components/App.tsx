@@ -8,13 +8,14 @@ import Aside from './Aside';
 import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
+import NetworkEdge from '../model/network/network-edge';
 
 
 type State = {
-  dag: Dag | null,
+  dag: Dag,
   network: Network | null,
-  nodes: DataSet<NetworkNode> | null,
-  edges: DataSet<Edge> | null,
+  nodes: DataSet<NetworkNode>,
+  edges: DataSet<Edge>,
   nodeSelection: IdType[],
   historyLength: number,
   historyState: number,
@@ -27,10 +28,10 @@ type State = {
 class App extends Component<{}, State> {
 
   state = {
-    dag: null,
+    dag: new Dag({}),
     network: null,
-    nodes: null,
-    edges: null,
+    nodes: new DataSet([]),
+    edges: new DataSet([]),
     nodeSelection: [],
     historyLength: 0,
     historyState: 0,
@@ -40,13 +41,23 @@ class App extends Component<{}, State> {
     isLoading: false
   };
 
-  private versions: (Dag | null)[] = [];
+  private versions: Dag[] = [];
 
   render() {
-    const {error, isLoaded, isLoading, dag, nodes, nodeSelection, historyLength, historyState, versionCount} = this.state;
+    const {
+      dag,
+      nodes,
+      nodeSelection,
+      historyLength,
+      historyState,
+      versionCount,
+      error,
+      isLoaded,
+      isLoading
+    } = this.state;
     let main;
 
-    if (isLoaded && dag) {
+    if (isLoaded && dag.hasNodes()) {
       main = (
         <Main
           dag={dag}
@@ -59,7 +70,7 @@ class App extends Component<{}, State> {
         />
       );
     } else if (isLoading || error) {
-      const message = error ? `Error: ${error.message}` : 'Loading...';
+      const message = error ? `Error: ${error!['message']}` : 'Loading...';
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
@@ -67,10 +78,9 @@ class App extends Component<{}, State> {
         </main>
       );
     } else {
-      const message = 'Upload file →';
       main = (
         <main>
-          <section className="graph-placeholder upload-info">{message}</section>
+          <section className="graph-placeholder upload-info">Upload file →</section>
           <section className="slider-placeholder"/>
         </main>
       );
@@ -117,8 +127,9 @@ class App extends Component<{}, State> {
 
   uploadFile(fileContent: string | ArrayBuffer) {
     this.setState({
+      error: false,
       isLoading: true,
-      error: false
+      isLoaded: false
     });
 
     fetch('http://localhost:5000', {
@@ -133,22 +144,24 @@ class App extends Component<{}, State> {
       .then(res => res.json())
       .then(
         (result) => {
+          const dag = Dag.fromDto(result.dag);
           this.versions = [];
           this.setState({
-            isLoading: false,
-            isLoaded: true,
-            dag: result.dag,
-            historyLength: Object.keys(result.dag.nodes).length - 1,
-            historyState: Object.keys(result.dag.nodes).length - 1,
+            dag,
+            nodeSelection: [],
+            historyLength: Object.keys(dag.nodes).length - 1,
+            historyState: Object.keys(dag.nodes).length - 1,
             versionCount: 0,
-            error: false
+            error: false,
+            isLoaded: true,
+            isLoading: false
           });
         },
         (error) => {
           this.setState({
-            isLoading: false,
+            error,
             isLoaded: true,
-            error
+            isLoading: false
           });
         }
       )
@@ -174,8 +187,8 @@ class App extends Component<{}, State> {
   renderParentsOnly() {
     const {dag, nodeSelection} = this.state;
 
-    const listsOfParents = nodeSelection.map(node => this.findAllParents(node));
-    const parentNodesIncludingDuplicates = [].concat(...listsOfParents, ...nodeSelection);
+    const listsOfParents = nodeSelection.map(node => [...this.findAllParents(node)]);
+    const parentNodesIncludingDuplicates = ([] as number[]).concat(...listsOfParents, ...nodeSelection);
     const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
 
     this.versions.push(dag);
@@ -185,8 +198,8 @@ class App extends Component<{}, State> {
   renderChildrenOnly() {
     const {dag, nodeSelection} = this.state;
 
-    const listsOfChildren = nodeSelection.map(node => this.findAllChildren(node));
-    const childNodesIncludingDuplicates = [].concat(...listsOfChildren, ...nodeSelection);
+    const listsOfChildren = nodeSelection.map(node => [...this.findAllChildren(node)]);
+    const childNodesIncludingDuplicates = ([] as number[]).concat(...listsOfChildren, ...nodeSelection);
     const childNodes = [...new Set(childNodesIncludingDuplicates)];
 
     this.versions.push(dag);
@@ -198,12 +211,20 @@ class App extends Component<{}, State> {
 
   selectParents() {
     const {edges, network, nodeSelection} = this.state;
-    const selectionSet = new Set(nodeSelection);
+    const selectionSet: Set<number> = new Set(nodeSelection);
+
+    if (!network) {
+      return;
+    }
+
+    const currentNetwork = network! as Network;
 
     nodeSelection.forEach(node => {
-      network
+      currentNetwork
         .getConnectedEdges(node)
         .map(edgeId => edges.get(edgeId))
+        .filter(edge => !!edge)
+        .map(edge => edge! as NetworkEdge)
         .filter(edge => edge.to === node)
         .forEach(edge => selectionSet.add(edge.from))
     });
@@ -211,13 +232,21 @@ class App extends Component<{}, State> {
   }
 
   selectChildren() {
-    const {edges, network, nodeSelection} = this.state;
-    const selectionSet = new Set(nodeSelection);
+    const {network, edges, nodeSelection} = this.state;
+    const selectionSet: Set<number> = new Set(nodeSelection);
+
+    if (!network) {
+      return;
+    }
+
+    const currentNetwork = network! as Network;
 
     nodeSelection.forEach(node => {
-      network
+      currentNetwork
         .getConnectedEdges(node)
         .map(edgeId => edges.get(edgeId))
+        .filter(edge => !!edge)
+        .map(edge => edge! as NetworkEdge)
         .filter(edge => edge.from === node)
         .forEach(edge => selectionSet.add(edge.to))
     });
@@ -229,6 +258,7 @@ class App extends Component<{}, State> {
 
     const newNodeSelection = nodeSelection
       .map(node => this.findAllChildren(node))
+      .map(childSet => [...childSet])
       .reduce((a, b) => a.filter(child => b.includes(child)));
 
     this.updateNodeSelection(newNodeSelection);
@@ -237,28 +267,44 @@ class App extends Component<{}, State> {
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private findAllParents(node: NetworkNode) {
+  private findAllParents(nodeId: number): Set<number> {
     const {edges, network} = this.state;
-    const selectionSet = new Set();
+    const selectionSet: Set<number> = new Set();
 
-    network
-      .getConnectedEdges(node)
+    if (!network) {
+      return selectionSet;
+    }
+
+    const currentNetwork = network! as Network;
+
+    currentNetwork
+      .getConnectedEdges(nodeId)
       .map(edgeId => edges.get(edgeId))
-      .filter(edge => edge.to === node)
+      .filter(edge => !!edge)
+      .map(edge => edge! as NetworkEdge)
+      .filter(edge => edge.to === nodeId)
       .forEach(edge => {
         selectionSet.add(edge.from);
         this.addAllParents(edge.from, selectionSet);
       });
-    return [...selectionSet];
+    return selectionSet;
   }
 
-  private addAllParents(node: NetworkNode, selectionSet: Set<number>) {
+  private addAllParents(nodeId: number, selectionSet: Set<number>) {
     const {edges, network} = this.state;
 
-    network
-      .getConnectedEdges(node)
+    if (!network) {
+      return;
+    }
+
+    const currentNetwork = network! as Network;
+
+    currentNetwork
+      .getConnectedEdges(nodeId)
       .map(edgeId => edges.get(edgeId))
-      .filter(edge => edge.to === node)
+      .filter(edge => !!edge)
+      .map(edge => edge! as NetworkEdge)
+      .filter(edge => edge.to === nodeId)
       .forEach(edge => {
         if (!selectionSet.has(edge.from)) {
           selectionSet.add(edge.from);
@@ -267,46 +313,60 @@ class App extends Component<{}, State> {
       })
   }
 
-  private findAllChildren(node: NetworkNode) {
+  private findAllChildren(nodeId: number): Set<number> {
     const {edges, network} = this.state;
-    const selectionSet = new Set();
+    const selectionSet: Set<number> = new Set();
 
-    network
-      .getConnectedEdges(node)
+    if (!network) {
+      return selectionSet;
+    }
+
+    const currentNetwork = network! as Network;
+
+    currentNetwork
+      .getConnectedEdges(nodeId)
       .map(edgeId => edges.get(edgeId))
-      .filter(edge => edge.from === node)
+      .filter(edge => !!edge)
+      .map(edge => edge! as NetworkEdge)
+      .filter(edge => edge.from === nodeId)
       .forEach(edge => {
         selectionSet.add(edge.to);
         this.addAllChildren(edge.to, selectionSet);
       });
-    return [...selectionSet];
+    return selectionSet;
   }
 
-  private addAllChildren(node: NetworkNode, selectionSet: Set<number>) {
-    const {edges, network} = this.state;
+  private addAllChildren(nodeId: number, selectionSet: Set<number>) {
+    const {network, edges} = this.state;
 
-    network
-      .getConnectedEdges(node)
+    if (!network) {
+      return;
+    }
+
+    const currentNetwork = network! as Network;
+
+    currentNetwork
+      .getConnectedEdges(nodeId)
       .map(edgeId => edges.get(edgeId))
-      .filter(edge => edge.from === node)
+      .filter(edge => !!edge)
+      .map(edge => edge! as NetworkEdge)
+      .filter(edge => edge.from === nodeId && !selectionSet.has(edge.to))
       .forEach(edge => {
-        if (!selectionSet.has(edge.to)) {
-          selectionSet.add(edge.to);
-          this.addAllChildren(edge.to, selectionSet);
-        }
-      })
+        selectionSet.add(edge.to);
+        this.addAllChildren(edge.to, selectionSet);
+      });
   }
 
-  private cutDag(remainingNodeNumbers: IdType[]) {
+  private cutDag(remainingNodeNumbers: number[]) {
     const {dag, historyLength, historyState, versionCount} = this.state;
     const remainingNodes: { [key: number]: SatNode } = {};
 
     remainingNodeNumbers.forEach(n => remainingNodes[n] = dag.get(n));
     this.setState({
       dag: new Dag(remainingNodes),
-      versionCount: versionCount + 1,
       historyLength: historyLength,
-      historyState: historyState
+      historyState: historyState,
+      versionCount: versionCount + 1
     });
 
   }
