@@ -1,34 +1,17 @@
 import * as React from 'react';
-import {DataSet, IdType, Network} from 'vis'
+import {DataSet, Network} from 'vis'
 
-import Dag from '../model/dag';
-import SatNode from '../model/sat-node';
-import NetworkNode from '../model/network/network-node';
-import NetworkEdge from '../model/network/network-edge';
+import Viz from 'viz.js';
+import {Module, render} from 'viz.js/full.render.js';
 import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css'
-
-
-const Viz = require('viz.js');
-const {Module, render} = require('viz.js/full.render.js');
 
 const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
 
-type Props = {
-  dag: Dag,
-  nodeSelection: number[],
-  historyState: number,
-  onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<any>) => void,
-  onNodeSelectionChange: (selection: number[]) => void
-};
-type State = {
-  dag: Dag,
-  nodeSelection: number[],
-  historyState: number
-};
-export default class Graph extends React.Component<Props, State> {
-  constructor(props: Props) {
+
+export default class Graph extends React.Component {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -38,16 +21,16 @@ export default class Graph extends React.Component<Props, State> {
     }
   }
 
-  private markers: IdType[] = [];
-  private network: Network | null = null;
-  private networkNodes: DataSet<NetworkNode> = new DataSet([]);
-  private graphContainer = React.createRef<HTMLDivElement>();
+  markers = [];
+  network = null;
+  networkNodes = new DataSet([]);
+  graphContainer = React.createRef();
 
   async componentDidMount() {
     await this.generateNetwork();
   }
 
-  async componentDidUpdate(prevProps: Props) {
+  async componentDidUpdate(prevProps) {
     if (this.props.dag !== prevProps.dag) {
       await this.generateNetwork();
     }
@@ -95,10 +78,10 @@ export default class Graph extends React.Component<Props, State> {
     }
   }
 
-  async generateNetworkData(): Promise<{ networkNodes: NetworkNode[], networkEdges: NetworkEdge[] }> {
+  async generateNetworkData() {
     const {dag, historyState} = this.props;
-    const networkNodes: NetworkNode[] = [];
-    const networkEdges: NetworkEdge[] = [];
+    const networkNodes = [];
+    const networkEdges = [];
     const positions = await this.computePositions(dag ? Object.values(dag.nodes) : []);
 
     positions.forEach(position => {
@@ -120,14 +103,14 @@ export default class Graph extends React.Component<Props, State> {
     return {networkNodes, networkEdges};
   }
 
-  findNodeAt(clickPosition: { layerX: number, layerY: number }): IdType {
-    return this.network!.getNodeAt({
+  findNodeAt(clickPosition) {
+    return this.network.getNodeAt({
       x: clickPosition.layerX,
       y: clickPosition.layerY
     });
   }
 
-  getNetworkOptions = (): any => {
+  getNetworkOptions = () => {
     return {
       physics: false,
       interaction: {
@@ -139,8 +122,8 @@ export default class Graph extends React.Component<Props, State> {
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  toDotString(nodes: SatNode[]): string {
-    const dotStrings: string[] = [];
+  toDotString(nodes) {
+    const dotStrings = [];
 
     nodes.forEach(node => {
       dotStrings.push(`${node.id} [label="${node.clause}"]`);
@@ -152,28 +135,28 @@ export default class Graph extends React.Component<Props, State> {
     return `digraph { ${dotStrings.join('; ')} }`;
   };
 
-  async toGraphLayout(nodes: SatNode[]) {
+  async toGraphLayout(nodes) {
     let viz = new Viz({Module, render});
 
     return viz
       .renderString(this.toDotString(nodes), {format: 'plain'})
-      .then((result: any) => {
+      .then((result) => {
         return result;
       })
-      .catch((error: any) => {
+      .catch((error) => {
         viz = new Viz({Module, render});
         console.error(error);
       });
   };
 
-  async computePositions(nodes: SatNode[]): Promise<{ id: number, x: number, y: number }[]> {
+  async computePositions(nodes) {
     const graphLayout = await this.toGraphLayout(nodes);
     return graphLayout
       .split('\n')
-      .filter((line: string) => line.startsWith('node'))
-      .map((line: string) => line.matchAll(PLAIN_PATTERN).next().value)
-      .filter((match: any[]) => !!match)
-      .map((match: any[]) => {
+      .filter((line) => line.startsWith('node'))
+      .map((line) => line.matchAll(PLAIN_PATTERN).next().value)
+      .filter((match) => !!match)
+      .map((match) => {
         const [, number, x, y] = match;
         return {
           id: parseInt(number, 10),
@@ -186,7 +169,7 @@ export default class Graph extends React.Component<Props, State> {
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  selectStyle = (node: SatNode, historyState: number): any => {
+  selectStyle = (node, historyState) => {
     if (node.inferenceRule === 'theory axiom') {
       if (node.activeTime && node.activeTime <= historyState) {
         return styleTemplates.activeTheoryAxiom;
@@ -210,14 +193,14 @@ export default class Graph extends React.Component<Props, State> {
     return styleTemplates.hidden;
   };
 
-  setStyle = (node: NetworkNode, newStyleKey: string) => {
+  setStyle = (node, newStyleKey) => {
     const newStyle = node.color.get(newStyleKey);
 
     node.color.background = newStyle.background;
     node.color.border = newStyle.border;
   };
 
-  toNetworkNode = (node: SatNode, position: { x: number, y: number }, historyState: number): NetworkNode => {
+  toNetworkNode = (node, position, historyState) => {
     const styleData = this.selectStyle(node, historyState);
 
     return {
@@ -232,7 +215,7 @@ export default class Graph extends React.Component<Props, State> {
     }
   };
 
-  toNetworkEdge = (fromNode: number, toNode: number, visible: boolean): NetworkEdge => {
+  toNetworkEdge = (fromNode, toNode, visible) => {
     return {
       arrows: 'to',
       color: new EdgeColor(visible ? 1.0 : 0.0, '#dddddd'),
@@ -241,7 +224,7 @@ export default class Graph extends React.Component<Props, State> {
     }
   };
 
-  getColorStyle = (styleData: any): ColorStyle => {
+  getColorStyle = (styleData) => {
     return new ColorStyle(
       styleData.defaultStyle.background,
       styleData.defaultStyle.border,
@@ -254,7 +237,7 @@ export default class Graph extends React.Component<Props, State> {
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private applyStoredMarkers(availableNodes: DataSet<NetworkNode>) {
+  applyStoredMarkers(availableNodes) {
     this.markers
       .map(nodeId => availableNodes.get(nodeId))
       .forEach(node => {
@@ -265,12 +248,12 @@ export default class Graph extends React.Component<Props, State> {
       });
   };
 
-  private toggleMarker(nodeId: IdType) {
+  toggleMarker(nodeId) {
     if (!this.networkNodes) {
       return;
     }
     const node = this.networkNodes.get(nodeId);
-    const markerSet: Set<IdType> = new Set(this.markers);
+    const markerSet = new Set(this.markers);
 
     if (node) {
       if (markerSet.has(node.id)) {
