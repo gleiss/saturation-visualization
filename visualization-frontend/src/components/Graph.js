@@ -11,15 +11,6 @@ const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-z
 
 
 export default class Graph extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      dag: props.dag,
-      nodeSelection: props.nodeSelection,
-      historyState: props.historyState
-    }
-  }
 
   markers = [];
   network = null;
@@ -33,6 +24,13 @@ export default class Graph extends React.Component {
   async componentDidUpdate(prevProps) {
     if (this.props.dag !== prevProps.dag) {
       await this.generateNetwork();
+    } else {
+      if (this.props.nodeSelection !== prevProps.nodeSelection) {
+        this.network.selectNodes(this.props.nodeSelection);
+      }
+      if (this.props.historyState !== prevProps.historyState) {
+        this.updateNodeStyles();
+      }
     }
   }
 
@@ -233,6 +231,22 @@ export default class Graph extends React.Component {
       new Color(styleData.markedStyle.background, styleData.markedStyle.border)
     )
   };
+
+  updateNodeStyles() {
+    this.networkNodes.update(
+      Object.values(this.props.dag.nodes)
+        .map(satNode => {
+          const node = this.networkNodes.get(satNode.id);
+          if (node) {
+            const styleData = this.selectStyle(satNode, this.props.historyState);
+            node.color = this.getColorStyle(styleData);
+            node.font = new FontStyle(styleData.text);
+            node.shape = styleData.shape;
+          }
+          return node;
+        })
+        .filter(node => !!node));
+  }
 
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -17,23 +17,7 @@ type Props = {
   onNodeSelectionChange: (selection: number[]) => void,
   onHistoryStateChange: (newState: number) => void
 };
-type State = {
-  dag: Dag,
-  nodeSelection: number[],
-  historyLength: number,
-  historyState: number
-};
-export default class Main extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      dag: props.dag,
-      nodeSelection: props.nodeSelection,
-      historyLength: props.historyState,
-      historyState: props.historyState
-    }
-  }
+export default class Main extends React.Component<Props, {}> {
 
   render() {
     return (
