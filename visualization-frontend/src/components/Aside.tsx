@@ -9,7 +9,7 @@ import Dag from '../model/dag';
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  versionCount: number,
+  multipleVersions: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
   onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
@@ -26,7 +26,7 @@ export default class Aside extends React.Component<Props, {}> {
       <aside>
         <GraphMenu
           nodeSelection={this.props.nodeSelection}
-          versionCount={this.props.versionCount}
+          multipleVersions={this.props.multipleVersions}
           onUploadFile={this.props.onUploadFile}
           onUndo={this.props.onUndo}
           onRenderParentsOnly={this.props.onRenderParentsOnly}

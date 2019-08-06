@@ -6,14 +6,14 @@ import Aside from './Aside';
 import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
+import { assert } from '../model/util';
 
 
 type State = {
-  dag: Dag,
+  dags: Dag[],
   nodeSelection: number[],
   historyLength: number,
   historyState: number,
-  versionCount: number,
   error: any,
   isLoaded: boolean,
   isLoading: boolean
@@ -21,36 +21,34 @@ type State = {
 
 class App extends Component<{}, State> {
 
-  state = {
-    dag: new Dag({}),
+  state: State = {
+    dags: [],
     nodeSelection: [],
     historyLength: 0,
     historyState: 0,
-    versionCount: 0,
     error: null,
     isLoaded: false,
     isLoading: false
   };
 
-  private versions: Dag[] = [];
-
   render() {
+    assert(this.state.dags != undefined,"");
+    console.log(this.state.dags);
     const {
-      dag,
+      dags,
       nodeSelection,
       historyLength,
       historyState,
-      versionCount,
       error,
       isLoaded,
       isLoading
     } = this.state;
     
     let main;
-    if (isLoaded && dag.hasNodes()) {
+    if (isLoaded && dags[dags.length-1].hasNodes()) {
       main = (
         <Main
-          dag={dag}
+          dag={dags[dags.length-1]}
           nodeSelection={nodeSelection}
           historyLength={historyLength}
           historyState={historyState}
@@ -79,9 +77,9 @@ class App extends Component<{}, State> {
       <div className="app">
         {main}
         <Aside
-          dag={dag}
+          dag={dags[dags.length-1]}
           nodeSelection={nodeSelection}
-          versionCount={versionCount}
+          multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUploadFile={this.uploadFile.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
@@ -130,13 +128,11 @@ class App extends Component<{}, State> {
       .then(
         (result) => {
           const dag = Dag.fromDto(result.dag);
-          this.versions = [];
           this.setState({
-            dag,
+            dags: [dag],
             nodeSelection: [],
             historyLength: dag.numberOfHistorySteps() - 1,
             historyState: dag.numberOfHistorySteps() - 1,
-            versionCount: 0,
             error: false,
             isLoaded: true,
             isLoading: false
@@ -156,50 +152,45 @@ class App extends Component<{}, State> {
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
-    const {versionCount} = this.state;
-    const latestDag = this.versions.pop();
+    const {dags} = this.state;
+    assert(dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
-    if (latestDag) {
-      this.setState({
-        dag: latestDag,
-        historyLength: Object.keys(latestDag.nodes).length - 1,
-        historyState: Object.keys(latestDag.nodes).length - 1,
-        versionCount: versionCount - 1
-      });
-    }
+    this.setState({
+      dags: dags.slice(0, dags.length-1),
+      historyLength: Object.keys(dags[dags.length-1].nodes).length - 1,
+      historyState: Object.keys(dags[dags.length-1].nodes).length - 1
+    });
   }
 
   renderParentsOnly() {
-    const {dag, nodeSelection} = this.state;
+    const {nodeSelection} = this.state;
 
     const listsOfParents = nodeSelection.map(node => [...this.findAllParents(node)]);
     const parentNodesIncludingDuplicates = ([] as number[]).concat(...listsOfParents, ...nodeSelection);
     const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
 
-    this.versions.push(dag);
-    this.cutDag(parentNodes);
+    this.createAndPushDag(parentNodes)
   }
 
   renderChildrenOnly() {
-    const {dag, nodeSelection} = this.state;
+    const {nodeSelection} = this.state;
 
     const listsOfChildren = nodeSelection.map(node => [...this.findAllChildren(node)]);
     const childNodesIncludingDuplicates = ([] as number[]).concat(...listsOfChildren, ...nodeSelection);
     const childNodes = [...new Set(childNodesIncludingDuplicates)];
 
-    this.versions.push(dag);
-    this.cutDag(childNodes);
+    this.createAndPushDag(childNodes);
   }
 
 
   // NODE SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   selectParents() {
-    const {dag, nodeSelection} = this.state;
+    const {dags, nodeSelection} = this.state;
     const selectionSet: Set<number> = new Set(nodeSelection);
 
     nodeSelection.forEach(node => {
-      dag.get(node).parents.forEach(parent => {
+      dags[dags.length - 1].get(node).parents.forEach(parent => {
         selectionSet.add(parent);
       })
     });
@@ -208,11 +199,11 @@ class App extends Component<{}, State> {
 
   // TODO: update to children
   selectChildren() {
-    const {dag, nodeSelection} = this.state;
+    const {dags, nodeSelection} = this.state;
     const selectionSet: Set<number> = new Set(nodeSelection);
 
     nodeSelection.forEach(node => {
-      dag.get(node).parents.forEach(child => {
+      dags[dags.length - 1].get(node).parents.forEach(child => {
         selectionSet.add(child);
       })
     });
@@ -234,10 +225,10 @@ class App extends Component<{}, State> {
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   private findAllParents(nodeId: number): Set<number> {
-    const {dag} = this.state;
+    const {dags} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    dag.get(nodeId).parents.forEach(parent => {
+    dags[dags.length - 1].get(nodeId).parents.forEach(parent => {
       selectionSet.add(parent);
       this.addAllParents(parent, selectionSet);
     })
@@ -246,9 +237,9 @@ class App extends Component<{}, State> {
   }
 
   private addAllParents(nodeId: number, selectionSet: Set<number>) {
-    const {dag} = this.state;
+    const {dags} = this.state;
 
-    dag.get(nodeId).parents.forEach(parent => {
+    dags[dags.length - 1].get(nodeId).parents.forEach(parent => {
       if (!selectionSet.has(parent)) {
         selectionSet.add(parent);
         this.addAllParents(parent, selectionSet);
@@ -258,10 +249,10 @@ class App extends Component<{}, State> {
 
   // TODO: children instead of parents
   private findAllChildren(nodeId: number): Set<number> {
-    const {dag} = this.state;
+    const {dags} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    dag.get(nodeId).parents.forEach(child => {
+    dags[dags.length - 1].get(nodeId).parents.forEach(child => {
       selectionSet.add(child);
       this.addAllChildren(child, selectionSet);
     })
@@ -270,9 +261,9 @@ class App extends Component<{}, State> {
   }
 
   private addAllChildren(nodeId: number, selectionSet: Set<number>) {
-    const {dag} = this.state;
+    const {dags} = this.state;
 
-    dag.get(nodeId).parents.forEach(child => {
+    dags[dags.length - 1].get(nodeId).parents.forEach(child => {
       if (!selectionSet.has(child)) {
         selectionSet.add(child);
         this.addAllChildren(child, selectionSet);
@@ -280,18 +271,18 @@ class App extends Component<{}, State> {
     })
   }
 
-  private cutDag(remainingNodeIds: number[]) {
-    const {dag, historyLength, historyState, versionCount} = this.state;
+  private createAndPushDag(remainingNodeIds: number[]) {
+    const {dags, historyLength, historyState} = this.state;
+    
     const remainingNodes: { [key: number]: SatNode } = {};
+    remainingNodeIds.forEach(n => remainingNodes[n] = dags[dags.length-1].get(n));
+    const newDag = new Dag(remainingNodes);
 
-    remainingNodeIds.forEach(n => remainingNodes[n] = dag.get(n));
     this.setState({
-      dag: new Dag(remainingNodes),
+      dags: dags.concat([newDag]),
       historyLength: historyLength,
       historyState: historyState,
-      versionCount: versionCount + 1
     });
-
   }
 
 }

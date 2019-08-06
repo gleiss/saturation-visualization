@@ -7,7 +7,7 @@ const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
   nodeSelection: number[],
-  versionCount: number,
+  multipleVersions: boolean,
   onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
@@ -31,7 +31,7 @@ export default class GraphMenu extends React.Component<Props, {}> {
           </svg>
         </button>
 
-        <button title="Undo last graph transformation" disabled={!this.props.versionCount} onClick={this.props.onUndo}>
+        <button title="Undo last graph transformation" disabled={!this.props.multipleVersions} onClick={this.props.onUndo}>
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-undo`}/>
           </svg>
