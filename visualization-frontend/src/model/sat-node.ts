@@ -1,3 +1,5 @@
+import {assert} from './util'
+
 export default class SatNode {
 
   id: number;
@@ -37,6 +39,8 @@ export default class SatNode {
   }
 
   static fromDto(dto: any): SatNode {
+    assert(typeof dto.number === 'number', "dto.number has to be a number");
+
     return new SatNode(
       dto.number,
       dto.clause,

@@ -5,9 +5,10 @@ import Viz from 'viz.js';
 import {Module, render} from 'viz.js/full.render.js';
 import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css'
+import { assert } from '../model/util';
 
 const styleTemplates = require('../resources/styleTemplates');
-const PLAIN_PATTERN = /^node (\d+) ([0-9.]+) ([0-9.]+) [0-9.]+ [0-9.]+ ".+" [a-zA-Z ]+$/g;
+const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 
 export default class Graph extends React.Component {
@@ -26,6 +27,7 @@ export default class Graph extends React.Component {
       await this.generateNetwork();
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
+        console.log(this.networkNodes)
         this.network.selectNodes(this.props.nodeSelection);
       }
       if (this.props.historyState !== prevProps.historyState) {
@@ -46,7 +48,7 @@ export default class Graph extends React.Component {
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   async generateNetwork() {
-    const {onNetworkChange, onNodeSelectionChange} = this.props;
+    const {onNodeSelectionChange} = this.props;
     const graph = await this.generateNetworkData();
     this.networkNodes = new DataSet(graph.networkNodes);
     const networkEdges = new DataSet(graph.networkEdges);
@@ -72,7 +74,7 @@ export default class Graph extends React.Component {
 
       this.applyStoredMarkers(this.networkNodes);
 
-      onNetworkChange(this.network, this.networkNodes, networkEdges);
+      // onNetworkChange(this.network, this.networkNodes, networkEdges);
     }
   }
 
@@ -83,20 +85,23 @@ export default class Graph extends React.Component {
     const positions = await this.computePositions(dag ? Object.values(dag.nodes) : []);
 
     positions.forEach(position => {
-      const node = dag ? dag.get(position.id) : null;
-      if (node) {
-        networkNodes.push(this.toNetworkNode(node, position, historyState));
+      assert(dag.get(position.id));
+      const node = dag.get(position.id);
 
-        const edgesVisible = node.isFromPreprocessing || !!(node.newTime && node.newTime <= historyState);
-        node
-          .parents
-          .forEach(parentId => {
-            if (dag && dag.get(parentId)) {
-              networkEdges.push(this.toNetworkEdge(parentId, node.id, edgesVisible))
-            }
-          });
-      }
+      networkNodes.push(this.toNetworkNode(node, position, historyState));
+
+      const edgesVisible = node.isFromPreprocessing || !!(node.newTime && node.newTime <= historyState);
+      node
+        .parents
+        .forEach(parentId => {
+          if (dag && dag.get(parentId)) {
+            networkEdges.push(this.toNetworkEdge(parentId, node.id, edgesVisible))
+          }
+        });
     });
+
+    console.log(dag.nodes);
+    console.log(networkNodes);
 
     return {networkNodes, networkEdges};
   }
@@ -149,11 +154,19 @@ export default class Graph extends React.Component {
 
   async computePositions(nodes) {
     const graphLayout = await this.toGraphLayout(nodes);
-    return graphLayout
-      .split('\n')
-      .filter((line) => line.startsWith('node'))
+
+    const parsedNodeLines = graphLayout
+      .substr(0, graphLayout.indexOf('\nedge')) // ignore remaining part of string describing edges
+      .split('\nnode ') //split lines
+      .slice(1) // ignore first line describing graph
+      .map(line => line.substr(0,line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
       .map((line) => line.matchAll(PLAIN_PATTERN).next().value)
-      .filter((match) => !!match)
+
+    parsedNodeLines.forEach(line => {
+      assert(line !== undefined);
+    })
+
+    return parsedNodeLines
       .map((match) => {
         const [, number, x, y] = match;
         return {

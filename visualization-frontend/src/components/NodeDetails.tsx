@@ -1,20 +1,19 @@
 import * as React from 'react';
 import {DataSet} from 'vis';
 
-import NetworkNode from '../model/network/network-node';
+import Dag from '../model/dag';
 import './NodeDetails.css';
 
-
 type Props = {
-  nodes: DataSet<NetworkNode> | null,
+  dag: Dag,
   nodeSelection: number[]
 };
 export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
     const oneNodeSelected = this.props.nodeSelection.length === 1;
-    const selectedNode = oneNodeSelected && this.props.nodes ?
-      this.props.nodes.get(this.props.nodeSelection[0]) :
+    const selectedNode = oneNodeSelected ?
+      this.props.dag.get(this.props.nodeSelection[0]) :
       undefined;
     const nodeInfo = oneNodeSelected ? '1 node' : `${this.props.nodeSelection.length} nodes`;
 
@@ -24,8 +23,8 @@ export default class NodeDetails extends React.Component<Props, {}> {
           selectedNode && (
             <article>
               <h2>Node <strong>{selectedNode.id}</strong></h2>
-              <h3>{selectedNode.rule}</h3>
-              <p>{selectedNode.label}</p>
+              <h3>{selectedNode.inferenceRule}</h3>
+              <p>{selectedNode.clause}</p>
             </article>
           )
         }

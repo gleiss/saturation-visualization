@@ -13,7 +13,7 @@ type Props = {
   nodeSelection: number[],
   historyLength: number,
   historyState: number,
-  onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) => void,
+  // onNetworkChange: (network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) => void,
   onNodeSelectionChange: (selection: number[]) => void,
   onHistoryStateChange: (newState: number) => void
 };
@@ -27,7 +27,7 @@ export default class Main extends React.Component<Props, {}> {
           nodeSelection={this.props.nodeSelection}
           historyState={this.props.historyState}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
-          onNetworkChange={this.props.onNetworkChange}
+          // onNetworkChange={this.props.onNetworkChange}
         />
         <Slider
           historyLength={this.props.historyLength}

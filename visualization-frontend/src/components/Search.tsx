@@ -1,16 +1,16 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
 
-import NetworkNode from '../model/network/network-node';
+import Dag from '../model/dag';
 import './Search.css';
+import SatNode from '../model/sat-node';
 
 
 type Props = {
-  nodes: DataSet<NetworkNode> | null,
+  dag: Dag,
   onUpdateNodeSelection: (selection: number[]) => void
 };
 type State = {
-  foundNodes: NetworkNode[]
+  foundNodes: SatNode[]
 };
 export default class Search extends React.Component<Props, State> {
 
@@ -47,16 +47,15 @@ export default class Search extends React.Component<Props, State> {
 
   search() {
     const searchValue = this.searchField.current ? this.searchField.current.value : '';
-    let foundNodes: NetworkNode[] = [];
+    let foundNodes: SatNode[] = [];
 
-    if (searchValue && this.props.nodes) {
-      foundNodes = this.props.nodes
+    if (searchValue) {
+      foundNodes = Object.values(this.props.dag.nodes)
         .map(node => node)
-        .filter(node => node.label.includes(searchValue));
-      foundNodes.sort((a, b) => a.label.length - b.label.length);
-
+        .filter(node => node.clause.includes(searchValue));
+      foundNodes.sort((a, b) => a.clause.length - b.clause.length);
       this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
-      foundNodes = foundNodes.filter(node => node.label !== 'Preproc');
+      foundNodes = foundNodes.filter(node => node.clause !== 'Preproc');
     }
     this.setState({
       foundNodes
@@ -64,8 +63,8 @@ export default class Search extends React.Component<Props, State> {
 
   }
 
-  toListItem = (node: NetworkNode) => {
-    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.label}</li>;
+  toListItem = (node: SatNode) => {
+    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.clause}</li>;
   };
 
   getDisabledListItem = () => {

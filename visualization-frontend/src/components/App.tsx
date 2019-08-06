@@ -1,9 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {DataSet, Network} from 'vis';
 
-import NetworkEdge from '../model/network/network-edge';
-import NetworkNode from '../model/network/network-node';
 import Main from './Main';
 import Aside from './Aside';
 import Dag from '../model/dag';
@@ -13,9 +10,9 @@ import './App.css';
 
 type State = {
   dag: Dag,
-  network: Network | null,
-  nodes: DataSet<NetworkNode>,
-  edges: DataSet<NetworkEdge>,
+  // network: Network | null,
+  // nodes: DataSet<NetworkNode>,
+  // edges: DataSet<NetworkEdge>,
   nodeSelection: number[],
   historyLength: number,
   historyState: number,
@@ -29,9 +26,9 @@ class App extends Component<{}, State> {
 
   state = {
     dag: new Dag({}),
-    network: null,
-    nodes: new DataSet([]),
-    edges: new DataSet([]),
+    // network: null,
+    // nodes: new DataSet([]),
+    // edges: new DataSet([]),
     nodeSelection: [],
     historyLength: 0,
     historyState: 0,
@@ -46,7 +43,7 @@ class App extends Component<{}, State> {
   render() {
     const {
       dag,
-      nodes,
+      // nodes,
       nodeSelection,
       historyLength,
       historyState,
@@ -64,7 +61,7 @@ class App extends Component<{}, State> {
           nodeSelection={nodeSelection}
           historyLength={historyLength}
           historyState={historyState}
-          onNetworkChange={this.setNetwork.bind(this)}
+          // onNetworkChange={this.setNetwork.bind(this)}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
         />
@@ -90,7 +87,7 @@ class App extends Component<{}, State> {
       <div className="app">
         {main}
         <Aside
-          nodes={nodes}
+          dag={dag}
           nodeSelection={nodeSelection}
           versionCount={versionCount}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
@@ -110,9 +107,9 @@ class App extends Component<{}, State> {
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) {
-    this.setState({network, nodes, edges});
-  }
+  // setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) {
+  //   this.setState({network, nodes, edges});
+  // }
 
   updateNodeSelection(nodeSelection: number[]) {
     this.setState({nodeSelection});
@@ -210,45 +207,26 @@ class App extends Component<{}, State> {
   // NODE SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   selectParents() {
-    const {edges, network, nodeSelection} = this.state;
+    const {dag, nodeSelection} = this.state;
     const selectionSet: Set<number> = new Set(nodeSelection);
 
-    if (!network) {
-      return;
-    }
-
-    const currentNetwork = network! as Network;
-
     nodeSelection.forEach(node => {
-      currentNetwork
-        .getConnectedEdges(node)
-        .map(edgeId => edges.get(edgeId))
-        .filter(edge => !!edge)
-        .map(edge => edge! as NetworkEdge)
-        .filter(edge => edge.to === node)
-        .forEach(edge => selectionSet.add(edge.from))
+      dag.get(node).parents.forEach(parent => {
+        selectionSet.add(parent);
+      })
     });
     this.updateNodeSelection([...selectionSet]);
   }
 
+  // TODO: update to children
   selectChildren() {
-    const {network, edges, nodeSelection} = this.state;
+    const {dag, nodeSelection} = this.state;
     const selectionSet: Set<number> = new Set(nodeSelection);
 
-    if (!network) {
-      return;
-    }
-
-    const currentNetwork = network! as Network;
-
     nodeSelection.forEach(node => {
-      currentNetwork
-        .getConnectedEdges(node)
-        .map(edgeId => edges.get(edgeId))
-        .filter(edge => !!edge)
-        .map(edge => edge! as NetworkEdge)
-        .filter(edge => edge.from === node)
-        .forEach(edge => selectionSet.add(edge.to))
+      dag.get(node).parents.forEach(child => {
+        selectionSet.add(child);
+      })
     });
     this.updateNodeSelection([...selectionSet]);
   }
@@ -268,93 +246,50 @@ class App extends Component<{}, State> {
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   private findAllParents(nodeId: number): Set<number> {
-    const {edges, network} = this.state;
+    const {dag} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    if (!network) {
-      return selectionSet;
-    }
-
-    const currentNetwork = network! as Network;
-
-    currentNetwork
-      .getConnectedEdges(nodeId)
-      .map(edgeId => edges.get(edgeId))
-      .filter(edge => !!edge)
-      .map(edge => edge! as NetworkEdge)
-      .filter(edge => edge.to === nodeId)
-      .forEach(edge => {
-        selectionSet.add(edge.from);
-        this.addAllParents(edge.from, selectionSet);
-      });
+    dag.get(nodeId).parents.forEach(parent => {
+      selectionSet.add(parent);
+      this.addAllParents(parent, selectionSet);
+    })
+    
     return selectionSet;
   }
 
   private addAllParents(nodeId: number, selectionSet: Set<number>) {
-    const {edges, network} = this.state;
+    const {dag} = this.state;
 
-    if (!network) {
-      return;
-    }
-
-    const currentNetwork = network! as Network;
-
-    currentNetwork
-      .getConnectedEdges(nodeId)
-      .map(edgeId => edges.get(edgeId))
-      .filter(edge => !!edge)
-      .map(edge => edge! as NetworkEdge)
-      .filter(edge => edge.to === nodeId)
-      .forEach(edge => {
-        if (!selectionSet.has(edge.from)) {
-          selectionSet.add(edge.from);
-          this.addAllParents(edge.from, selectionSet);
-        }
-      })
+    dag.get(nodeId).parents.forEach(parent => {
+      if (!selectionSet.has(parent)) {
+        selectionSet.add(parent);
+        this.addAllParents(parent, selectionSet);
+      }
+    })
   }
 
+  // TODO: children instead of parents
   private findAllChildren(nodeId: number): Set<number> {
-    const {edges, network} = this.state;
+    const {dag} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    if (!network) {
-      return selectionSet;
-    }
-
-    const currentNetwork = network! as Network;
-
-    currentNetwork
-      .getConnectedEdges(nodeId)
-      .map(edgeId => edges.get(edgeId))
-      .filter(edge => !!edge)
-      .map(edge => edge! as NetworkEdge)
-      .filter(edge => edge.from === nodeId)
-      .forEach(edge => {
-        selectionSet.add(edge.to);
-        this.addAllChildren(edge.to, selectionSet);
-      });
+    dag.get(nodeId).parents.forEach(child => {
+      selectionSet.add(child);
+      this.addAllChildren(child, selectionSet);
+    })
+    
     return selectionSet;
   }
 
   private addAllChildren(nodeId: number, selectionSet: Set<number>) {
-    const {network, edges} = this.state;
+    const {dag} = this.state;
 
-    if (!network) {
-      return;
-    }
-
-    const currentNetwork = network! as Network;
-
-    currentNetwork
-      .getConnectedEdges(nodeId)
-      .map(edgeId => edges.get(edgeId))
-      .filter(edge => !!edge)
-      .map(edge => edge! as NetworkEdge)
-      .filter(edge => edge.from === nodeId && !selectionSet.has(edge.to))
-      .forEach(edge => {
-        selectionSet.add(edge.to);
-        this.addAllChildren(edge.to, selectionSet);
-      });
+    dag.get(nodeId).parents.forEach(child => {
+      if (!selectionSet.has(child)) {
+        selectionSet.add(child);
+        this.addAllChildren(child, selectionSet);
+      }
+    })
   }
 
   private cutDag(remainingNodeNumbers: number[]) {

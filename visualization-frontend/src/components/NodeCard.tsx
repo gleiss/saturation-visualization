@@ -1,14 +1,12 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
 
-import NetworkNode from '../model/network/network-node';
+import Dag from '../model/dag';
 import NodeMenu from './NodeMenu';
 import Search from './Search';
 import './NodeCard.css';
 
-
 type Props = {
-  nodes: DataSet<NetworkNode> | null,
+  dag: Dag,
   nodeSelection: number[],
   onUpdateNodeSelection: (selection: number[]) => void,
   onSelectParents: () => void,
@@ -29,7 +27,7 @@ export default class NodeCard extends React.Component<Props, {}> {
             onFindCommonConsequences={this.props.onFindCommonConsequences}
           />
           <Search
-            nodes={this.props.nodes}
+            dag={this.props.dag}
             onUpdateNodeSelection={this.props.onUpdateNodeSelection}
           />
         </article>
