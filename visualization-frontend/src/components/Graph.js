@@ -73,8 +73,6 @@ export default class Graph extends React.Component {
       });
 
       this.applyStoredMarkers(this.networkNodes);
-
-      // onNetworkChange(this.network, this.networkNodes, networkEdges);
     }
   }
 

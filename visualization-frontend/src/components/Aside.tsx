@@ -1,7 +1,5 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
 
-import NetworkNode from '../model/network/network-node';
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
