@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {DataSet} from 'vis';
 
 import Dag from '../model/dag';
 import './NodeDetails.css';

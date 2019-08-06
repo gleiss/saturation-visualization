@@ -10,9 +10,6 @@ import './App.css';
 
 type State = {
   dag: Dag,
-  // network: Network | null,
-  // nodes: DataSet<NetworkNode>,
-  // edges: DataSet<NetworkEdge>,
   nodeSelection: number[],
   historyLength: number,
   historyState: number,
@@ -26,9 +23,6 @@ class App extends Component<{}, State> {
 
   state = {
     dag: new Dag({}),
-    // network: null,
-    // nodes: new DataSet([]),
-    // edges: new DataSet([]),
     nodeSelection: [],
     historyLength: 0,
     historyState: 0,
@@ -43,7 +37,6 @@ class App extends Component<{}, State> {
   render() {
     const {
       dag,
-      // nodes,
       nodeSelection,
       historyLength,
       historyState,
@@ -61,7 +54,6 @@ class App extends Component<{}, State> {
           nodeSelection={nodeSelection}
           historyLength={historyLength}
           historyState={historyState}
-          // onNetworkChange={this.setNetwork.bind(this)}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
         />
@@ -106,10 +98,6 @@ class App extends Component<{}, State> {
 
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // setNetwork(network: Network, nodes: DataSet<NetworkNode>, edges: DataSet<NetworkEdge>) {
-  //   this.setState({network, nodes, edges});
-  // }
 
   updateNodeSelection(nodeSelection: number[]) {
     this.setState({nodeSelection});
