@@ -45,8 +45,8 @@ class App extends Component<{}, State> {
       isLoaded,
       isLoading
     } = this.state;
+    
     let main;
-
     if (isLoaded && dag.hasNodes()) {
       main = (
         <Main
@@ -280,11 +280,11 @@ class App extends Component<{}, State> {
     })
   }
 
-  private cutDag(remainingNodeNumbers: number[]) {
+  private cutDag(remainingNodeIds: number[]) {
     const {dag, historyLength, historyState, versionCount} = this.state;
     const remainingNodes: { [key: number]: SatNode } = {};
 
-    remainingNodeNumbers.forEach(n => remainingNodes[n] = dag.get(n));
+    remainingNodeIds.forEach(n => remainingNodes[n] = dag.get(n));
     this.setState({
       dag: new Dag(remainingNodes),
       historyLength: historyLength,
