@@ -98,9 +98,6 @@ export default class Graph extends React.Component {
         });
     });
 
-    console.log(dag.nodes);
-    console.log(networkNodes);
-
     return {networkNodes, networkEdges};
   }
 
