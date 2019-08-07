@@ -16,18 +16,19 @@ export default class Graph extends React.Component {
   markers = [];
   network = null;
   networkNodes = new DataSet([]);
+  networkEdges = new DataSet([]);
   graphContainer = React.createRef();
 
   async componentDidMount() {
-    await this.generateNetwork();
+    this.generateNetwork();
+    await this.updateNetwork();
   }
 
   async componentDidUpdate(prevProps) {
     if (this.props.dag !== prevProps.dag) {
-      await this.generateNetwork();
+      await this.updateNetwork();
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
-        console.log(this.networkNodes)
         this.network.selectNodes(this.props.nodeSelection);
       }
       if (this.props.historyState !== prevProps.historyState) {
@@ -46,42 +47,39 @@ export default class Graph extends React.Component {
 
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  generateNetwork() {
+    assert(this.graphContainer.current);
+    assert(!this.network); // should only be called once
 
-  async generateNetwork() {
+    this.network = new Network(this.graphContainer.current, {
+      nodes: [],
+      edges: []
+    }, this.getNetworkOptions());
+
     const {onNodeSelectionChange} = this.props;
-    const graph = await this.generateNetworkData();
-    this.networkNodes = new DataSet(graph.networkNodes);
-    const networkEdges = new DataSet(graph.networkEdges);
-
-    if (this.graphContainer.current) {
-      if (this.network) {
-        this.network.destroy();
+    this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
+    this.network.on('oncontext', (rightClickEvent) => {
+      const nodeId = this.findNodeAt(rightClickEvent.event);
+      if (nodeId) {
+        this.toggleMarker(nodeId);
       }
+      rightClickEvent.event.preventDefault();
+    });
 
-      this.network = new Network(this.graphContainer.current, {
-        nodes: this.networkNodes,
-        edges: networkEdges
-      }, this.getNetworkOptions());
-
-      this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
-      this.network.on('oncontext', (rightClickEvent) => {
-        const nodeId = this.findNodeAt(rightClickEvent.event);
-        if (nodeId) {
-          this.toggleMarker(nodeId);
-        }
-        rightClickEvent.event.preventDefault();
-      });
-
-      this.applyStoredMarkers(this.networkNodes);
-    }
+    this.applyStoredMarkers(this.networkNodes);
   }
 
-  async generateNetworkData() {
+  async updateNetwork() {
+
+    // generate node and edge data
     const {dag, historyState} = this.props;
     const networkNodes = [];
     const networkEdges = [];
-    const positions = await this.computePositions(dag ? Object.values(dag.nodes) : []);
 
+    // compute positions
+    const positions = await this.computePositions(Object.values(dag.nodes));
+
+    // generate network-nodes as combination of nodes and their positions
     positions.forEach(position => {
       assert(dag.get(position.id));
       const node = dag.get(position.id);
@@ -98,7 +96,16 @@ export default class Graph extends React.Component {
         });
     });
 
-    return {networkNodes, networkEdges};
+    // update networkNodes and networkEdges
+    // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
+    // TODO: can we get altogether get rid of DataSet and use a standard dict or array instead?
+    this.networkNodes.clear();
+    this.networkEdges.clear();
+    this.networkNodes.add(networkNodes);
+    this.networkEdges.add(networkEdges);
+
+    // force a rerender (TODO: this should not be necessary)
+    this.network.setData({nodes: networkNodes,edges: networkEdges});
   }
 
   findNodeAt(clickPosition) {
