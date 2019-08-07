@@ -19,6 +19,8 @@ export default class Graph extends React.Component {
   networkEdges = new DataSet([]);
   graphContainer = React.createRef();
 
+  layoutCache = new Map();
+
   async componentDidMount() {
     this.generateNetwork();
     await this.updateNetwork();
@@ -76,8 +78,17 @@ export default class Graph extends React.Component {
     const networkNodes = [];
     const networkEdges = [];
 
-    // compute positions
-    const positions = await this.computePositions(this.props.dag);
+    // lookup or compute positions
+    let positions;
+    if(this.layoutCache.has(dag))
+    {
+      positions = this.layoutCache.get(dag);
+    }
+    else
+    {
+      positions = await this.computePositions(dag);
+      this.layoutCache.set(dag, positions);
+    }
 
     // generate network-nodes as combination of nodes and their positions
     positions.forEach(position => {
