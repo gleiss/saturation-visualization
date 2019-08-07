@@ -77,7 +77,7 @@ export default class Graph extends React.Component {
     const networkEdges = [];
 
     // compute positions
-    const positions = await this.computePositions(Object.values(dag.nodes));
+    const positions = await this.computePositions(this.props.dag);
 
     // generate network-nodes as combination of nodes and their positions
     positions.forEach(position => {
@@ -126,10 +126,22 @@ export default class Graph extends React.Component {
 
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  async computePositions(dag) {
+    // generate dot string
+    const dotString = this.dagToDotString(dag);
+    
+    // use viz to compute layout for dag given as dotstring
+    // note that viz returns the layout as a string
+    const layoutString = await this.runViz(dotString);
 
-  toDotString(nodes) {
+    // parse the layout string into array of network-nodes
+    return this.parseLayoutString(layoutString);
+  };
+
+  dagToDotString(dag) {
     const dotStrings = [];
 
+    const nodes = Object.values(dag.nodes);
     nodes.forEach(node => {
       dotStrings.push(`${node.id} [label="${node.clause}"]`);
       node
@@ -140,11 +152,11 @@ export default class Graph extends React.Component {
     return `digraph { ${dotStrings.join('; ')} }`;
   };
 
-  async toGraphLayout(nodes) {
+  async runViz(dotString) {
     let viz = new Viz({Module, render});
 
     return viz
-      .renderString(this.toDotString(nodes), {format: 'plain'})
+      .renderString(dotString, {format: 'plain'})
       .then((result) => {
         return result;
       })
@@ -154,20 +166,18 @@ export default class Graph extends React.Component {
       });
   };
 
-  async computePositions(nodes) {
-    const graphLayout = await this.toGraphLayout(nodes);
-
-    const parsedNodeLines = graphLayout
-      .substr(0, graphLayout.indexOf('\nedge')) // ignore remaining part of string describing edges
+  parseLayoutString(layoutString) {
+    // split layoutString to array of strings describing positions of nodes
+    const parsedNodeLines = layoutString
+      .substr(0, layoutString.indexOf('\nedge')) // ignore remaining part of string describing edges
       .split('\nnode ') //split lines
       .slice(1) // ignore first line describing graph
-      .map(line => line.substr(0,line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
-      .map((line) => line.matchAll(PLAIN_PATTERN).next().value)
-
+      .map(line => line.substr(0, line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
+      .map((line) => line.matchAll(PLAIN_PATTERN).next().value); // parse each remaining line
     parsedNodeLines.forEach(line => {
-      assert(line !== undefined);
-    })
-
+      assert(line !== undefined); // check that each remaining line was successfully parsed
+    });
+    // generate network node for each nodeString
     return parsedNodeLines
       .map((match) => {
         const [, number, x, y] = match;
@@ -177,8 +187,7 @@ export default class Graph extends React.Component {
           y: parseFloat(y)
         };
       });
-  };
-
+  }
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
