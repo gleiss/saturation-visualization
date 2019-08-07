@@ -41,6 +41,10 @@ export default class SatNode {
   static fromDto(dto: any): SatNode {
     assert(typeof dto.number === 'number', "dto.number has to be a number");
 
+    assert(dto.new_time !== undefined, "new_time must be a number or null");
+    assert(dto.passive_time !== undefined, "passive_time must be a number or null");
+    assert(dto.active_time !== undefined, "active_time must be a number or null");
+
     return new SatNode(
       dto.number,
       dto.clause,

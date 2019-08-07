@@ -16,7 +16,7 @@ export default class Dag {
     let counter = 0;
     Object.values(this.nodes)
       .forEach(node => {
-        if (node.activeTime) {
+        if (node.activeTime !== null) {
           counter += 1;
         }
       });

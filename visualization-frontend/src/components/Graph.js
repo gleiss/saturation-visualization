@@ -98,7 +98,7 @@ export default class Graph extends React.Component {
 
       networkNodes.push(this.toNetworkNode(node, position, historyState));
 
-      const edgesVisible = node.isFromPreprocessing || !!(node.newTime && node.newTime <= historyState);
+      const edgesVisible = node.isFromPreprocessing || !!(node.newTime !== null && node.newTime <= historyState);
       node
         .parents
         .forEach(parentId => {
@@ -205,9 +205,9 @@ export default class Graph extends React.Component {
 
   selectStyle = (node, historyState) => {
     if (node.inferenceRule === 'theory axiom') {
-      if (node.activeTime && node.activeTime <= historyState) {
+      if (node.activeTime !== null && node.activeTime <= historyState) {
         return styleTemplates.activeTheoryAxiom;
-      } else if (node.passiveTime && node.passiveTime <= historyState) {
+      } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
         return styleTemplates.passiveTheoryAxiom;
       }
     }
@@ -216,11 +216,11 @@ export default class Graph extends React.Component {
       return node.parents ? styleTemplates.preprocessing : styleTemplates.input;
     }
 
-    if (node.activeTime && node.activeTime <= historyState) {
+    if (node.activeTime !== null && node.activeTime <= historyState) {
       return styleTemplates.active;
-    } else if (node.passiveTime && node.passiveTime <= historyState) {
+    } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
       return styleTemplates.passive;
-    } else if (node.newTime && node.newTime < historyState) { // TODO: check that < is correct instead of <=
+    } else if (node.newTime !== null && node.newTime < historyState) { // TODO: check that < is correct instead of <=
       return styleTemplates.new;
     }
 
