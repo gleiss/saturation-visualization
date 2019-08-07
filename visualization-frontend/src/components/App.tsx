@@ -149,13 +149,12 @@ class App extends Component<{}, State> {
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
-    const {dags} = this.state;
-    assert(dags.length > 1, "Undo last step must only be called if there exist at least two dags");
+    assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
-    this.setState({
-      dags: dags.slice(0, dags.length-1),
-      historyState: Object.keys(dags[dags.length-1].nodes).length - 1
-    });
+    this.setState((state, props) => ({
+      dags: state.dags.slice(0, state.dags.length-1),
+      historyState: state.dags[state.dags.length-2].numberOfHistorySteps()-1
+    }));
   }
 
   renderParentsOnly() {
@@ -268,7 +267,7 @@ class App extends Component<{}, State> {
   }
 
   private createAndPushDag(remainingNodeIds: number[]) {
-    const {dags, historyState} = this.state;
+    const {dags} = this.state;
     
     const remainingNodes: { [key: number]: SatNode } = {};
     remainingNodeIds.forEach(n => remainingNodes[n] = dags[dags.length-1].get(n));
@@ -276,7 +275,7 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: historyState,
+      historyState: newDag.numberOfHistorySteps()-1,
     });
   }
 
