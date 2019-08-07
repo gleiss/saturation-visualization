@@ -219,12 +219,23 @@ export default class Graph extends React.Component {
       return styleTemplates.active;
     } else if (node.passiveTime && node.passiveTime <= historyState) {
       return styleTemplates.passive;
-    } else if (node.newTime && node.newTime < historyState) {
+    } else if (node.newTime && node.newTime < historyState) { // TODO: check that < is correct instead of <=
       return styleTemplates.new;
     }
 
     return styleTemplates.hidden;
   };
+
+  getColorStyle = (styleData) => {
+    return new ColorStyle(
+      styleData.defaultStyle.background,
+      styleData.defaultStyle.border,
+      new Color(styleData.defaultStyle.background, styleData.defaultStyle.border),
+      new Color(styleData.highlightStyle.background, styleData.highlightStyle.border),
+      new Color(styleData.markedStyle.background, styleData.markedStyle.border)
+    )
+  };
+
 
   setStyle = (node, newStyleKey) => {
     const newStyle = node.color.get(newStyleKey);
@@ -236,13 +247,17 @@ export default class Graph extends React.Component {
   toNetworkNode = (node, position, historyState) => {
     const styleData = this.selectStyle(node, historyState);
 
+    const styleColor = this.getColorStyle(styleData);
+    const styleFont = new FontStyle(styleData.text);
+    const styleShape = styleData.shape;
+    
     return {
       id: node.id,
-      color: this.getColorStyle(styleData),
-      font: new FontStyle(styleData.text),
+      color: styleColor,
+      font: styleFont,
       label: node.clause,
       rule: node.inferenceRule,
-      shape: styleData.shape,
+      shape: styleShape,
       x: Math.round(position.x * -70),
       y: Math.round(position.y * -120)
     }
@@ -255,16 +270,6 @@ export default class Graph extends React.Component {
       from: fromNode,
       to: toNode
     }
-  };
-
-  getColorStyle = (styleData) => {
-    return new ColorStyle(
-      styleData.defaultStyle.background,
-      styleData.defaultStyle.border,
-      new Color(styleData.defaultStyle.background, styleData.defaultStyle.border),
-      new Color(styleData.highlightStyle.background, styleData.highlightStyle.border),
-      new Color(styleData.markedStyle.background, styleData.markedStyle.border)
-    )
   };
 
   updateNodeStyles() {
