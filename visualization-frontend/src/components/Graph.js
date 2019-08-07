@@ -29,6 +29,7 @@ export default class Graph extends React.Component {
   async componentDidUpdate(prevProps) {
     if (this.props.dag !== prevProps.dag) {
       await this.updateNetwork();
+      this.network.selectNodes(this.props.nodeSelection);
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
         this.network.selectNodes(this.props.nodeSelection);
