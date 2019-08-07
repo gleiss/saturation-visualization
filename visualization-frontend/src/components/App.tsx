@@ -8,7 +8,12 @@ import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
 
-
+/* Invariant: the state is always in one of the following phases
+ * "Waiting": error, isLoaded and isLoading are all false
+ * "Error":   error holds an error, and there are no guarantees on other fields
+ * "Loading": isLoading is true, and there are no guarantees on other fields
+ * "Loaded":  isLoaded is true, error and isLoading are false, and dags, nodeSelection and historyState hold meaningful values.
+ */
 type State = {
   dags: Dag[],
   nodeSelection: number[],
@@ -30,8 +35,6 @@ class App extends Component<{}, State> {
   };
 
   render() {
-    assert(this.state.dags != undefined,"");
-    console.log(this.state.dags);
     const {
       dags,
       nodeSelection,
@@ -42,6 +45,7 @@ class App extends Component<{}, State> {
     } = this.state;
     
     let main;
+    // TODO: why doesn't it work for a dag without nodes?
     if (isLoaded && dags[dags.length-1].hasNodes()) {
       const dag = dags[dags.length-1];
       main = (
