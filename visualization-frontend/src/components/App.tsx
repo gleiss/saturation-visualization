@@ -12,7 +12,6 @@ import { assert } from '../model/util';
 type State = {
   dags: Dag[],
   nodeSelection: number[],
-  historyLength: number,
   historyState: number,
   error: any,
   isLoaded: boolean,
@@ -24,7 +23,6 @@ class App extends Component<{}, State> {
   state: State = {
     dags: [],
     nodeSelection: [],
-    historyLength: 0,
     historyState: 0,
     error: null,
     isLoaded: false,
@@ -37,7 +35,6 @@ class App extends Component<{}, State> {
     const {
       dags,
       nodeSelection,
-      historyLength,
       historyState,
       error,
       isLoaded,
@@ -46,11 +43,12 @@ class App extends Component<{}, State> {
     
     let main;
     if (isLoaded && dags[dags.length-1].hasNodes()) {
+      const dag = dags[dags.length-1];
       main = (
         <Main
-          dag={dags[dags.length-1]}
+          dag={dag}
           nodeSelection={nodeSelection}
-          historyLength={historyLength}
+          historyLength={dag.numberOfHistorySteps()-1}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
@@ -131,7 +129,6 @@ class App extends Component<{}, State> {
           this.setState({
             dags: [dag],
             nodeSelection: [],
-            historyLength: dag.numberOfHistorySteps() - 1,
             historyState: dag.numberOfHistorySteps() - 1,
             error: false,
             isLoaded: true,
@@ -157,7 +154,6 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.slice(0, dags.length-1),
-      historyLength: Object.keys(dags[dags.length-1].nodes).length - 1,
       historyState: Object.keys(dags[dags.length-1].nodes).length - 1
     });
   }
@@ -272,7 +268,7 @@ class App extends Component<{}, State> {
   }
 
   private createAndPushDag(remainingNodeIds: number[]) {
-    const {dags, historyLength, historyState} = this.state;
+    const {dags, historyState} = this.state;
     
     const remainingNodes: { [key: number]: SatNode } = {};
     remainingNodeIds.forEach(n => remainingNodes[n] = dags[dags.length-1].get(n));
@@ -280,7 +276,6 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyLength: historyLength,
       historyState: historyState,
     });
   }
