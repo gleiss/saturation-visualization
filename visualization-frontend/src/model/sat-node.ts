@@ -11,6 +11,7 @@ export default class SatNode {
   newTime: number;
   passiveTime: number;
   activeTime: number;
+  literals: string[];
 
   constructor(
     id: number,
@@ -32,6 +33,7 @@ export default class SatNode {
     this.newTime = newTime;
     this.passiveTime = passiveTime;
     this.activeTime = activeTime;
+    this.literals = clause.split(" | ");
   }
 
   toString(): string {
