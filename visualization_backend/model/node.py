@@ -40,6 +40,10 @@ class Node:
         assert self.active_time is None
         self.active_time = line_number
 
+    def set_clause(self, clause):
+        assert isinstance(clause, str)
+        self.clause = clause
+
     def set_statistics(self, statistics):
         assert isinstance(statistics, dict)
         for key, value in statistics.items():

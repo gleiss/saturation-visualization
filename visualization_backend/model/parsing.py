@@ -155,6 +155,7 @@ def analyse(parsed_lines):
             # Currently the statistics printed for active clauses subsume all other statistics, so we always use the 
             # statistics from the line where the clause is activated (if available).
             current_node.set_statistics(line.statistics)
+            current_node.set_clause(line.clause)
 
             # set active time
             index = index + 1
