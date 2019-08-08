@@ -6,7 +6,7 @@ export default class SatNode {
   clause: string;
   inferenceRule: string;
   parents: number[];
-  statistics: any[];
+  statistics: Map<string,number>;
   isFromPreprocessing: boolean;
   newTime: number;
   passiveTime: number;
@@ -18,7 +18,7 @@ export default class SatNode {
     clause: string,
     inferenceRule: string,
     parents: number[],
-    statistics: any[],
+    statistics: Map<string,number>,
     isFromPreprocessing: boolean,
     newTime: number,
     passiveTime: number,
@@ -47,6 +47,13 @@ export default class SatNode {
     assert(dto.passive_time !== undefined, "passive_time must be a number or null");
     assert(dto.active_time !== undefined, "active_time must be a number or null");
 
+    const statistics = new Map<string,number>();
+    for (const key in dto.statistics) {
+      const val = dto.statistics[key];
+      if (typeof val == "number"){
+        statistics.set(key, val);
+      }
+  }
     return new SatNode(
       dto.number,
       dto.clause,

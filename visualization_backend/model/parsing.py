@@ -14,12 +14,12 @@ __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN_SATURATION = re.compile(
-    r'^(\[SA\] [a-z]{3,7}): (\d+)\. (.*) \(([\d:]+)\)([T ]+)\[(\D*) ?([\d,]*)\]$')
-OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\]$')
+    r'^(\[SA\] [a-z]{3,7}): (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
+OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
 
 PREPROCESSING_LABEL = 'Preproc'
 
-ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'statistics', 'inference_rule', 'parents'])
+ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'inference_rule', 'parents', 'statistics'])
 
 
 def process(vampire_output):
@@ -38,33 +38,41 @@ def parse_line(line):
     # first try to parse line as output from saturation, i.e. line has form
     # [SA] new: Clause, [SA] passive: Clause, or [SA] active: Clause
     try:
-        type_, number, clause, statistics, _, inference_rule, parents = re.match(OUTPUT_PATTERN_SATURATION,
+        type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_SATURATION,
                                                                                  line).groups()
         type_ = type_.split(']')[1].strip()
         number = int(number)
         clause = util.remove_quotes(clause.rstrip())
-        statistics = [int(stat) for stat in statistics.split(':')]
         inference_rule = inference_rule.rstrip()
         parents = [int(parent) for parent in parents.split(',') if parent]
-
-        return ParsedLine(type_, number, clause, statistics, inference_rule, parents)
+        statistics = parseStatistics(statistics)
+        return ParsedLine(type_, number, clause, inference_rule, parents,statistics)
     except AttributeError:
         # next try to parse line as output from preprocessing (actually from print_clausifier_premises)
         try:
-            number, clause, inference_rule, parents = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
+            number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
             type_ = "preprocessing"
             number = int(number)
             clause = util.remove_quotes(clause.rstrip())
-            if clause.endswith("(TD)"):
-                clause = clause[:-4]
-            statistics = []
             inference_rule = inference_rule.rstrip()
             parents = [int(parent) for parent in parents.split(',') if parent]
-
-            return ParsedLine(type_, number, clause, statistics, inference_rule, parents)
+            statistics = parseStatistics(statistics)
+            return ParsedLine(type_, number, clause, inference_rule, parents, statistics)
         except AttributeError:
             LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
 
+def parseStatistics(statisticsString):
+    statisticsString = statisticsString.replace(' ','')
+    if statisticsString == '': # no statistics included in parsed line
+        return {}
+    else: # statistics included in parsed line
+        assert(statisticsString.startswith('{') and statisticsString.endswith('}'))
+        keyValueStrings = statisticsString[1:-1].split(',')
+        statistics = {}
+        for keyValueString in keyValueStrings:
+            keyValuePair = keyValueString.split(':')
+            statistics[keyValuePair[0]] = int(keyValuePair[1])
+        return statistics
 
 def analyse(parsed_lines):
     """Build a DAG from parsed vampire output lines."""

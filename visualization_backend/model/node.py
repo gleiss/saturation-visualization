@@ -52,9 +52,10 @@ class Node:
         assert isinstance(clause, str)
         assert isinstance(inference_rule, str)
         assert isinstance(parents, list)
-        assert isinstance(statistics, list)
         for parent in parents:
             assert isinstance(parent, int)
-        for stat in statistics:
-            assert isinstance(stat, int)
+        assert isinstance(statistics, dict)
+        for key, value in statistics.items():
+            assert isinstance(key, str)
+            assert isinstance(value, int)
         assert isinstance(is_from_preprocessing, bool)
