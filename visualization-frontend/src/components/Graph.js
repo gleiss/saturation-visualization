@@ -220,7 +220,7 @@ export default class Graph extends React.Component {
       return styleTemplates.active;
     } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
       return styleTemplates.passive;
-    } else if (node.newTime !== null && node.newTime < historyState) { // TODO: check that < is correct instead of <=
+    } else if (node.newTime !== null && node.newTime <= historyState) {
       return styleTemplates.new;
     }
 
