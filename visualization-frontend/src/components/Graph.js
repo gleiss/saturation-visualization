@@ -252,11 +252,35 @@ export default class Graph extends React.Component {
     const styleFont = new FontStyle(styleData.text);
     const styleShape = styleData.shape;
     
+    let label;
+    // if the node contains information about the number of selected literals,
+    // construct a label-string which formats all selected literals bold.
+    if(node.statistics.has("nSel")) {
+      const numberOfSelectedLiterals = node.statistics.get("nSel");
+      assert(numberOfSelectedLiterals >= 1);
+      assert(numberOfSelectedLiterals <= node.literals.length);
+
+      label = "<b>" + node.literals[0];
+      for (let i = 1; i < numberOfSelectedLiterals; i++) {
+        label = label.concat(" | " + node.literals[i]);
+      }
+      label = label.concat("</b>")
+      for (let i = numberOfSelectedLiterals; i < node.literals.length; i++) {
+        label = label.concat(" | " + node.literals[i]);
+      }
+    }
+    // otherwise use no formatting
+    else {
+      label = node.clause;
+    }
+
     return {
       id: node.id,
       color: styleColor,
-      font: styleFont,
-      label: node.clause,
+      font: { //TODO: restore fonts
+        multi: true,
+      },      
+      label: label,
       rule: node.inferenceRule,
       shape: styleShape,
       x: Math.round(position.x * -70),
