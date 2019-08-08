@@ -59,7 +59,7 @@ export default class SatNode {
       dto.clause,
       dto.inference_rule,
       dto.parents,
-      dto.statistics,
+      statistics,
       dto.is_from_preprocessing,
       dto.new_time,
       dto.passive_time,
