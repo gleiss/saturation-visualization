@@ -151,8 +151,10 @@ def analyse(parsed_lines):
             # order them consistently and then do a sanity comparison. Parsing them is not much extra implementation
             # effort, since we anyway need it for later features.
             # TODO:
-            # Collect the selected literal, which is only there at some point (probably at the point where the clause
-            # gets activated)
+            # think about a smarter way how to merge statistics from different points in time.
+            # Currently the statistics printed for active clauses subsume all other statistics, so we always use the 
+            # statistics from the line where the clause is activated (if available).
+            current_node.set_statistics(line.statistics)
 
             # set active time
             index = index + 1
