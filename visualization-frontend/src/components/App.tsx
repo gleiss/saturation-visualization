@@ -52,7 +52,7 @@ class App extends Component<{}, State> {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
-          historyLength={dag.numberOfHistorySteps()-1}
+          historyLength={dags[0].numberOfHistorySteps()-1}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
@@ -157,7 +157,7 @@ class App extends Component<{}, State> {
 
     this.setState((state, props) => ({
       dags: state.dags.slice(0, state.dags.length-1),
-      historyState: state.dags[state.dags.length-2].numberOfHistorySteps()-1
+      historyState: state.dags[0].numberOfHistorySteps()-1 // TODO: construct history steps properly for each subgraph
     }));
   }
 
@@ -279,7 +279,7 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: newDag.numberOfHistorySteps()-1,
+      historyState: dags[0].numberOfHistorySteps()-1,
     });
   }
 
