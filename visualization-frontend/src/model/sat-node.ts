@@ -54,7 +54,7 @@ export default class SatNode {
     const statistics = new Map<string,number>();
     for (const key in dto.statistics) {
       const val = dto.statistics[key];
-      if (typeof val == "number"){
+      if (typeof val === "number"){
         statistics.set(key, val);
       }
   }
