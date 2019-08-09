@@ -23,7 +23,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
             <article>
               <h2>Node <strong>{selectedNode.id}</strong></h2>
               <h3>{selectedNode.inferenceRule}</h3>
-              <p>{selectedNode.clause}</p>
+              <p>{selectedNode.toString()}</p>
             </article>
           )
         }

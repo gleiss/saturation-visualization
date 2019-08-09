@@ -1,9 +1,11 @@
-import {assert} from './util'
+import { assert } from './util'
+import { Unit } from './unit'
+import { UnitParser } from './unit-parser';
 
 export default class SatNode {
 
   readonly id: number;
-  readonly clause: string;
+  readonly unit: Unit;
   readonly inferenceRule: string;
   readonly parents: number[];
   readonly statistics: Map<string,number>;
@@ -11,11 +13,10 @@ export default class SatNode {
   readonly newTime: number;
   readonly passiveTime: number;
   readonly activeTime: number;
-  readonly literals: string[];
 
   constructor(
     id: number,
-    clause: string,
+    unitString: string,
     inferenceRule: string,
     parents: number[],
     statistics: Map<string,number>,
@@ -25,7 +26,7 @@ export default class SatNode {
     activeTime: number
   ) {
     this.id = id;
-    this.clause = clause;
+    this.unit = UnitParser.parseUnit(unitString, isFromPreprocessing, statistics);
     this.inferenceRule = inferenceRule;
     this.parents = parents;
     this.statistics = statistics;
@@ -33,11 +34,14 @@ export default class SatNode {
     this.newTime = newTime;
     this.passiveTime = passiveTime;
     this.activeTime = activeTime;
-    this.literals = clause.split(" | ");
   }
 
   toString(): string {
-    return this.clause;
+    return this.unit.toString();
+  }
+
+  toHTMLString(): string {
+    return this.unit.toHTMLString();
   }
 
   static fromDto(dto: any): SatNode {
@@ -66,5 +70,4 @@ export default class SatNode {
       dto.active_time
     );
   }
-
 }

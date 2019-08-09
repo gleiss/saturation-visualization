@@ -52,10 +52,10 @@ export default class Search extends React.Component<Props, State> {
     if (searchValue) {
       foundNodes = Object.values(this.props.dag.nodes)
         .map(node => node)
-        .filter(node => node.clause.includes(searchValue));
-      foundNodes.sort((a, b) => a.clause.length - b.clause.length);
+        .filter(node => node.toString().includes(searchValue));
+      foundNodes.sort((a, b) => a.toString().length - b.toString().length);
       this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
-      foundNodes = foundNodes.filter(node => node.clause !== 'Preproc');
+      foundNodes = foundNodes.filter(node => node.toString() !== 'Preproc');
     }
     this.setState({
       foundNodes
@@ -64,7 +64,7 @@ export default class Search extends React.Component<Props, State> {
   }
 
   toListItem = (node: SatNode) => {
-    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.clause}</li>;
+    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.toString()}</li>;
   };
 
   getDisabledListItem = () => {
