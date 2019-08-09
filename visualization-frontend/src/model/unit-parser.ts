@@ -6,8 +6,13 @@ import {Literal, FunctionApplication} from './literal'
 export class UnitParser {
 
 	static parseUnit(string: string, isFromPreprocessing: boolean, statistics: Map<string,number>): Unit {
-		const symbolsAllowedInClauses = /^[a-zA-Z0-9(),~$ |']+$/;
-		let isClause = (!isFromPreprocessing) || string.match(symbolsAllowedInClauses); // heuristic to determine whether unit is a clause. if not sure, treat it as a formula.
+		
+		// heuristic to determine whether unit is a clause:
+		// if unit is not from preprocessing, it has to be a clause
+		// if unit only contains certain symbols, it has to be a clause
+		// otherwise, treat it as a formula.
+		const symbolsAllowedInClauses = /^[a-zA-Z0-9()=,~!$ |']+$/;
+		let isClause = (!isFromPreprocessing) || string.match(symbolsAllowedInClauses);
 	
 		if(isClause) {
 		  const nSel = statistics.get("nSel");
