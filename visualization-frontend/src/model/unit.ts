@@ -8,9 +8,11 @@ import {Literal} from './literal'
 export type Unit = Formula | Clause;
 
 export class Formula {
+  readonly type: "Formula" | "Clause";
   readonly formula: string;
   
   constructor(formula: string) {
+    this.type = "Formula";
     this.formula = formula;
   }
 
@@ -24,10 +26,12 @@ export class Formula {
 }
 
 export class Clause {
+  readonly type: "Formula" | "Clause";
   readonly literals: Literal[];
   readonly numberOfSelectedLiterals: number | null;
-  
+
   constructor(literals: Literal[], numberOfSelectedLiterals: number | null){
+    this.type = "Clause";
     this.literals = literals;
     this.numberOfSelectedLiterals = numberOfSelectedLiterals;
   }
