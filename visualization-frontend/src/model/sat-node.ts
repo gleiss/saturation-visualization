@@ -2,16 +2,16 @@ import {assert} from './util'
 
 export default class SatNode {
 
-  id: number;
-  clause: string;
-  inferenceRule: string;
-  parents: number[];
-  statistics: Map<string,number>;
-  isFromPreprocessing: boolean;
-  newTime: number;
-  passiveTime: number;
-  activeTime: number;
-  literals: string[];
+  readonly id: number;
+  readonly clause: string;
+  readonly inferenceRule: string;
+  readonly parents: number[];
+  readonly statistics: Map<string,number>;
+  readonly isFromPreprocessing: boolean;
+  readonly newTime: number;
+  readonly passiveTime: number;
+  readonly activeTime: number;
+  readonly literals: string[];
 
   constructor(
     id: number,
