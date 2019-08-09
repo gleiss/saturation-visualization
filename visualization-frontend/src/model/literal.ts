@@ -35,10 +35,23 @@ export class FunctionApplication {
 	}
 
 	toString(): string {
+		let name = this.name;
+		if(this.name === "$sum") {
+			name = "+";
+		} else if(this.name === "$uminus") {
+			name = "-";
+		}
+
 		if(this.args.length === 0){
-			return this.name;
+			return name;
 		} else {
-			return this.name + "(" + this.args.map(arg => arg.toString()).join(",") + ")";
+			const ignoreAssociativity = true;
+			if(ignoreAssociativity) {
+				if(name == "+"){
+					return this.args.map(arg => arg.toString()).join("+");
+				}
+			}
+			return name + "(" + this.args.map(arg => arg.toString()).join(",") + ")";
 		}
 	}
 }
