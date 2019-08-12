@@ -27,6 +27,12 @@ export default class Dag {
     return Object.keys(this.nodes).length > 0;
   }
 
+  static fromSetOfNodes(nodes: Set<SatNode>): Dag {
+    const nodeDict: { [key: number]: SatNode } = {};
+    nodes.forEach(node => nodeDict[node.id] = node);
+    return new Dag(nodeDict);
+  }
+
   static fromDto(dto: any): Dag {
     const nodes: { [key: number]: SatNode } = {};
     Object.values(dto.nodes).forEach((node: any) => nodes[node.number] = SatNode.fromDto(node));
