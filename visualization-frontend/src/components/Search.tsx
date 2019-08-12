@@ -25,12 +25,13 @@ export default class Search extends React.Component<Props, State> {
     return (
       <section className="component-search">
         <input
+          disabled={!(this.props.dag && !!Object.values(this.props.dag.nodes).length)}
           ref={this.searchField}
           type="text"
           placeholder="Search for a node ..."
           onKeyUp={this.search.bind(this)}
         />
-        <ul id="searchResults" className={foundNodes.length ? 'focused' : ''}>
+        <ul id="searchResults">
           {
             foundNodes.slice(0, 21).map(node => this.toListItem(node))
           }
