@@ -29,6 +29,10 @@ main > .upload-info {
   color: #343539;
 }
 
+main > .upload-info > span  {
+  margin-left: auto;
+}
+
 main > .slider-placeholder {
   margin-top: 0.5rem;
   height: 2rem;

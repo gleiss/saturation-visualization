@@ -69,7 +69,7 @@ class App extends Component<{}, State> {
     } else {
       main = (
         <main>
-          <section className="graph-placeholder upload-info">Upload file →</section>
+          <section className="graph-placeholder upload-info"><span>Upload file →</span></section>
           <section className="slider-placeholder"/>
         </main>
       );
