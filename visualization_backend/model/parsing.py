@@ -14,9 +14,9 @@ __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
 OUTPUT_PATTERN_SATURATION = re.compile(
-    r'^(\[SA\] [a-z]{3,7}): (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
+    r'^\[SA\] ([a-z ]{3,15}): (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
 OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
-
+OUTPUT_PATTERN_REDUCTIONS = re.compile(r'^     (replaced by|using) (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
 PREPROCESSING_LABEL = 'Preproc'
 
 ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'inference_rule', 'parents', 'statistics'])
@@ -35,12 +35,10 @@ def parse(vampire_output):
 
 
 def parse_line(line):
-    # first try to parse line as output from saturation, i.e. line has form
-    # [SA] new: Clause, [SA] passive: Clause, or [SA] active: Clause
+    # first try to parse line as standard output line from saturation, i.e. line has form
+    # '[SA] new: Clause', '[SA] passive: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
     try:
-        type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_SATURATION,
-                                                                                 line).groups()
-        type_ = type_.split(']')[1].strip()
+        type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_SATURATION,line).groups()
         number = int(number)
         clause = util.remove_quotes(clause.rstrip())
         inference_rule = inference_rule.rstrip()
@@ -48,18 +46,29 @@ def parse_line(line):
         statistics = parseStatistics(statistics)
         return ParsedLine(type_, number, clause, inference_rule, parents,statistics)
     except AttributeError:
-        # next try to parse line as output from preprocessing (actually from print_clausifier_premises)
+        # next try to parse line as additional lines output by reduction, i.e. line has form 
+        # '     forward reduce Clause', or '     backward reduce Clause'
         try:
-            number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
-            type_ = "preprocessing"
+            type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_REDUCTIONS, line).groups()
             number = int(number)
             clause = util.remove_quotes(clause.rstrip())
             inference_rule = inference_rule.rstrip()
             parents = [int(parent) for parent in parents.split(',') if parent]
             statistics = parseStatistics(statistics)
-            return ParsedLine(type_, number, clause, inference_rule, parents, statistics)
+            return ParsedLine(type_, number, clause, inference_rule, parents,statistics)
         except AttributeError:
-            LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
+            # next try to parse line as output from preprocessing (actually from print_clausifier_premises)
+            try:
+                number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
+                type_ = "preprocessing"
+                number = int(number)
+                clause = util.remove_quotes(clause.rstrip())
+                inference_rule = inference_rule.rstrip()
+                parents = [int(parent) for parent in parents.split(',') if parent]
+                statistics = parseStatistics(statistics)
+                return ParsedLine(type_, number, clause, inference_rule, parents, statistics)
+            except AttributeError:
+                LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
 
 def parseStatistics(statisticsString):
     statisticsString = statisticsString.replace(' ','')
@@ -79,6 +88,7 @@ def analyse(parsed_lines):
 
     nodes = {}
     index = 0
+    current_node = None
     for line in parsed_lines:
 
         if line.type == "preprocessing":
@@ -160,7 +170,20 @@ def analyse(parsed_lines):
             # set active time
             index = index + 1
             current_node.set_active_time(index)
+        elif line.type == "forward reduce" or line.type == "backward reduce": 
+            if line.number not in nodes:
+                LOG.warning(
+                    "Found clause with id %s, which was deleted, but wasn't added as new clause before. Maybe you"
+                    " forgot to output the passive clauses?",
+                    line.number)
+                raise Exception("Invalid active line {}".format(line.number))
+            
+            current_node = nodes.get(line.number)
+            current_node.set_deletion_time(index)
 
+        elif line.type == "replaced by" or line.type == "using":
+            assert current_node is not None
+            current_node.add_deletion_parent(line.number)           
         else:
             # unreachable
             raise Exception("Invalid line {}".format(repr(line)))

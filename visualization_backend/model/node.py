@@ -18,6 +18,8 @@ class Node:
         self.new_time = None
         self.passive_time = None
         self.active_time = None
+        self.deletion_time = None
+        self.deletion_parents = None
 
     def set_new_time(self, line_number):
         assert isinstance(line_number, int)
@@ -39,6 +41,18 @@ class Node:
         assert self.passive_time is not None
         assert self.active_time is None
         self.active_time = line_number
+
+    def set_deletion_time(self, line_number):
+        assert isinstance(line_number, int)
+        assert self.new_time is not None
+        assert self.deletion_time is None
+        self.deletion_time = line_number
+        self.deletion_parents = []
+
+    def add_deletion_parent(self, deletion_parent):
+        assert isinstance(deletion_parent, int)
+        assert self.deletion_time is not None
+        self.deletion_parents.append(deletion_parent)
 
     def set_clause(self, clause):
         assert isinstance(clause, str)

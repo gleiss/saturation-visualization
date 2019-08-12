@@ -13,6 +13,8 @@ export default class SatNode {
   readonly newTime: number;
   readonly passiveTime: number;
   readonly activeTime: number;
+  readonly deletionTime: number;
+  readonly deletionParents: number[];
 
   constructor(
     id: number,
@@ -23,7 +25,9 @@ export default class SatNode {
     isFromPreprocessing: boolean,
     newTime: number,
     passiveTime: number,
-    activeTime: number
+    activeTime: number,
+    deletionTime: number,
+    deletionParents: number[]
   ) {
     this.id = id;
     this.unit = UnitParser.parseUnit(unitString, isFromPreprocessing, statistics);
@@ -34,6 +38,8 @@ export default class SatNode {
     this.newTime = newTime;
     this.passiveTime = passiveTime;
     this.activeTime = activeTime;
+    this.deletionTime = deletionTime;
+    this.deletionParents = deletionParents;
   }
 
   toString(): string {
@@ -50,6 +56,8 @@ export default class SatNode {
     assert(dto.new_time !== undefined, "new_time must be a number or null");
     assert(dto.passive_time !== undefined, "passive_time must be a number or null");
     assert(dto.active_time !== undefined, "active_time must be a number or null");
+    assert(dto.deletion_time !== undefined, "deletion_time must be a number or null");
+    assert((dto.deletion_time === null && dto.deletion_parents === null) || (dto.deletion_time !== null && dto.deletion_parents !== null), "invariant violated")
 
     const statistics = new Map<string,number>();
     for (const key in dto.statistics) {
@@ -67,7 +75,9 @@ export default class SatNode {
       dto.is_from_preprocessing,
       dto.new_time,
       dto.passive_time,
-      dto.active_time
+      dto.active_time,
+      dto.deletion_time,
+      dto.deletion_parents
     );
   }
 }
