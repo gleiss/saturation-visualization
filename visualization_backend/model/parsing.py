@@ -24,7 +24,11 @@ ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'inference_ru
 
 def process(vampire_output):
     lines = parse(vampire_output)
-    return analyse(lines)
+    dag = analyse(lines)
+    for node in dag.nodes.values():
+        for parent in node.parents:
+            dag.get(parent).children.append(node.number)
+    return dag
 
 
 def parse(vampire_output):

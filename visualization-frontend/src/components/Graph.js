@@ -158,6 +158,7 @@ export default class Graph extends React.Component {
       dotStrings.push(`${node.id} [label="${node.toString()}"]`);
       node
         .parents
+        .filter(parent => !!dag.get(parent))
         .forEach(parent => dotStrings.push(`${parent} -> ${node.id}`));
     });
 
@@ -179,9 +180,10 @@ export default class Graph extends React.Component {
   };
 
   parseLayoutString(layoutString) {
+    let firstEdgeLineIndex = layoutString.includes('\nedge') ? layoutString.indexOf('\nedge') : layoutString.length;
     // split layoutString to array of strings describing positions of nodes
     const parsedNodeLines = layoutString
-      .substr(0, layoutString.indexOf('\nedge')) // ignore remaining part of string describing edges
+      .substr(0, firstEdgeLineIndex) // ignore remaining part of string describing edges
       .split('\nnode ') //split lines
       .slice(1) // ignore first line describing graph
       .map(line => line.substr(0, line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
