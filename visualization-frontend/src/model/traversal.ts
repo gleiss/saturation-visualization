@@ -17,7 +17,7 @@ export class DFPostOrderTraversal {
 		this.visited = new Set();
 	}
 
-	hasNext() {
+	hasNext(): boolean {
 		while (this.todo.length > 0) {
 			const last = this.todo[length - 1];
 			if (this.visited.has(last)) {
@@ -32,7 +32,7 @@ export class DFPostOrderTraversal {
 
 	// returns the next node (the actual node, not its id) for traversal
 	// note: only call this method after checking for has_next
-	getNext() {
+	getNext(): SatNode {
 		while (this.todo.length > 0) {
 			const currentId = this.todo[this.todo.length - 1];
 			const currentNode = this.dag.get(currentId);
@@ -63,7 +63,8 @@ export class DFPostOrderTraversal {
 				this.todo.pop();
 			}
 		}
-		assert(false, "We have already iterated through all the inferences, so getNext() should not have been called")
+		assert(false, "We have already iterated through all the inferences, so getNext() should not been called");
+		return null as unknown as SatNode;
 	}
 }
 
@@ -81,13 +82,13 @@ export class ReversePostOrderTraversal {
 		}
 	}
 
-	hasNext() {
+	hasNext(): boolean {
 		return this.postOrder.length > 0;
 	}
 
-	getNext() {
+	getNext(): SatNode {
 		assert(this.hasNext(), "We have already iterated through all the inferences, so getNext() should not have been called");
-		return this.postOrder.pop();
+		return this.postOrder.pop() as SatNode;
 	}
 
 }
