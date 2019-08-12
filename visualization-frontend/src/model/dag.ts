@@ -3,9 +3,25 @@ import SatNode from './sat-node';
 export default class Dag {
 
   readonly nodes: { [key: number]: SatNode };
+  readonly leaves: Set<number>;
 
   constructor(nodes: { [key: number]: SatNode }) {
     this.nodes = nodes;
+
+    // compute leaves
+    const leaves: Set<number> = new Set();
+    const non_leaves: Set<number> = new Set();
+    
+    for (const nodeId in nodes) {
+      nodes[nodeId].parents.forEach(parentId => non_leaves.add(parentId));
+    }
+
+    for (const nodeId in nodes) {
+      if(!non_leaves.has(parseInt(nodeId))) {
+        leaves.add(parseInt(nodeId));
+      }
+    }
+    this.leaves = leaves;
   }
 
   get(nodeId: number): SatNode {
