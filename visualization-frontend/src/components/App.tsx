@@ -69,7 +69,7 @@ class App extends Component<{}, State> {
     } else {
       main = (
         <main>
-          <section className="graph-placeholder upload-info">Upload file →</section>
+          <section className="graph-placeholder upload-info"><span>Upload file →</span></section>
           <section className="slider-placeholder"/>
         </main>
       );
@@ -196,13 +196,12 @@ class App extends Component<{}, State> {
     this.updateNodeSelection([...selectionSet]);
   }
 
-  // TODO: update to children
   selectChildren() {
     const {dags, nodeSelection} = this.state;
     const selectionSet: Set<number> = new Set(nodeSelection);
 
     nodeSelection.forEach(node => {
-      dags[dags.length - 1].get(node).parents.forEach(child => {
+      dags[dags.length - 1].get(node).children.forEach(child => {
         selectionSet.add(child);
       })
     });
@@ -246,15 +245,14 @@ class App extends Component<{}, State> {
     })
   }
 
-  // TODO: children instead of parents
   private findAllChildren(nodeId: number): Set<number> {
     const {dags} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    dags[dags.length - 1].get(nodeId).parents.forEach(child => {
+    dags[dags.length - 1].get(nodeId).children.forEach(child => {
       selectionSet.add(child);
       this.addAllChildren(child, selectionSet);
-    })
+    });
     
     return selectionSet;
   }
@@ -262,7 +260,7 @@ class App extends Component<{}, State> {
   private addAllChildren(nodeId: number, selectionSet: Set<number>) {
     const {dags} = this.state;
 
-    dags[dags.length - 1].get(nodeId).parents.forEach(child => {
+    dags[dags.length - 1].get(nodeId).children.forEach(child => {
       if (!selectionSet.has(child)) {
         selectionSet.add(child);
         this.addAllChildren(child, selectionSet);

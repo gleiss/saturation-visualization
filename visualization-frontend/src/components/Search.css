@@ -21,6 +21,10 @@
   box-shadow: 1px 3px 30px 0 rgba(0, 0, 0, .25);
 }
 
+.component-search input:disabled + ul {
+  box-shadow: none;
+}
+
 .component-search ul {
   background: #fff;
   position: absolute;
@@ -30,15 +34,18 @@
   border-radius: 5px;
   width: 225px;
   z-index: 10;
+  max-height: 0;
+}
+
+.component-search:hover ul,
+.component-search:focus ul,
+.component-search:active ul {
+  max-height: unset;
 }
 
 .component-search ul:hover,
 .component-search ul:focus,
 .component-search ul:active {
-  box-shadow: 1px 3px 30px 0 rgba(0, 0, 0, .25);
-}
-
-.component-search ul.focused {
   box-shadow: 1px 3px 30px 0 rgba(0, 0, 0, .25);
 }
 

@@ -123,7 +123,7 @@ export class UnitParser {
 		}
 
 		assert(stack.length === 1, "invar violated for string: " + string);
-		assert(stack[0].length === 1, "invar violated for string:" + string + ":");
+		// assert(stack[0].length === 1, "invar violated for string:" + string + ":");
 		return stack[0][0] as FunctionApplication;
 	}
 }
