@@ -151,16 +151,42 @@ export default class Graph extends React.Component {
   };
 
   dagToDotString(dag) {
-    const dotStrings = [];
-
+    // TODO: make sure boundary nodes are handled properly
+    // TODO: document
+    const inputStrings = [];
+    const preprocessingStrings = [];
+    const otherStrings = [];
+    const edgeStrings = [];
     for (const node of dag.nodes.values()) {
-      dotStrings.push(`${node.id} [label="${node.toString()}"]`);
-      for (const parentId of node.parents) {
-        dotStrings.push(`${parentId} -> ${node.id}`)
+      if (node.isFromPreprocessing) {
+        if(dag.nodeIsInputNode(node.id)) {
+          inputStrings.push(`${node.id} [label="${node.toString()}"]`);
+        } else {
+          preprocessingStrings.push(`${node.id} [label="${node.toString()}"]`);
+        }
+      }
+    }
+    for (const node of dag.nodes.values()) {
+      if (!node.isFromPreprocessing) {
+        otherStrings.push(`${node.id} [label="${node.toString()}"]`);
       }
     }
 
-    return `digraph { ${dotStrings.join('; ')} }`;
+    for (const node of dag.nodes.values()) {
+      for (const parentId of node.parents) {
+        edgeStrings.push(`${parentId} -> ${node.id}`)
+      }
+    }
+
+    const inputString = "   subgraph inputgraph {\n      rank=source;\n      " + inputStrings.join(";\n      ") + "\n   }";
+    const preprocessingString = "   subgraph preprocessinggraph {\n      rank=same;\n      " + preprocessingStrings.join(";\n      ") + "\n   }";
+    const otherstring = "   subgraph othergraph {\n      " + otherStrings.join(";\n      ") + "\n   }";
+    const edgeString = edgeStrings.join(";\n   ");
+
+    const dotString =  "digraph {\n\n" + inputString + "\n\n" + preprocessingString + "\n\n" + otherstring + "\n\n   " + edgeString + "\n}";
+    
+    console.log(dotString);
+    return dotString;
   };
 
   async runViz(dotString) {

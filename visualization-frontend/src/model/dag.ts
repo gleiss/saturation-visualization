@@ -66,6 +66,22 @@ export default class Dag {
     return children;
   }
 
+  nodeIsInputNode(nodeId: number): boolean {
+    assert(this.nodes.has(nodeId), "node doesn't occur in Dag");
+    const node = this.get(nodeId);
+
+    // TODO: maybe not accurate if node has no children.
+    if (node.isFromPreprocessing) {
+      const childrenIds = this.getChildren(nodeId);
+      for (const childId of childrenIds) {
+        const childNode = this.get(childId);
+        if (childNode.isFromPreprocessing) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
   static fromSetOfNodes(nodes: Set<SatNode>): Dag {
     const nodeDict = new Map<number,SatNode>();
     for (const node of nodes) {
