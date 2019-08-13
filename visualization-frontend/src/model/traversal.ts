@@ -44,14 +44,14 @@ export class DFPostOrderTraversal {
 				// add unprocessed parents to stack for DFS.
 				// If there is at least one unprocessed parent, don't compute the result
 				// for current_id now, but wait until those unprocessed parents are processed.
-				currentNode.parents.forEach(parentId => {
+				for (const parentId of currentNode.parents) {
 					// if we haven't visited the parent yet
 					if (! this.visited.has(parentId)) {
 						// add it to the stack
 						this.todo.push(parentId);
 						existsUnvisitedParent = true;
 					}
-				});
+				}
 
 				// if we already visited all parents, we can visit the node too
 				if (!existsUnvisitedParent) {
