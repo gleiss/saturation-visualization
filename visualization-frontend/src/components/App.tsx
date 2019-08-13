@@ -7,6 +7,7 @@ import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
+import { filterNonParents, filterNonConsequences } from '../model/transformations';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -153,32 +154,25 @@ class App extends Component<{}, State> {
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
-    assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
-
-    this.setState((state, props) => ({
-      dags: state.dags.slice(0, state.dags.length-1),
-      historyState: state.dags[0].numberOfHistorySteps()-1 // TODO: construct history steps properly for each subgraph
-    }));
+    this.popDag();
   }
 
   renderParentsOnly() {
-    const {nodeSelection} = this.state;
+    const {dags, nodeSelection} = this.state;
+    const currentDag = dags[dags.length - 1];
 
-    const listsOfParents = nodeSelection.map(node => [...this.findAllParents(node)]);
-    const parentNodesIncludingDuplicates = ([] as number[]).concat(...listsOfParents, ...nodeSelection);
-    const parentNodes = [...new Set(parentNodesIncludingDuplicates)];
+    const newDag = filterNonParents(currentDag, new Set(nodeSelection));
 
-    this.createAndPushDag(parentNodes)
+    this.pushDag(newDag);
   }
 
   renderChildrenOnly() {
-    const {nodeSelection} = this.state;
+    const {dags, nodeSelection} = this.state;
+    const currentDag = dags[dags.length - 1];
 
-    const listsOfChildren = nodeSelection.map(node => [...this.findAllChildren(node)]);
-    const childNodesIncludingDuplicates = ([] as number[]).concat(...listsOfChildren, ...nodeSelection);
-    const childNodes = [...new Set(childNodesIncludingDuplicates)];
+    const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
 
-    this.createAndPushDag(childNodes);
+    this.pushDag(newDag);
   }
 
 
@@ -221,28 +215,22 @@ class App extends Component<{}, State> {
 
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  private findAllParents(nodeId: number): Set<number> {
+  private pushDag(newDag: Dag) {
     const {dags} = this.state;
-    const selectionSet: Set<number> = new Set();
 
-    dags[dags.length - 1].get(nodeId).parents.forEach(parent => {
-      selectionSet.add(parent);
-      this.addAllParents(parent, selectionSet);
-    })
-    
-    return selectionSet;
+    this.setState({
+      dags: dags.concat([newDag]),
+      historyState: dags[0].numberOfHistorySteps()-1,
+    });
   }
 
-  private addAllParents(nodeId: number, selectionSet: Set<number>) {
-    const {dags} = this.state;
+  private popDag() {
+    assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
-    dags[dags.length - 1].get(nodeId).parents.forEach(parent => {
-      if (!selectionSet.has(parent)) {
-        selectionSet.add(parent);
-        this.addAllParents(parent, selectionSet);
-      }
-    })
+    this.setState((state, props) => ({
+      dags: state.dags.slice(0, state.dags.length-1),
+      historyState: state.dags[0].numberOfHistorySteps()-1 // TODO: construct history steps properly for each subgraph
+    }));
   }
 
   private findAllChildren(nodeId: number): Set<number> {
@@ -267,20 +255,6 @@ class App extends Component<{}, State> {
       }
     })
   }
-
-  private createAndPushDag(remainingNodeIds: number[]) {
-    const {dags} = this.state;
-    
-    const remainingNodes = new Map<number, SatNode>();
-    remainingNodeIds.forEach(n => remainingNodes.set(n, dags[dags.length-1].get(n)));
-    const newDag = new Dag(remainingNodes);
-
-    this.setState({
-      dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps()-1,
-    });
-  }
-
 }
 
 export default App;
