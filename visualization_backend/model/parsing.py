@@ -4,11 +4,10 @@ import logging
 import re
 from collections import namedtuple
 
-from visualization_backend.model import util
-from visualization_backend.model.dag import Dag
-from visualization_backend.model.node import Node
-from visualization_backend.model.transformations import filter_non_active_deriving_nodes, \
-    merge_preprocessing
+from model import util
+from model.dag import Dag
+from model.node import Node
+from model.transformations import filter_non_active_deriving_nodes, merge_preprocessing
 
 __all__ = 'process', 'parse', 'analyse'
 

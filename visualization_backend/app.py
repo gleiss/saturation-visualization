@@ -5,7 +5,7 @@ import json
 from flask import Flask, request
 from flask_cors import CORS
 
-from visualization_backend.model.parsing import process
+from model.parsing import process
 
 app = Flask(__name__)
 app.config.from_object(__name__)

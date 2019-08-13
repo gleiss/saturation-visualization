@@ -1,7 +1,6 @@
 """Data object representing a line of proof output"""
 
-from visualization_backend.model import util
-
+from model import util
 
 class Node:
     def __init__(self, number, clause, inference_rule, parents, statistics, is_from_preprocessing):

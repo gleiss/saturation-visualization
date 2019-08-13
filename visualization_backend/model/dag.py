@@ -1,7 +1,7 @@
 """Data structure for DAGs which is used to represent proofs."""
 
-from visualization_backend.model import util
-from visualization_backend.model.node import Node
+from model import util
+from model.node import Node
 
 
 class Dag:
