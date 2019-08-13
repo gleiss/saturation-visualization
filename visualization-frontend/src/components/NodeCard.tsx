@@ -11,7 +11,7 @@ type Props = {
   onUpdateNodeSelection: (selection: number[]) => void,
   onSelectParents: () => void,
   onSelectChildren: () => void,
-  onFindCommonConsequences: () => void
+  onSelectCommonConsequences: () => void
 };
 export default class NodeCard extends React.Component<Props, {}> {
 
@@ -24,7 +24,7 @@ export default class NodeCard extends React.Component<Props, {}> {
             nodeSelection={this.props.nodeSelection}
             onSelectParents={this.props.onSelectParents}
             onSelectChildren={this.props.onSelectChildren}
-            onFindCommonConsequences={this.props.onFindCommonConsequences}
+            onSelectCommonConsequences={this.props.onSelectCommonConsequences}
           />
           <Search
             dag={this.props.dag}

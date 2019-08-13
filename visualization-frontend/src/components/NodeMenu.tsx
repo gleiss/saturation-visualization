@@ -9,7 +9,7 @@ type Props = {
   nodeSelection: number[],
   onSelectParents: () => void,
   onSelectChildren: () => void,
-  onFindCommonConsequences: () => void
+  onSelectCommonConsequences: () => void
 };
 export default class NodeMenu extends React.Component<Props, {}> {
 
@@ -40,7 +40,7 @@ export default class NodeMenu extends React.Component<Props, {}> {
         <button
           title="Find common consequences of selected nodes"
           disabled={this.props.nodeSelection.length < 2}
-          onClick={this.props.onFindCommonConsequences}
+          onClick={this.props.onSelectCommonConsequences}
         >
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#node-consequences`}/>

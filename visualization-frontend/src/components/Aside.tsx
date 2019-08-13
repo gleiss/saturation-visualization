@@ -17,7 +17,7 @@ type Props = {
   onRenderChildrenOnly: () => void,
   onSelectParents: () => void,
   onSelectChildren: () => void,
-  onFindCommonConsequences: () => void
+  onSelectCommonConsequences: () => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -38,7 +38,7 @@ export default class Aside extends React.Component<Props, {}> {
           onUpdateNodeSelection={this.props.onUpdateNodeSelection}
           onSelectParents={this.props.onSelectParents}
           onSelectChildren={this.props.onSelectChildren}
-          onFindCommonConsequences={this.props.onFindCommonConsequences}
+          onSelectCommonConsequences={this.props.onSelectCommonConsequences}
         />
         <NodeDetails
           dag={this.props.dag}

@@ -8,6 +8,7 @@ import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
 import { filterNonParents, filterNonConsequences } from '../model/transformations';
+import { findCommonConsequences } from '../model/find-node';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -90,7 +91,7 @@ class App extends Component<{}, State> {
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
-          onFindCommonConsequences={this.findCommonConsequences.bind(this)}
+          onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
         />
       </div>
     );
@@ -206,19 +207,18 @@ class App extends Component<{}, State> {
     this.updateNodeSelection(Array.from(newSelection));
   }
 
-  findCommonConsequences() {
-    const {nodeSelection} = this.state;
+  selectCommonConsequences() {
+    const {dags, nodeSelection} = this.state;
+    const currentDag = dags[dags.length - 1];
 
-    const newNodeSelection = nodeSelection
-      .map(node => this.findAllChildren(node))
-      .map(childSet => [...childSet])
-      .reduce((a, b) => a.filter(child => b.includes(child)));
-
-    this.updateNodeSelection(newNodeSelection);
+    const newSelection = findCommonConsequences(currentDag, new Set(nodeSelection));
+    
+    this.updateNodeSelection(newSelection);
   }
 
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   private pushDag(newDag: Dag) {
     const {dags} = this.state;
 
@@ -235,29 +235,6 @@ class App extends Component<{}, State> {
       dags: state.dags.slice(0, state.dags.length-1),
       historyState: state.dags[0].numberOfHistorySteps()-1 // TODO: construct history steps properly for each subgraph
     }));
-  }
-
-  private findAllChildren(nodeId: number): Set<number> {
-    const {dags} = this.state;
-    const selectionSet: Set<number> = new Set();
-
-    dags[dags.length - 1].getChildren(nodeId).forEach(child => {
-      selectionSet.add(child);
-      this.addAllChildren(child, selectionSet);
-    });
-    
-    return selectionSet;
-  }
-
-  private addAllChildren(nodeId: number, selectionSet: Set<number>) {
-    const {dags} = this.state;
-
-    dags[dags.length - 1].getChildren(nodeId).forEach(child => {
-      if (!selectionSet.has(child)) {
-        selectionSet.add(child);
-        this.addAllChildren(child, selectionSet);
-      }
-    })
   }
 }
 
