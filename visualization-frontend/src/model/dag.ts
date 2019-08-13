@@ -50,6 +50,22 @@ export default class Dag {
     return this.nodes.size === 0;
   }
 
+  getChildren(nodeId: number): Array<number> {
+    if(!this.nodes.has(nodeId)) {
+      assert(false, "Node with id " + nodeId + " does not occur in Dag");
+    }
+
+    const children = new Array<number>();
+    for (const node of this.nodes.values()) {
+      for (const parentId of node.parents) {
+        if (parentId === nodeId) {
+          children.push(node.id);
+        }
+      }
+    }
+    return children;
+  }
+
   static fromSetOfNodes(nodes: Set<SatNode>): Dag {
     const nodeDict = new Map<number,SatNode>();
     for (const node of nodes) {

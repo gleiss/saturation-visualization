@@ -10,7 +10,6 @@ class Node:
         self.clause = util.remove_quotes(clause)
         self.inference_rule = inference_rule
         self.parents = parents
-        self.children = []
 
         self.statistics = statistics
 

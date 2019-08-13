@@ -180,26 +180,30 @@ class App extends Component<{}, State> {
 
   selectParents() {
     const {dags, nodeSelection} = this.state;
-    const selectionSet: Set<number> = new Set(nodeSelection);
+    const currentDag = dags[dags.length - 1];
 
-    nodeSelection.forEach(node => {
-      dags[dags.length - 1].get(node).parents.forEach(parent => {
-        selectionSet.add(parent);
-      })
-    });
-    this.updateNodeSelection([...selectionSet]);
+    const newSelection: Set<number> = new Set(nodeSelection);
+    for (const nodeId of nodeSelection) {
+      for (const parentId of currentDag.get(nodeId).parents) {
+        newSelection.add(parentId);
+      }
+    }
+
+    this.updateNodeSelection(Array.from(newSelection));
   }
 
   selectChildren() {
     const {dags, nodeSelection} = this.state;
-    const selectionSet: Set<number> = new Set(nodeSelection);
+    const currentDag = dags[dags.length - 1];
 
-    nodeSelection.forEach(node => {
-      dags[dags.length - 1].get(node).children.forEach(child => {
-        selectionSet.add(child);
-      })
-    });
-    this.updateNodeSelection([...selectionSet]);
+    const newSelection: Set<number> = new Set(nodeSelection);
+    for (const nodeId of nodeSelection) {
+      for (const childId of currentDag.getChildren(nodeId)) {
+        newSelection.add(childId);
+      }
+    }
+
+    this.updateNodeSelection(Array.from(newSelection));
   }
 
   findCommonConsequences() {
@@ -237,7 +241,7 @@ class App extends Component<{}, State> {
     const {dags} = this.state;
     const selectionSet: Set<number> = new Set();
 
-    dags[dags.length - 1].get(nodeId).children.forEach(child => {
+    dags[dags.length - 1].getChildren(nodeId).forEach(child => {
       selectionSet.add(child);
       this.addAllChildren(child, selectionSet);
     });
@@ -248,7 +252,7 @@ class App extends Component<{}, State> {
   private addAllChildren(nodeId: number, selectionSet: Set<number>) {
     const {dags} = this.state;
 
-    dags[dags.length - 1].get(nodeId).children.forEach(child => {
+    dags[dags.length - 1].getChildren(nodeId).forEach(child => {
       if (!selectionSet.has(child)) {
         selectionSet.add(child);
         this.addAllChildren(child, selectionSet);

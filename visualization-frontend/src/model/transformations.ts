@@ -90,7 +90,7 @@ export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 
 // create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents
 function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
-	return new SatNode(node.id, node.unit.toString(), "Boundary", [], [], node.statistics, node.isFromPreprocessing, node.newTime, node.passiveTime, node.activeTime, node.deletionTime, node.deletionParents);
+	return new SatNode(node.id, node.unit.toString(), "Boundary", [], node.statistics, node.isFromPreprocessing, node.newTime, node.passiveTime, node.activeTime, node.deletionTime, node.deletionParents);
 }
 
 

@@ -8,7 +8,6 @@ export default class SatNode {
   readonly unit: Unit;
   readonly inferenceRule: string;
   readonly parents: number[];
-  readonly children: number[];
   readonly statistics: Map<string,number>;
   readonly isFromPreprocessing: boolean;
   readonly newTime: number;
@@ -22,7 +21,6 @@ export default class SatNode {
     unitString: string,
     inferenceRule: string,
     parents: number[],
-    children: number[],
     statistics: Map<string,number>,
     isFromPreprocessing: boolean,
     newTime: number,
@@ -35,7 +33,6 @@ export default class SatNode {
     this.unit = UnitParser.parseUnit(unitString, isFromPreprocessing, statistics);
     this.inferenceRule = inferenceRule;
     this.parents = parents;
-    this.children = children;
     this.statistics = statistics;
     this.isFromPreprocessing = isFromPreprocessing;
     this.newTime = newTime;
@@ -74,7 +71,6 @@ export default class SatNode {
       dto.clause,
       dto.inference_rule,
       dto.parents,
-      dto.children,
       statistics,
       dto.is_from_preprocessing,
       dto.new_time,
