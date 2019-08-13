@@ -1,58 +1,65 @@
 import SatNode from './sat-node';
+import { assert } from './util';
 
 export default class Dag {
 
-  readonly nodes: { [key: number]: SatNode };
+  readonly nodes: Map<number,SatNode>;
   readonly leaves: Set<number>;
 
-  constructor(nodes: { [key: number]: SatNode }) {
+  constructor(nodes: Map<number,SatNode>) {
     this.nodes = nodes;
 
     // compute leaves
     const leaves: Set<number> = new Set();
-    const non_leaves: Set<number> = new Set();
+    const nonLeaves: Set<number> = new Set();
     
-    for (const nodeId in nodes) {
-      nodes[nodeId].parents.forEach(parentId => non_leaves.add(parentId));
-    }
-
-    for (const nodeId in nodes) {
-      if(!non_leaves.has(parseInt(nodeId))) {
-        leaves.add(parseInt(nodeId));
+    for (const node of nodes.values()) {
+      for (const parentId of node.parents) {
+        nonLeaves.add(parentId);
       }
     }
+
+    for (const nodeId of nodes.keys()) {
+      if(!nonLeaves.has(nodeId)) {
+        leaves.add(nodeId);
+      }
+    }
+
     this.leaves = leaves;
   }
 
   get(nodeId: number): SatNode {
-    return this.nodes[nodeId];
+    assert(this.nodes.has(nodeId), "node doesn't occur in Dag");
+    return this.nodes.get(nodeId) as SatNode;
   }
 
   numberOfHistorySteps(): number {
     let counter = 0;
-    Object.values(this.nodes)
-      .forEach(node => {
-        if (node.activeTime !== null) {
-          counter += 1;
-        }
-      });
+    for (const node of this.nodes.values()) {
+      if (node.activeTime !== null) {
+        counter += 1;
+      }
+    }
     return counter;
   }
 
-  hasNodes(): boolean {
-    return Object.keys(this.nodes).length > 0;
+  isEmpty(): boolean {
+    return this.nodes.size === 0;
   }
 
   static fromSetOfNodes(nodes: Set<SatNode>): Dag {
-    const nodeDict: { [key: number]: SatNode } = {};
-    nodes.forEach(node => nodeDict[node.id] = node);
+    const nodeDict = new Map<number,SatNode>();
+    for (const node of nodes) {
+      nodeDict.set(node.id,node);
+    }
     return new Dag(nodeDict);
   }
 
   static fromDto(dto: any): Dag {
-    const nodes: { [key: number]: SatNode } = {};
-    Object.values(dto.nodes).forEach((node: any) => nodes[node.number] = SatNode.fromDto(node));
-    return new Dag(nodes);
+    const nodeDict = new Map<number,SatNode>();
+
+    Object.values(dto.nodes).forEach((node: any) => nodeDict.set(node.number, SatNode.fromDto(node)));
+    return new Dag(nodeDict);
   }
 
 }

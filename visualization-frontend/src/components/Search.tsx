@@ -50,9 +50,11 @@ export default class Search extends React.Component<Props, State> {
     let foundNodes: SatNode[] = [];
 
     if (searchValue) {
-      foundNodes = Object.values(this.props.dag.nodes)
-        .map(node => node)
-        .filter(node => node.toString().includes(searchValue));
+      for (const node of this.props.dag.nodes.values()) {
+        if (node.toString().includes(searchValue)) {
+          foundNodes.push(node);
+        }
+      }
       foundNodes.sort((a, b) => a.toString().length - b.toString().length);
       this.props.onUpdateNodeSelection(foundNodes.map(node => node.id));
       foundNodes = foundNodes.filter(node => node.toString() !== 'Preproc');

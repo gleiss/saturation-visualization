@@ -153,13 +153,12 @@ export default class Graph extends React.Component {
   dagToDotString(dag) {
     const dotStrings = [];
 
-    const nodes = Object.values(dag.nodes);
-    nodes.forEach(node => {
+    for (const node of dag.nodes.values()) {
       dotStrings.push(`${node.id} [label="${node.toString()}"]`);
-      node
-        .parents
-        .forEach(parent => dotStrings.push(`${parent} -> ${node.id}`));
-    });
+      for (const parentId of node.parents) {
+        dotStrings.push(`${parentId} -> ${node.id}`)
+      }
+    }
 
     return `digraph { ${dotStrings.join('; ')} }`;
   };
@@ -276,19 +275,20 @@ export default class Graph extends React.Component {
   };
 
   updateNodeStyles() {
-    this.networkNodes.update(
-      Object.values(this.props.dag.nodes)
-        .map(satNode => {
-          const node = this.networkNodes.get(satNode.id);
-          if (node) {
-            const styleData = this.selectStyle(satNode, this.props.historyState);
-            node.color = this.getColorStyle(styleData);
-            node.font = new FontStyle(styleData.text);
-            node.shape = styleData.shape;
-          }
-          return node;
-        })
-        .filter(node => !!node));
+    const updatedNetworkNodes = [];
+    for (const satNode of this.props.dag.nodes.values()) {
+      const networkNode = this.networkNodes.get(satNode.id);
+      assert(networkNode);
+
+      const styleData = this.selectStyle(satNode, this.props.historyState);
+      networkNode.color = this.getColorStyle(styleData);
+      networkNode.font = new FontStyle(styleData.text);
+      networkNode.shape = styleData.shape;
+
+      assert(!!networkNode);
+      updatedNetworkNodes.push(networkNode);
+    }
+    this.networkNodes.update(updatedNetworkNodes);
   }
 
 

@@ -46,7 +46,7 @@ class App extends Component<{}, State> {
     
     let main;
     // TODO: why doesn't it work for a dag without nodes?
-    if (!error && isLoaded && dags[dags.length-1].hasNodes()) {
+    if (!error && isLoaded && !dags[dags.length-1].isEmpty()) {
       const dag = dags[dags.length-1];
       main = (
         <Main
@@ -273,8 +273,8 @@ class App extends Component<{}, State> {
   private createAndPushDag(remainingNodeIds: number[]) {
     const {dags} = this.state;
     
-    const remainingNodes: { [key: number]: SatNode } = {};
-    remainingNodeIds.forEach(n => remainingNodes[n] = dags[dags.length-1].get(n));
+    const remainingNodes = new Map<number, SatNode>();
+    remainingNodeIds.forEach(n => remainingNodes.set(n, dags[dags.length-1].get(n)));
     const newDag = new Dag(remainingNodes);
 
     this.setState({
