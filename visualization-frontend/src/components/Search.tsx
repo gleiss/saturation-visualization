@@ -46,6 +46,7 @@ export default class Search extends React.Component<Props, State> {
   // SEARCH ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   search() {
+    // BUG: crashes if search is performed before loading dag.
     const searchValue = this.searchField.current ? this.searchField.current.value : '';
     let foundNodes: SatNode[] = [];
 
@@ -66,7 +67,7 @@ export default class Search extends React.Component<Props, State> {
   }
 
   toListItem = (node: SatNode) => {
-    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>${node.toString()}</li>;
+    return <li key={node.id} onClick={() => this.props.onUpdateNodeSelection([node.id])}>{node.toString()}</li>;
   };
 
   getDisabledListItem = () => {
