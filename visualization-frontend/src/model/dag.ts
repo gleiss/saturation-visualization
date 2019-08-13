@@ -3,6 +3,9 @@ import { assert } from './util';
 
 export default class Dag {
 
+  // TODO: it seems that the result of Graphviz depends on the order of node- and edge declarations.
+  //       the order of these declarations depends on the order in which the nodes occur in the nodes-Map.
+  //       therefore it could make sense to normalize the order of nodes in the nodes-Map at construction time of the Dag.
   readonly nodes: Map<number,SatNode>;
   readonly leaves: Set<number>;
 
