@@ -18,7 +18,7 @@ export default class SatNode {
 
   constructor(
     id: number,
-    unitString: string,
+    unit: Unit,
     inferenceRule: string,
     parents: number[],
     statistics: Map<string,number>,
@@ -30,7 +30,7 @@ export default class SatNode {
     deletionParents: number[]
   ) {
     this.id = id;
-    this.unit = UnitParser.parseUnit(unitString, isFromPreprocessing, statistics);
+    this.unit = unit;
     this.inferenceRule = inferenceRule;
     this.parents = parents;
     this.statistics = statistics;
@@ -65,10 +65,11 @@ export default class SatNode {
       if (typeof val === "number"){
         statistics.set(key, val);
       }
-  }
+    }
+    const unit = UnitParser.parseUnit(dto.clause, dto.is_from_preprocessing, statistics);
     return new SatNode(
       dto.number,
-      dto.clause,
+      unit,
       dto.inference_rule,
       dto.parents,
       statistics,
