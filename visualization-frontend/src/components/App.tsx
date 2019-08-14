@@ -47,8 +47,7 @@ class App extends Component<{}, State> {
     } = this.state;
     
     let main;
-    // TODO: why doesn't it work for a dag without nodes?
-    if (!error && isLoaded && !dags[dags.length-1].isEmpty()) {
+    if (!error && isLoaded) {
       const dag = dags[dags.length-1];
       main = (
         <Main
