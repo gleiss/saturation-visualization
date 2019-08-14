@@ -23,11 +23,32 @@ export class UnitParser {
 		}
 	}
 	static parseClause(string: string, numberOfSelectedLiterals: number | null): Clause {
-		const literals = string.split(" | ").map(string => UnitParser.parseLiteral(string));
+		if(string === "$false") {
+			assert(numberOfSelectedLiterals === null);
+			return new Clause([], numberOfSelectedLiterals); // empty clause
+		}
+		const literalStrings = string.split(" | ")
+
+		const literals = new Array<Literal>();
+		for (let i = 0; i < literalStrings.length; i++) {
+			const isSelected = (numberOfSelectedLiterals !== null) && i < numberOfSelectedLiterals;
+			literals.push(UnitParser.parseLiteral(literalStrings[i], isSelected));
+		}
+		
+		// simple heuristic for orienting literals: negated literal which are no equalities are premise-literals, all other literals are conclusion-literals
+		const conclusionLiteralRemains = literals.reduce((acc, literal) => acc || (!literal.negated || literal.name === "="),false);
+		if (conclusionLiteralRemains) {
+			for (const literal of literals) {
+				if (literal.negated && literal.name !== "=") {
+					literal.setOrientation(false);
+				}
+			}
+		}
+
 		return new Clause(literals, numberOfSelectedLiterals);
 	}
 
-	static parseLiteral(string: string): Literal {
+	static parseLiteral(string: string, isSelected: boolean): Literal {
 		// need to handle equality separately, since it is written in infix-notation
 		// all other predicates are written in prefix-notation
 		const equalityPosition = string.search("=");
@@ -40,7 +61,7 @@ export class UnitParser {
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
 				const rhs = UnitParser.parseFunctionApplication(rhsString);
-				return new Literal("=", [lhs, rhs], true);
+				return new Literal("=", [lhs, rhs], true, isSelected);
 			}
 			else
 			{
@@ -51,7 +72,7 @@ export class UnitParser {
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
 				const rhs = UnitParser.parseFunctionApplication(rhsString);
 				
-				return new Literal("=", [lhs, rhs], false);
+				return new Literal("=", [lhs, rhs], false, isSelected);
 			}
 		}
 		else
@@ -61,7 +82,7 @@ export class UnitParser {
 
 			// parse atom as term first and then convert it to literal
 			const literalTerm = UnitParser.parseFunctionApplication(atomString);
-			return new Literal(literalTerm.name, literalTerm.args, negated);
+			return new Literal(literalTerm.name, literalTerm.args, negated, isSelected);
 		}
 	}
 

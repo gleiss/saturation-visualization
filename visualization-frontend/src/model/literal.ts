@@ -4,30 +4,49 @@ export class Literal {
 	readonly name: string;
 	readonly args: FunctionApplication[];
 	readonly negated: boolean;
+	readonly isSelected: boolean;
 	orientationIsConclusion: boolean;
+	representation: number;
 
-	constructor(name:string, args: FunctionApplication[], negated: boolean){
+	constructor(name:string, args: FunctionApplication[], negated: boolean, isSelected: boolean){
 		this.name = name;
 		this.args = args;
 		this.negated = negated;
-		this.orientationIsConclusion = true;
+		this.isSelected = isSelected;
+		this.orientationIsConclusion = true; // at the beginning all clauses are in clausal orientation.
+		this.representation = 0; // 0 represents standard representation. Some literals may define other representations
 	}
 
-	toString() : string {
-		if (this.name === "=") {
-			assert(this.args.length === 2, "equalities must have exactly two arguments");
-			return this.args[0].toString() + (this.negated ? " != " : " = ") + this.args[1].toString();
-		}
-		if (this.name === "$less" || this.name === "Sub") {
-			assert(this.args.length === 2, "inequalities must have exactly two arguments");
-			return this.args[0].toString() + (this.negated ? " !< " : " < ") + this.args[1].toString();
-		}
-		// could also use logical-not-symbol: "\u00AC"
-		return (this.negated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString()).join(",") + ")"; 
+	setOrientation(orientationIsConclusion: boolean) {
+		this.orientationIsConclusion = orientationIsConclusion;
 	}
 
 	switchToNextRepresentation() {
-		console.log("not implemented yet");
+		if (this.name === "$less" || this.name === "Sub") {
+			if (this.representation === 0) {
+				this.representation = 1;
+			} else {
+				this.representation = 0;
+			}
+		}
+	}
+
+	toString() : string {
+		const occursNegated = this.orientationIsConclusion ? this.negated : !this.negated;
+		if (this.name === "=") {
+			assert(this.args.length === 2, "equalities must have exactly two arguments");
+			return this.args[0].toString() + (occursNegated ? " != " : " = ") + this.args[1].toString();
+		}
+		if (this.name === "$less" || this.name === "Sub") {
+			assert(this.args.length === 2, "inequalities must have exactly two arguments");
+			if(this.representation === 0) {
+				return this.args[0].toString() + (occursNegated ? " !< " : " < ") + this.args[1].toString();
+			} else {
+				return this.args[1].toString() + (occursNegated ? " !> " : " > ") + this.args[0].toString();
+			}
+		}
+		// could also use logical-not-symbol: "\u00AC"
+		return (occursNegated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString()).join(",") + ")"; 
 	}
 }
 

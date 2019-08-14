@@ -37,28 +37,43 @@ export class Clause {
   }
 
   toString(): string {
+    if (this.literals.length === 0) {
+      return "$empty"; // empty clause
+    }
     return this.literals.map(literal => literal.toString()).join(" | ");
   }
 
   toHTMLString(): string {
-    if(this.numberOfSelectedLiterals === null) {
-      // if the node does not contain information about the number of selected literals,
-      // use no formatting
-      return this.toString();
-    } else {
-      // otherwise construct a string which formats all selected literals bold.
-      let string;
-      assert(this.numberOfSelectedLiterals >= 1, "nSel must be greater or equal 1");
-      assert(this.numberOfSelectedLiterals <= this.literals.length, "nSel can't be greater than number of literals");
+    if (this.literals.length === 0) {
+      return "$empty"; // empty clause
+    }
+    const premiseString = this.literals
+      .filter(literal => !literal.orientationIsConclusion)
+      .map(literal => literal.isSelected ? ("<b>" + literal.toString() + "</b>") : literal.toString())
+      .join(" & ");
 
-      string = "<b>" + this.literals[0];
-      for (let i = 1; i < this.numberOfSelectedLiterals; i++) {
-        string = string.concat(" | " + this.literals[i]);
-      }
-      string = string.concat("</b>")
-      for (let i = this.numberOfSelectedLiterals; i < this.literals.length; i++) {
-        string = string.concat(" | " + this.literals[i]);
-      }
+    let conclusionString = this.literals
+      .filter(literal => literal.orientationIsConclusion)
+      .map(literal => literal.isSelected ? ("<b>" + literal.toString() + "</b>") : literal.toString())
+      .join(" | ");
+
+    if(conclusionString === "") {
+      conclusionString = "$false";
+    }
+    if (premiseString === "") {
+      return conclusionString;
+    } else {
+      // simple heuristic to estimate the length of the separating line between premise and conclusion.
+      const premiseStringWithoutBoldness = this.literals
+        .filter(literal => !literal.orientationIsConclusion)
+        .map(literal => literal.toString())
+        .join(" & ");
+      const conclusionStringWithoutBoldness = this.literals
+        .filter(literal => literal.orientationIsConclusion)
+        .map(literal => literal.toString())
+        .join(" | ");
+      const estimatedLengthOfLine = Math.ceil(Math.max(premiseStringWithoutBoldness.length, conclusionStringWithoutBoldness.length) * 0.8);
+      const string = premiseString + "\n" + "\u2013".repeat(estimatedLengthOfLine) + "\n" + conclusionString;
       return string;
     }
   }
