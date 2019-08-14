@@ -191,7 +191,6 @@ export default class Graph extends React.Component<Props, {}> {
 
     const dotString =  "digraph {\n\n" + inputString + "\n\n" + preprocessingString + "\n\n" + otherstring + "\n\n   " + edgeString + "\n}";
     
-    console.log(dotString);
     return dotString;
   };
 
