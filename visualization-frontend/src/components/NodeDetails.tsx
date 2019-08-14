@@ -27,7 +27,9 @@ export default class NodeDetails extends React.Component<Props, {}> {
             </article>
           )
         }
-        <small id="nodeInfo"><strong>{nodeInfo}</strong> selected</small>
+        {
+          !selectedNode && <small id="nodeInfo"><strong>{nodeInfo}</strong> selected</small>
+        }
       </section>
     );
   }
