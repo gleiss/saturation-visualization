@@ -1,38 +1,48 @@
 import * as React from 'react';
-import {DataSet, Network} from 'vis'
+import {DataSet, Network, IdType, Node} from 'vis'
 
-import Viz from 'viz.js';
-import {Module, render} from 'viz.js/full.render.js';
 import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css'
 import { assert } from '../model/util';
 
+import { runViz } from '../model/callViz';
+import Dag from '../model/dag';
+import NetworkNode from '../model/network/network-node';
+import NetworkEdge from '../model/network/network-edge';
+import SatNode from '../model/sat-node';
+
 const styleTemplates = require('../resources/styleTemplates');
 const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
+type Props = {
+  dag: Dag,
+  nodeSelection: number[],
+  historyState: number,
+  onNodeSelectionChange: (selection: number[]) => void
+};
 
-export default class Graph extends React.Component {
+export default class Graph extends React.Component<Props, {}> {
 
-  markers = [];
-  network = null;
-  networkNodes = new DataSet([]);
-  networkEdges = new DataSet([]);
-  graphContainer = React.createRef();
+  markers = new Array<number>();
+  network: Network | null = null;
+  networkNodes = new DataSet<any>([]);
+  networkEdges = new DataSet<NetworkEdge>([]);
+  graphContainer = React.createRef<HTMLDivElement>();
 
-  layoutCache = new Map();
+  layoutCache = new Map<Dag, Array<{id: number, x: number, y: number}>>();
 
   async componentDidMount() {
     this.generateNetwork();
     await this.updateNetwork();
   }
 
-  async componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
       await this.updateNetwork();
-      this.network.selectNodes(this.props.nodeSelection);
+      this.network!.selectNodes(this.props.nodeSelection);
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
-        this.network.selectNodes(this.props.nodeSelection);
+        this.network!.selectNodes(this.props.nodeSelection);
       }
       if (this.props.historyState !== prevProps.historyState) {
         this.updateNodeStyles();
@@ -54,15 +64,20 @@ export default class Graph extends React.Component {
     assert(this.graphContainer.current);
     assert(!this.network); // should only be called once
 
-    this.network = new Network(this.graphContainer.current, {
+    this.network = new Network(this.graphContainer.current!, {
       nodes: [],
       edges: []
-    }, this.getNetworkOptions());
+    }, {
+      physics: false,
+      interaction: {
+        multiselect: true
+      }
+    });
 
     const {onNodeSelectionChange} = this.props;
     this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
     this.network.on('oncontext', (rightClickEvent) => {
-      const nodeId = this.findNodeAt(rightClickEvent.event);
+      const nodeId = this.findNodeAt(rightClickEvent.event) as number;
       if (nodeId) {
         this.toggleMarker(nodeId);
       }
@@ -76,8 +91,8 @@ export default class Graph extends React.Component {
 
     // generate node and edge data
     const {dag, historyState} = this.props;
-    const networkNodes = [];
-    const networkEdges = [];
+    const networkNodes = new Array<NetworkNode>();
+    const networkEdges = new Array<NetworkEdge>();
 
     // lookup or compute positions
     let positions;
@@ -117,46 +132,37 @@ export default class Graph extends React.Component {
     this.networkEdges.add(networkEdges);
 
     // force a rerender (TODO: this should not be necessary)
-    this.network.setData({nodes: networkNodes,edges: networkEdges});
+    this.network!.setData({nodes: networkNodes as any as Array<Node>, edges: networkEdges});
   }
 
-  findNodeAt(clickPosition) {
-    return this.network.getNodeAt({
+  findNodeAt(clickPosition: {layerX: number, layerY: number}): IdType  {
+    return this.network!.getNodeAt({
       x: clickPosition.layerX,
       y: clickPosition.layerY
     });
   }
 
-  getNetworkOptions = () => {
-    return {
-      physics: false,
-      interaction: {
-        multiselect: true
-      }
-    };
-  };
-
 
   // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  async computePositions(dag) {
+  async computePositions(dag: Dag): Promise<Array<{id: number, x: number, y: number}>> {
     // generate dot string
     const dotString = this.dagToDotString(dag);
     
     // use viz to compute layout for dag given as dotstring
     // note that viz returns the layout as a string
-    const layoutString = await this.runViz(dotString);
+    const layoutString = await runViz(dotString);
 
     // parse the layout string into array of network-nodes
     return this.parseLayoutString(layoutString);
   };
 
-  dagToDotString(dag) {
+  dagToDotString(dag: Dag): string {
     // TODO: make sure boundary nodes are handled properly
     // TODO: document
-    const inputStrings = [];
-    const preprocessingStrings = [];
-    const otherStrings = [];
-    const edgeStrings = [];
+    const inputStrings = new Array<string>();
+    const preprocessingStrings = new Array<string>();
+    const otherStrings = new Array<string>();
+    const edgeStrings = new Array<string>();
     for (const node of dag.nodes.values()) {
       if (node.isFromPreprocessing) {
         if(dag.nodeIsInputNode(node.id)) {
@@ -189,21 +195,7 @@ export default class Graph extends React.Component {
     return dotString;
   };
 
-  async runViz(dotString) {
-    let viz = new Viz({Module, render});
-
-    return viz
-      .renderString(dotString, {format: 'plain'})
-      .then((result) => {
-        return result;
-      })
-      .catch((error) => {
-        viz = new Viz({Module, render});
-        console.error(error);
-      });
-  };
-
-  parseLayoutString(layoutString) {
+  parseLayoutString(layoutString: string): Array<{id: number, x: number, y: number}> {
     let firstEdgeLineIndex = layoutString.includes('\nedge') ? layoutString.indexOf('\nedge') : layoutString.length;
     // split layoutString to array of strings describing positions of nodes
     const parsedNodeLines = layoutString
@@ -229,7 +221,7 @@ export default class Graph extends React.Component {
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  selectStyle = (node, historyState) => {
+  selectStyle = (node: SatNode, historyState: number) => {
     if (node.inferenceRule === 'theory axiom') {
       if (node.activeTime !== null && node.activeTime <= historyState) {
         return styleTemplates.activeTheoryAxiom;
@@ -253,7 +245,7 @@ export default class Graph extends React.Component {
     return styleTemplates.hidden;
   };
 
-  getColorStyle = (styleData) => {
+  getColorStyle = (styleData): ColorStyle => {
     return new ColorStyle(
       styleData.defaultStyle.background,
       styleData.defaultStyle.border,
@@ -264,45 +256,30 @@ export default class Graph extends React.Component {
   };
 
 
-  setStyle = (node, newStyleKey) => {
+  setStyle = (node: NetworkNode, newStyleKey: string) => {
     const newStyle = node.color.get(newStyleKey);
 
     node.color.background = newStyle.background;
     node.color.border = newStyle.border;
   };
 
-  toNetworkNode = (node, position, historyState) => {
+  toNetworkNode = (node: SatNode, position: {id: number, x: number, y: number}, historyState: number): NetworkNode => {
     const styleData = this.selectStyle(node, historyState);
 
     const styleColor = this.getColorStyle(styleData);
     const styleFont = new FontStyle(styleData.text);
     const styleShape = styleData.shape;
     
-    return {
-      id: node.id,
-      color: styleColor,
-      font: { //TODO: restore fonts
-        multi: true,
-      },      
-      label: node.toHTMLString(),
-      rule: node.inferenceRule,
-      shape: styleShape,
-      x: Math.round(position.x * -70),
-      y: Math.round(position.y * -120)
-    }
+
+    return new NetworkNode(node.id, styleColor, styleFont, node.toHTMLString(), node.inferenceRule, styleShape, Math.round(position.x * -70), Math.round(position.y * -120));
   };
 
-  toNetworkEdge = (fromNode, toNode, visible) => {
-    return {
-      arrows: 'to',
-      color: new EdgeColor(visible ? 1.0 : 0.0, '#dddddd'),
-      from: fromNode,
-      to: toNode
-    }
+  toNetworkEdge = (fromNode: number, toNode: number, visible: boolean): NetworkEdge => {
+    return new NetworkEdge('to', new EdgeColor(visible ? 1.0 : 0.0, '#dddddd'), fromNode, toNode);
   };
 
   updateNodeStyles() {
-    const updatedNetworkNodes = [];
+    const updatedNetworkNodes = new Array<NetworkNode>();
     for (const satNode of this.props.dag.nodes.values()) {
       const networkNode = this.networkNodes.get(satNode.id);
       assert(networkNode);
@@ -321,7 +298,7 @@ export default class Graph extends React.Component {
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  applyStoredMarkers(availableNodes) {
+  applyStoredMarkers(availableNodes: any) {
     this.markers
       .map(nodeId => availableNodes.get(nodeId))
       .forEach(node => {
@@ -332,7 +309,7 @@ export default class Graph extends React.Component {
       });
   };
 
-  toggleMarker(nodeId) {
+  toggleMarker(nodeId: number) {
     if (!this.networkNodes) {
       return;
     }

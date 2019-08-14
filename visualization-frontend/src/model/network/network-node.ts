@@ -1,6 +1,5 @@
 import {ColorStyle, FontStyle} from './network-style';
 
-
 export default class NetworkNode {
 
   id: number;

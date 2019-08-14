@@ -59,9 +59,11 @@ export class ColorStyle {
 
 export class FontStyle {
   color: string;
+  multi: boolean;
 
   constructor(color: string) {
     this.color = color;
+    this.multi = true;
   }
 
 }
