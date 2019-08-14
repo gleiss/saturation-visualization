@@ -4,11 +4,13 @@ export class Literal {
 	readonly name: string;
 	readonly args: FunctionApplication[];
 	readonly negated: boolean;
+	orientationIsConclusion: boolean;
 
 	constructor(name:string, args: FunctionApplication[], negated: boolean){
 		this.name = name;
 		this.args = args;
 		this.negated = negated;
+		this.orientationIsConclusion = true;
 	}
 
 	toString() : string {
@@ -22,6 +24,10 @@ export class Literal {
 		}
 		// could also use logical-not-symbol: "\u00AC"
 		return (this.negated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString()).join(",") + ")"; 
+	}
+
+	switchToNextRepresentation() {
+		console.log("not implemented yet");
 	}
 }
 
