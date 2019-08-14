@@ -5,6 +5,7 @@ export default class NetworkNode {
   id: number;
   color: ColorStyle;
   font: FontStyle;
+  labelHighlightBold: boolean;
   label: string;
   rule: string;
   shape: string;
@@ -24,6 +25,7 @@ export default class NetworkNode {
     this.id = id;
     this.color = color;
     this.font = font;
+    this.labelHighlightBold = false;
     this.label = label;
     this.rule = rule;
     this.shape = shape;
