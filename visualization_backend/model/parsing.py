@@ -12,10 +12,11 @@ from model.transformations import filter_non_active_deriving_nodes, merge_prepro
 __all__ = 'process', 'parse', 'analyse'
 
 LOG = logging.getLogger('VampireParser')
-OUTPUT_PATTERN_SATURATION = re.compile(
-    r'^\[SA\] ([a-z ]{3,15}): (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
-OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^(\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
-OUTPUT_PATTERN_REDUCTIONS = re.compile(r'^     (replaced by|using) (\d+)\. (.*) \[(\D*) ?([\d,]*)\](.*)$')
+clauseRegex = r'(\d+)\. (.*) \[(\D*) ?([\d,]*)\]( \{[a-z]\w*:\d*(?:,[a-z]\w*:\d*)*\})?'
+OUTPUT_PATTERN_SATURATION = re.compile(r'^(\[SA\] [a-z]{3,7}): ' + clauseRegex + '$')
+OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^' + clauseRegex + '$')
+OUTPUT_PATTERN_KEYVALUE = re.compile(r'([a-z]\w*):(\d*)')
+
 PREPROCESSING_LABEL = 'Preproc'
 
 ParsedLine = namedtuple('ParsedLine', ['type', 'number', 'clause', 'inference_rule', 'parents', 'statistics'])
@@ -37,37 +38,29 @@ def parse_line(line):
     # first try to parse line as standard output line from saturation, i.e. line has form
     # '[SA] new: Clause', '[SA] passive: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
     try:
-        type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_SATURATION,line).groups()
-        number = int(number)
-        clause = util.remove_quotes(clause.rstrip())
-        inference_rule = inference_rule.rstrip()
-        parents = [int(parent) for parent in parents.split(',') if parent]
-        statistics = parseStatistics(statistics)
-        return ParsedLine(type_, number, clause, inference_rule, parents,statistics)
+        type_, number, clause, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_SATURATION, line).groups()
+        type_ = type_.split(']')[1].strip()
+
     except AttributeError:
-        # next try to parse line as additional lines output by reduction, i.e. line has form 
-        # '     forward reduce Clause', or '     backward reduce Clause'
+        # next try to parse line as output from preprocessing
         try:
-            type_, number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_REDUCTIONS, line).groups()
-            number = int(number)
-            clause = util.remove_quotes(clause.rstrip())
-            inference_rule = inference_rule.rstrip()
-            parents = [int(parent) for parent in parents.split(',') if parent]
-            statistics = parseStatistics(statistics)
-            return ParsedLine(type_, number, clause, inference_rule, parents,statistics)
+            number, clause, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
+            type_ = "preprocessing"
+
         except AttributeError:
-            # next try to parse line as output from preprocessing (actually from print_clausifier_premises)
-            try:
-                number, clause, inference_rule, parents, statistics = re.match(OUTPUT_PATTERN_PREPROCESSING, line).groups()
-                type_ = "preprocessing"
-                number = int(number)
-                clause = util.remove_quotes(clause.rstrip())
-                inference_rule = inference_rule.rstrip()
-                parents = [int(parent) for parent in parents.split(',') if parent]
-                statistics = parseStatistics(statistics)
-                return ParsedLine(type_, number, clause, inference_rule, parents, statistics)
-            except AttributeError:
-                LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
+            # LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
+            return
+
+    number = int(number)
+    clause = util.remove_quotes(clause.rstrip())
+    if statisticsString:
+        statistics = dict((key, int(value)) for (key, value) in re.findall(OUTPUT_PATTERN_KEYVALUE, statisticsString))
+    else:
+        statistics = dict()
+    inference_rule = inference_rule.rstrip()
+    parents = [int(parent) for parent in parents.split(',') if parent]
+
+    return ParsedLine(type_, number, clause, inference_rule, parents, statistics)
 
 def parseStatistics(statisticsString):
     statisticsString = statisticsString.replace(' ','')

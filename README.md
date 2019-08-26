@@ -20,6 +20,8 @@ Navigate to the root directory of the visualization and run
 pip3 install -r requirements.txt
 ```
 
+Note: The command above triggers the installation of pygraphviz (and some other things). Unfortunately it is quite likely that the installation of pygraphviz will not work out of the box (their installation script doesn't seem to be very robust). (Platform-specific) fixes should be available online though.
+
 ## Usage
 ### Generate the Output for Vampire's Saturation Run
 Call Vampire with the following options:
@@ -37,7 +39,7 @@ and make sure to pipe standard and error output to the output-file using `&>`.
   ```
   python3 app.py
   ```
-* Open a browser and go to `127.0.0.1:5000`.
-* Open the output-file using the top left button.
+* Open a browser and go to `127.0.0.1:5000`. (as default, the output-file example.proof will be visualized)
+* Open the output-file you generated with Vampire using the top left button.
 
 
