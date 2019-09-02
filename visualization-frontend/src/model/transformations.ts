@@ -39,7 +39,7 @@ export function filterNonParents(dag: Dag, relevantIds: Set<number>) {
 // additionally keeps boundary nodes
 export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 	// use new set to avoid mutating relevantIds
-	const transitiveChildrenIds = new Set(relevantIds);
+	const transitiveChildrenIds = new Set<number>(relevantIds);
 
 	// need to compute remaining nodes
 	const remainingNodes = new Map<number, SatNode>();
@@ -95,61 +95,74 @@ function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
 
 
 
-// # remove all nodes, which are not used to derive any clause which is activated at some point
-// # (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have
-// # never been added to passive)
-// def filter_non_active_deriving_nodes(dag):
-//     # collect all active nodes
-//     activated_nodes = set()
-//     for _, node in dag.nodes.items():
-//         if node.active_time is not None:
-//             activated_nodes.add(node.number)
+// remove all nodes, which are not used to derive any clause which is activated at some point
+// (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have
+// never been added to passive)
+export function filterNonActiveDerivingNodes(dag: Dag): Dag {
+	
+	// collect all activated nodes
+	const activatedNodes = new Set<number>();
+	for (const [nodeId, node] of dag.nodes) {
+		if(node.activeTime !== null) {
+			activatedNodes.add(nodeId);
+		}
+	}
 
-//     # remove all nodes which are not transitive parents of activated nodes
-//     transformed_dag = filter_non_parents(dag, activated_nodes)
+    // remove all nodes which are not transitive parents of activated nodes
+	const transformedDag = filterNonParents(dag, activatedNodes);
+	return transformedDag;
+}
 
-//     return transformed_dag
+// vampire performs preprocessing in multiple steps
+// we are only interested in
+// 1) the input-formulas (and axioms added by Vampire)
+// 2) the clauses resulting from them
+// We therefore merge together all preprocessing steps into single steps
+// from input-formulas/vapire-added-axioms to final-preprocessing-clauses
+// additionally remove all choice axiom parents, since we treat them as part of the background theory
+export function mergePreprocessing(dag: Dag): Dag {
+	const nodes = new Map<number, SatNode>(dag.nodes);
+	const nodeIdsToRemove = new Set<number>(); // nodes which should be removed. note that we can't remove them upfront due to the fact that the derivation is a dag and not a tree
 
+	const postOrderTraversal = new DFPostOrderTraversal(dag);
+	while (postOrderTraversal.hasNext()) {
+		// note: the ids are still valid, but the nodes may have been replaced by new node
+		const currentNodeId = postOrderTraversal.getNext().id;
+		const currentNode = nodes.get(currentNodeId) as SatNode;
 
-// # vampire performs preprocessing in multiple steps
-// # we are only interested in
-// # 1) the input-formulas (and axioms added by Vampire)
-// # 2) the clauses resulting from them
-// # We therefore merge together all preprocessing steps into single steps
-// # from input-formulas/vapire-added-axioms to final-preprocessing-clauses
-// # additionally remove all choice axiom parents, since we treat them as part of the background theory
-// def merge_preprocessing(dag):
-//     post_order_traversal = DFPostOrderTraversal(dag)
-//     while post_order_traversal.has_next():
-//         current_node = post_order_traversal.get_next()
+		// if there is a preprocessing node n1 with a parent node n2 which has itself a parent node n3,
+		// then replace n2 by n3 in the parents of n1 and add n2 to the nodes which should be removed
+		if (currentNode.isFromPreprocessing) {
+			const updatedParents = new Array<number>();
+			for (const parentId of currentNode.parents) {
+				const parentNode = nodes.get(parentId) as SatNode;
+				assert(parentNode.isFromPreprocessing, "invariant violated");
 
-//         # if there is a preprocessing node n1 with a parent node n2 which has itself a parent node n3,
-//         # then replace n2 by n3 in the parents of n1
-//         if current_node.is_from_preprocessing:
-//             new_parents = []
-//             for parent_id in current_node.parents:
-//                 parent_node = dag.get(parent_id)
-//                 assert parent_node.is_from_preprocessing
+				if (parentNode.parents.length === 0) {
+					// small optimization: remove choice axioms, which should not been added to the proof by Vampire in the first place
+					if (parentNode.inferenceRule !== "choice axiom") {
+						updatedParents.push(parentId);
+					}
+				} else {
+					for (const parent2Id of parentNode.parents) {
+						const parent2Node = nodes.get(parent2Id) as SatNode;
+						assert(parent2Node.isFromPreprocessing, "invariant violated");
+						updatedParents.push(parent2Id);
+					}
+					nodeIdsToRemove.add(parentId);
+				}
+			}
+			const updatedNode = new SatNode(currentNode.id, currentNode.unit, currentNode.inferenceRule, updatedParents, currentNode.statistics, currentNode.isFromPreprocessing, currentNode.newTime, currentNode.passiveTime, currentNode.activeTime, currentNode.deletionTime, currentNode.deletionParents);
+			nodes.set(currentNodeId, updatedNode);
+		}
+	}
 
-//                 if len(parent_node.parents) == 0:
-//                     if parent_node.inference_rule != "choice axiom":
-//                         new_parents.append(parent_id)
+	// remove merged nodes
+	for (const nodeIdToRemove of nodeIdsToRemove) {
+		const success = nodes.delete(nodeIdToRemove);
+		assert(success, "invar violated");
+	}
 
-//                 for parent_2_id in parent_node.parents:
-//                     parent_2_node = dag.get(parent_2_id)
-//                     assert parent_2_node.is_from_preprocessing
-
-//                     new_parents.append(parent_2_id)
-
-//             current_node.parents = new_parents
-
-//     # remove unused nodes like n2.
-//     # not that they are now not reachable anymore from the leaves of the dag
-//     remaining_nodes = dict()
-//     post_order_traversal_2 = DFPostOrderTraversal(dag)
-//     while post_order_traversal_2.has_next():
-//         current_node = post_order_traversal_2.get_next()
-//         current_id = current_node.number
-//         remaining_nodes[current_id] = current_node
-
-//     return Dag(remaining_nodes)
+	// return new dag
+	return new Dag(nodes);
+}
