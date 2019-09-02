@@ -7,7 +7,7 @@ import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences } from '../model/transformations';
+import { filterNonParents, filterNonConsequences, filterNonActiveDerivingNodes, mergePreprocessing } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
 
 /* Invariant: the state is always in one of the following phases
@@ -131,10 +131,13 @@ class App extends Component<{}, State> {
       .then(
         (result) => {
           const dag = Dag.fromDto(result.dag);
+          const filteredDag = filterNonActiveDerivingNodes(dag);
+          const mergedDag = mergePreprocessing(filteredDag);
+
           this.setState({
-            dags: [dag],
+            dags: [mergedDag],
             nodeSelection: [],
-            historyState: dag.numberOfHistorySteps() - 1,
+            historyState: mergedDag.numberOfHistorySteps() - 1,
             error: false,
             isLoaded: true,
             isLoading: false

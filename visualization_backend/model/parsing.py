@@ -181,12 +181,6 @@ def analyse(parsed_lines):
             raise Exception("Invalid line {}".format(repr(line)))
 
     parsed_dag = Dag(nodes)
-
-    dag = filter_non_active_deriving_nodes(parsed_dag)
-
     print("number of nodes in parsed dag: " + str(len(parsed_dag.nodes)))
-    print("number of nodes in active dag: " + str(len(dag.nodes)))
 
-    merged_dag = merge_preprocessing(dag)
-
-    return merged_dag
+    return parsed_dag
