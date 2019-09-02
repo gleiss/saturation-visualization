@@ -12,6 +12,12 @@ export default class Dag {
   constructor(nodes: Map<number,SatNode>) {
     this.nodes = nodes;
 
+    // sanity check: each parentId needs to occur in the derivation as node
+    for (const [nodeId, node] of nodes) {
+      for (const parentId of node.parents) {
+        assert(nodes.has(parentId), `node ${nodeId} has parent ${parentId} which does not occur as node in the dag!`);
+      }
+    }
     // compute leaves
     const leaves: Set<number> = new Set();
     const nonLeaves: Set<number> = new Set();
