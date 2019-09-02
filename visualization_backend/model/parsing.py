@@ -7,7 +7,6 @@ from collections import namedtuple
 from model import util
 from model.dag import Dag
 from model.node import Node
-from model.transformations import filter_non_active_deriving_nodes, merge_preprocessing
 
 __all__ = 'process', 'parse', 'analyse'
 
