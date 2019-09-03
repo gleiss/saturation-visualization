@@ -9,7 +9,7 @@ import './App.css';
 import { assert } from '../model/util';
 import { filterNonParents, filterNonConsequences, filterNonActiveDerivingNodes, mergePreprocessing } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
-import {DagLayouter} from '../model/dag-layouter';
+import {VizWrapper} from '../model/viz-wrapper';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -135,7 +135,7 @@ class App extends Component<{}, State> {
       const filteredDag = filterNonActiveDerivingNodes(dag);
       const mergedDag = mergePreprocessing(filteredDag);
 
-      await DagLayouter.layout(mergedDag);
+      await VizWrapper.layout(mergedDag);
 
       this.setState({
         dags: [mergedDag],
@@ -167,7 +167,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonParents(currentDag, new Set(nodeSelection));
-    await DagLayouter.layout(newDag);
+    await VizWrapper.layout(newDag);
 
     this.pushDag(newDag);
   }
@@ -177,7 +177,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
-    await DagLayouter.layout(newDag);
+    await VizWrapper.layout(newDag);
 
     this.pushDag(newDag);
   }
@@ -226,7 +226,7 @@ class App extends Component<{}, State> {
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   // push a new dag on the stack of dags
-  // Precondition: the layout for newDag has already been computed using DagLayouter.layout()
+  // Precondition: the layout for newDag has already been computed using VizWrapper.layout()
   private pushDag(newDag: Dag) {
     const {dags} = this.state;
 

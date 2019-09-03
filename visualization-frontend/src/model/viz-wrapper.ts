@@ -4,18 +4,18 @@ import { runViz } from './callViz';
 
 const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
-export class DagLayouter {
+export class VizWrapper {
 
   static async layout(dag: Dag) {
     // generate dot string
-    const dotString = DagLayouter.dagToDotString(dag);
+    const dotString = VizWrapper.dagToDotString(dag);
     
     // use viz to compute layout for dag given as dotstring
     // note that viz returns the layout as a string
     const layoutString = await runViz(dotString);
 
     // parse the layout string into array of network-nodes
-    DagLayouter.parseLayoutString(layoutString, dag);
+    VizWrapper.parseLayoutString(layoutString, dag);
   };
 
   static dagToDotString(dag: Dag): string {
