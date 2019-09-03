@@ -15,6 +15,7 @@ export default class SatNode {
   readonly activeTime: number;
   readonly deletionTime: number;
   readonly deletionParents: number[];
+  position: [number,number] | null;
 
   constructor(
     id: number,
@@ -40,6 +41,17 @@ export default class SatNode {
     this.activeTime = activeTime;
     this.deletionTime = deletionTime;
     this.deletionParents = deletionParents;
+    this.position = null;
+  }
+
+  // return a copy of this node, where the position is null
+  copy(): SatNode {
+    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.passiveTime, this.activeTime, this.deletionTime, this.deletionParents);
+  }
+
+  getPosition(): [number,number] {
+    assert(this.position !== null);
+    return this.position as [number,number];
   }
 
   toString(): string {

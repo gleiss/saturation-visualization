@@ -30,7 +30,13 @@ export function filterNonParents(dag: Dag, relevantIds: Set<number>) {
 		}
 	}
 
-	return new Dag(remainingNodes);
+	// create deep copy of nodes
+	// needed so that layout computation for the transformed dag does not overwrite the layout of the original dag
+	const remainingNodesDeepCopy = new Map<number, SatNode>();
+	for (const [nodeId,node] of remainingNodes) {
+		remainingNodesDeepCopy.set(nodeId, node.copy());
+	}
+	return new Dag(remainingNodesDeepCopy);
 }
 
 // returns a new dag containing only the nodes which either
@@ -85,7 +91,13 @@ export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 		} 
 	}
 
-	return new Dag(remainingNodes);
+	// create deep copy of nodes
+	// needed so that layout computation for the transformed dag does not overwrite the layout of the original dag
+	const remainingNodesDeepCopy = new Map<number, SatNode>();
+	for (const [nodeId,node] of remainingNodes) {
+		remainingNodesDeepCopy.set(nodeId, node.copy());
+	}
+	return new Dag(remainingNodesDeepCopy);
 }
 
 // create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents

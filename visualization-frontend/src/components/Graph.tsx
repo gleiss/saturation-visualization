@@ -5,14 +5,12 @@ import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-
 import './Graph.css'
 import { assert } from '../model/util';
 
-import { runViz } from '../model/callViz';
 import Dag from '../model/dag';
 import NetworkNode from '../model/network/network-node';
 import NetworkEdge from '../model/network/network-edge';
 import SatNode from '../model/sat-node';
 
 const styleTemplates = require('../resources/styleTemplates');
-const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 type Props = {
   dag: Dag,
@@ -29,16 +27,14 @@ export default class Graph extends React.Component<Props, {}> {
   networkEdges = new DataSet<NetworkEdge>([]);
   graphContainer = React.createRef<HTMLDivElement>();
 
-  layoutCache = new Map<Dag, Array<{id: number, x: number, y: number}>>();
-
-  async componentDidMount() {
+  componentDidMount() {
     this.generateNetwork();
-    await this.updateNetwork();
+    this.updateNetwork();
   }
 
-  async componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
-      await this.updateNetwork();
+      this.updateNetwork();
       this.network!.selectNodes(this.props.nodeSelection);
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
@@ -94,24 +90,9 @@ export default class Graph extends React.Component<Props, {}> {
     const networkNodes = new Array<NetworkNode>();
     const networkEdges = new Array<NetworkEdge>();
 
-    // lookup or compute positions
-    let positions;
-    if(this.layoutCache.has(dag))
-    {
-      positions = this.layoutCache.get(dag);
-    }
-    else
-    {
-      positions = await this.computePositions(dag);
-      this.layoutCache.set(dag, positions);
-    }
-
     // generate network-nodes as combination of nodes and their positions
-    positions.forEach(position => {
-      assert(dag.get(position.id));
-      const node = dag.get(position.id);
-
-      networkNodes.push(this.toNetworkNode(node, position, historyState));
+    for (const [nodeId, node] of dag.nodes) {
+      networkNodes.push(this.toNetworkNode(node, historyState));
 
       const edgesVisible = node.isFromPreprocessing || !!(node.newTime !== null && node.newTime <= historyState);
       node
@@ -121,7 +102,7 @@ export default class Graph extends React.Component<Props, {}> {
             networkEdges.push(this.toNetworkEdge(parentId, node.id, edgesVisible))
           }
         });
-    });
+    }
 
     // update networkNodes and networkEdges
     // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
@@ -142,81 +123,6 @@ export default class Graph extends React.Component<Props, {}> {
     });
   }
 
-
-  // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  async computePositions(dag: Dag): Promise<Array<{id: number, x: number, y: number}>> {
-    // generate dot string
-    const dotString = this.dagToDotString(dag);
-    
-    // use viz to compute layout for dag given as dotstring
-    // note that viz returns the layout as a string
-    const layoutString = await runViz(dotString);
-
-    // parse the layout string into array of network-nodes
-    return this.parseLayoutString(layoutString);
-  };
-
-  dagToDotString(dag: Dag): string {
-    // TODO: make sure boundary nodes are handled properly
-    // TODO: document
-    const inputStrings = new Array<string>();
-    const preprocessingStrings = new Array<string>();
-    const otherStrings = new Array<string>();
-    const edgeStrings = new Array<string>();
-    for (const node of dag.nodes.values()) {
-      if (node.isFromPreprocessing) {
-        if(dag.nodeIsInputNode(node.id)) {
-          inputStrings.push(`${node.id} [label="${node.toString()}"]`);
-        } else {
-          preprocessingStrings.push(`${node.id} [label="${node.toString()}"]`);
-        }
-      }
-    }
-    for (const node of dag.nodes.values()) {
-      if (!node.isFromPreprocessing) {
-        otherStrings.push(`${node.id} [label="${node.toString()}"]`);
-      }
-    }
-
-    for (const node of dag.nodes.values()) {
-      for (const parentId of node.parents) {
-        edgeStrings.push(`${parentId} -> ${node.id}`)
-      }
-    }
-
-    const inputString = "   subgraph inputgraph {\n      rank=source;\n      " + inputStrings.join(";\n      ") + "\n   }";
-    const preprocessingString = "   subgraph preprocessinggraph {\n      rank=same;\n      " + preprocessingStrings.join(";\n      ") + "\n   }";
-    const otherstring = "   subgraph othergraph {\n      " + otherStrings.join(";\n      ") + "\n   }";
-    const edgeString = edgeStrings.join(";\n   ");
-
-    const dotString =  "digraph {\n\n" + inputString + "\n\n" + preprocessingString + "\n\n" + otherstring + "\n\n   " + edgeString + "\n}";
-    
-    return dotString;
-  };
-
-  parseLayoutString(layoutString: string): Array<{id: number, x: number, y: number}> {
-    let firstEdgeLineIndex = layoutString.includes('\nedge') ? layoutString.indexOf('\nedge') : layoutString.length;
-    // split layoutString to array of strings describing positions of nodes
-    const parsedNodeLines = layoutString
-      .substr(0, firstEdgeLineIndex) // ignore remaining part of string describing edges
-      .split('\nnode ') //split lines
-      .slice(1) // ignore first line describing graph
-      .map(line => line.substr(0, line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
-      .map((line) => line.matchAll(PLAIN_PATTERN).next().value); // parse each remaining line
-    parsedNodeLines.forEach(line => {
-      assert(line !== undefined); // check that each remaining line was successfully parsed
-    });
-    // generate network node for each nodeString
-    return parsedNodeLines
-      .map((match) => {
-        const [, number, x, y] = match;
-        return {
-          id: parseInt(number, 10),
-          x: parseFloat(x),
-          y: parseFloat(y)
-        };
-      });
-  }
 
   // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -262,15 +168,16 @@ export default class Graph extends React.Component<Props, {}> {
     node.color.border = newStyle.border;
   };
 
-  toNetworkNode = (node: SatNode, position: {id: number, x: number, y: number}, historyState: number): NetworkNode => {
+  toNetworkNode = (node: SatNode, historyState: number): NetworkNode => {
     const styleData = this.selectStyle(node, historyState);
 
     const styleColor = this.getColorStyle(styleData);
     const styleFont = new FontStyle(styleData.text);
     const styleShape = styleData.shape;
-    
 
-    return new NetworkNode(node.id, styleColor, styleFont, node.toHTMLString(), node.inferenceRule, styleShape, Math.round(position.x * -70), Math.round(position.y * -120));
+    const positionX = node.getPosition()[0];
+    const positionY = node.getPosition()[1];
+    return new NetworkNode(node.id, styleColor, styleFont, node.toHTMLString(), node.inferenceRule, styleShape, Math.round(positionX * -70), Math.round(positionY * -120));
   };
 
   toNetworkEdge = (fromNode: number, toNode: number, visible: boolean): NetworkEdge => {
