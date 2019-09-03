@@ -20,7 +20,7 @@ CORS(app)
 def startVampire(vampireProcess, inputFile):
     if vampireProcess != None:
         vampireProcess.kill()
-    output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on"], stdout=PIPE, stderr=STDOUT, text=True).stdout
+    output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on"], stdout=PIPE, stderr=STDOUT, text=True).stdout
     return output
 
 
@@ -53,7 +53,7 @@ def collectVampireOutput(vampireProcess):
 def startManualCSVampire(vampireProcess, inputFile):
     if vampireProcess != None:
         vampireProcess.kill()
-    vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "on", "--show_passive", "on"], stdin=PIPE, stdout=PIPE)
+    vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "on", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on"], stdin=PIPE, stdout=PIPE)
     
     newLines, vampireState, remainingChoices = collectVampireOutput(vampireProcess)
     return vampireProcess, newLines, vampireState, remainingChoices
@@ -97,7 +97,7 @@ def handle_startVampireManualCS():
 
     request_params = request.get_json()
     inputFile = request_params.get('file', '')
-    vampireProcess, newLines, vampireState, remainingChoices = startManualCSVampire(vampireProcess, inputFile) # "/Users/bernhard/Desktop/test.smt2"
+    vampireProcess, newLines, vampireState, remainingChoices = startManualCSVampire(vampireProcess, inputFile)
     return json.dumps({'vampireState' : vampireState, 'newLines' : newLines, 'remainingChoices' : remainingChoices})
 
 
