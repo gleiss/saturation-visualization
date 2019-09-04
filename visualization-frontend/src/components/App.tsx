@@ -10,6 +10,7 @@ import { assert } from '../model/util';
 import { filterNonParents, filterNonConsequences, filterNonActiveDerivingNodes, mergePreprocessing } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
 import {VizWrapper} from '../model/viz-wrapper';
+import { ParsedLine } from '../model/dag';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -130,8 +131,20 @@ class App extends Component<{}, State> {
     });
 
     try {
-      const result = await fetchedJSON.json();
-      const dag = Dag.fromDto(result.dag);
+      const json = await fetchedJSON.json();
+      const parsedLines = new Array<ParsedLine>();
+      for (const line of json.lines) {
+        const statistics = new Map<string,number>();
+        for (const key in line.statistics) {
+          const val = line.statistics[key];
+          if (typeof val === "number"){
+            statistics.set(key, val);
+          }
+        }
+        parsedLines.push(new ParsedLine(line.lineType, line.unitId, line.unitString, line.inferenceRule, line.parents, statistics));
+      }
+
+      const dag = Dag.fromParsedLines(parsedLines, null);
       const filteredDag = filterNonActiveDerivingNodes(dag);
       const mergedDag = mergePreprocessing(filteredDag);
 

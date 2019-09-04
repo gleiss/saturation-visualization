@@ -5,16 +5,16 @@ import { UnitParser } from './unit-parser';
 export default class SatNode {
 
   readonly id: number;
-  readonly unit: Unit;
+  unit: Unit;
   readonly inferenceRule: string;
   readonly parents: number[];
-  readonly statistics: Map<string,number>;
+  statistics: Map<string,number>;
   readonly isFromPreprocessing: boolean;
-  readonly newTime: number;
-  readonly passiveTime: number;
-  readonly activeTime: number;
-  readonly deletionTime: number;
-  readonly deletionParents: number[];
+  newTime: number | null;
+  passiveTime: number | null;
+  activeTime: number | null;
+  deletionTime: number | null;
+  deletionParents: number[];
   position: [number,number] | null;
 
   constructor(
@@ -24,10 +24,10 @@ export default class SatNode {
     parents: number[],
     statistics: Map<string,number>,
     isFromPreprocessing: boolean,
-    newTime: number,
-    passiveTime: number,
-    activeTime: number,
-    deletionTime: number,
+    newTime: number | null,
+    passiveTime: number | null,
+    activeTime: number | null,
+    deletionTime: number | null,
     deletionParents: number[]
   ) {
     this.id = id;

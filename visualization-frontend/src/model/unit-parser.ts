@@ -6,7 +6,6 @@ import {Literal, FunctionApplication} from './literal'
 export class UnitParser {
 
 	static parseUnit(string: string, isFromPreprocessing: boolean, statistics: Map<string,number>): Unit {
-		
 		// heuristic to determine whether unit is a clause:
 		// if unit is not from preprocessing, it has to be a clause
 		// if unit only contains certain symbols, it has to be a clause
@@ -55,8 +54,8 @@ export class UnitParser {
 		if(equalityPosition != -1)
 		{
 			if(string[equalityPosition - 1] === "!") {
-				assert(string[equalityPosition - 2] === " ", "negated equality must be surrounded by spaces");
-				assert(string[equalityPosition + 1] === " ", "negated equality must be surrounded by spaces");
+				assert(string[equalityPosition - 2] === " ", `negated equality not surrounded by spaces in string ${string}`);
+				assert(string[equalityPosition + 1] === " ", `negated equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 2);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
@@ -65,8 +64,8 @@ export class UnitParser {
 			}
 			else
 			{
-				assert(string[equalityPosition - 1] === " ", "equality must be surrounded by spaces");
-				assert(string[equalityPosition + 1] === " ", "equality must be surrounded by spaces");
+				assert(string[equalityPosition - 1] === " ", `equality not surrounded by spaces in string ${string}`);
+				assert(string[equalityPosition + 1] === " ", `equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 1);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
