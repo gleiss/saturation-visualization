@@ -134,9 +134,8 @@ export default class Graph extends React.Component<Props, {}> {
         return styleTemplates.passiveTheoryAxiom;
       }
     }
-
     if (node.isFromPreprocessing) {
-      return node.parents ? styleTemplates.preprocessing : styleTemplates.input;
+      return (node.parents.length > 0) ? styleTemplates.preprocessing : styleTemplates.input;
     }
 
     if (node.activeTime !== null && node.activeTime <= historyState) {
