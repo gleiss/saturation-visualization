@@ -7,9 +7,10 @@ from collections import namedtuple
 __all__ = 'parse'
 
 LOG = logging.getLogger('VampireParser')
-clauseRegex = r'(\d+)\. (.*) \[(\D*) ?([\d,]*)\]( \{[a-z]\w*:\d*(?:,[a-z]\w*:\d*)*\})?'
-OUTPUT_PATTERN_SATURATION = re.compile(r'^(\[SA\] [a-z]{3,7}): ' + clauseRegex + '$')
-OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^' + clauseRegex + '$')
+CLAUSE_REGEX = r'(\d+)\. (.*) \[(\D*) ?([\d,]*)\]( \{[a-z]\w*:\d*(?:,[a-z]\w*:\d*)*\})?'
+OUTPUT_PATTERN_SATURATION = re.compile(r'^\[SA\] ([a-z ]{3,14}): ' + CLAUSE_REGEX + '$')
+OUTPUT_PATTERN_REDUCTIONS = re.compile(r'^     ([a-z ]{5,12}) ' + CLAUSE_REGEX + '$')
+OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^' + CLAUSE_REGEX + '$')
 OUTPUT_PATTERN_KEYVALUE = re.compile(r'([a-z]\w*):(\d*)')
 
 class ParsedLine (object):
@@ -32,14 +33,20 @@ class ParsedLine (object):
 
 def parse(vampire_output):
     lines = vampire_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
-    return [parsed_line for parsed_line in (parse_line(line) for line in lines) if parsed_line]
+    lines2 = []
+    for line in lines:
+        if line.startswith("% Refutation found. Thanks to"):
+            break
+        else:
+            lines2.append(line)
+    return [parsed_line for parsed_line in (parse_line(line) for line in lines2) if parsed_line]
 
 def parse_line(line):
     # first try to parse line as standard output line from saturation, i.e. line has form
     # '[SA] new: Clause', '[SA] passive: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
     try:
         line_type, unit_id, unit_string, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_SATURATION, line).groups()
-        line_type = line_type.split(']')[1].strip()
+        # line_type = line_type.split(']')[1].strip()
 
     except AttributeError:
         # next try to parse line as output from preprocessing
@@ -48,8 +55,13 @@ def parse_line(line):
             line_type = "preprocessing"
 
         except AttributeError:
-            # LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
-            return
+            # next try to parse line as 'replaced by' or 'using' line generated for clause reductions
+            try:
+                line_type, unit_id, unit_string, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_REDUCTIONS, line).groups()
+
+            except AttributeError:
+                # LOG.warning('\'%s\' does not match any pattern and will be skipped', line)
+                return
 
     unit_id = int(unit_id)
     unit_string = unit_string.rstrip().replace("'", "").replace("\"", "")
