@@ -38,14 +38,14 @@ export class Clause {
 
   toString(): string {
     if (this.literals.length === 0) {
-      return "$empty"; // empty clause
+      return "$false"; // empty clause
     }
     return this.literals.map(literal => literal.toString()).join(" | ");
   }
 
   toHTMLString(): string {
     if (this.literals.length === 0) {
-      return "$empty"; // empty clause
+      return "$false"; // empty clause
     }
     const premiseString = this.literals
       .filter(literal => !literal.orientationIsConclusion)
