@@ -26,7 +26,7 @@ export class VizWrapper {
     const otherStrings = new Array<string>();
     const edgeStrings = new Array<string>();
     for (const node of dag.nodes.values()) {
-      // assert(node.position === null, "the dag has already been layouted!");
+      assert(node.position === null, "the dag has already been layouted!");
       if (node.isFromPreprocessing) {
         if(dag.nodeIsInputNode(node.id)) {
           inputStrings.push(`${node.id} [label="${node.toString()}"]`);
