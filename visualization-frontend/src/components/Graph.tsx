@@ -26,19 +26,19 @@ export default class Graph extends React.Component<Props, {}> {
 
   componentDidMount() {
     this.generateNetwork();
-    this.updateNetwork();
+    this.updateNetwork(false);
   }
 
   componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
-      this.updateNetwork();
+      this.updateNetwork(false);
       this.network!.selectNodes(this.props.nodeSelection);
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
         this.network!.selectNodes(this.props.nodeSelection);
       }
       if (this.props.historyState !== prevProps.historyState) {
-        this.updateNodeStyles();
+        this.updateNetwork(true);
       }
     }
   }
@@ -52,7 +52,8 @@ export default class Graph extends React.Component<Props, {}> {
   }
 
 
-  // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   generateNetwork() {
     assert(this.graphContainer.current);
     assert(!this.network); // should only be called once
@@ -78,87 +79,93 @@ export default class Graph extends React.Component<Props, {}> {
     });
   }
 
-  async updateNetwork() {
+  // updates the network displayed by Vis.js
+  // if onlyUpdateStyles is false, all nodes and edges are newly generated.
+  // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
+  updateNetwork(onlyUpdateStyles: boolean) {
+    const {dag} = this.props;
 
-    // generate node and edge data
-    const {dag, historyState} = this.props;
     const visNodes = new Array<Node>();
     const visEdges = new Array<Edge>();
     let edgeId = 0;
-    // generate network-nodes as combination of nodes and their positions
-    for (const satNode of dag.nodes.values()) {
-      const visNode = this.toVisNode(satNode, historyState)
+
+    const styleMap = this.computeStyleMap();
+
+    for (const [satNodeId, satNode] of dag.nodes) {
+      const nodeStyle = styleMap.get(satNodeId);
+      const visNode = this.toVisNode(satNode, nodeStyle);
       visNodes.push(visNode);
 
-      const edgesVisible = satNode.isFromPreprocessing || !!(satNode.newTime !== null && satNode.newTime <= historyState);
       for (const parentId of satNode.parents) {
+        // TODO: why do we check whether the dag exists and whether the parentId exists?
         if (dag && dag.get(parentId)) {
-          const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, !edgesVisible);
+          const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
           edgeId = edgeId + 1;
           visEdges.push(visEdge);
         }
       }
     }
 
-    // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
-    this.networkNodes.clear();
-    this.networkNodes.add(visNodes);
-    this.networkEdges.clear();
-    this.networkEdges.add(visEdges);
+    if(onlyUpdateStyles) {
+      // QUESTION: it seems that using a single call to update is faster than separately updating each node. is this true?
+      this.networkNodes.update(visNodes);
+      this.networkEdges.update(visEdges);
+    } else {
+      // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
+      this.networkNodes.clear();
+      this.networkNodes.add(visNodes);
+      this.networkEdges.clear();
+      this.networkEdges.add(visEdges);
 
-    // center the dag
-    this.network!.fit();
+      // center the dag
+      this.network!.fit();
+    }
   }
 
-  updateNodeStyles() {
-    const {dag, historyState} = this.props;
+  computeStyleMap(): Map<number, any> {
+    const {dag, historyState, nodeSelection} = this.props;
+    const selection = new Set<number>(nodeSelection.filter(nodeId => (dag.get(nodeId).activeTime !== null && (dag.get(nodeId).activeTime as number) <= historyState || dag.nodeIsInputNode(nodeId))));
+    
+    const passiveNodesForSelection = dag.computePassiveNodesForSelection(historyState, selection);
+    const nodesInActivePassiveDag = dag.computeNodesInActiveAndPassiveDag(historyState, selection);
 
-    const visNodes = new Array<Node>();
-    const visEdges = new Array<Edge>();
-    let edgeId = 0;
-    for (const satNode of this.props.dag.nodes.values()) {
-      const visNode = this.toVisNode(satNode, historyState);
-      visNodes.push(visNode);
+    const styleMap = new Map<number, any>();
+    for (const [nodeId, node] of dag.nodes) {
+      const isDeleted = (node.deletionTime !== null && node.deletionTime <= historyState);
 
-      const edgesVisible = satNode.isFromPreprocessing || !!(satNode.newTime !== null && satNode.newTime <= historyState);
-      for (const parentId of satNode.parents) {
-        if (dag && dag.get(parentId)) {
-          const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, !edgesVisible);
-          edgeId = edgeId + 1;
-          visEdges.push(visEdge);
-        }
+      if (node.inferenceRule === "theory axiom") {
+        styleMap.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
+        continue;
       }
+      if (node.isFromPreprocessing) {
+        styleMap.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+        continue;
+      }
+
+      const isActivated = (node.activeTime !== null && node.activeTime <= historyState);
+      if (isActivated) {
+        styleMap.set(nodeId, isDeleted ? "activatedDeleted" : "active");
+        continue;
+      }
+
+      if (!isDeleted && passiveNodesForSelection.has(nodeId)) {
+        styleMap.set(nodeId, "passive");
+        continue;
+      }
+
+      if (nodesInActivePassiveDag.has(nodeId)) {
+        styleMap.set(nodeId, "deletedButContributing");
+        continue;
+      }
+
+      styleMap.set(nodeId, "hidden");
     }
-    this.networkNodes.update(visNodes);
-    this.networkEdges.update(visEdges);
+
+    return styleMap;
   }
 
-
-  selectStyle = (node: SatNode, historyState: number) => {
-    if (node.inferenceRule === 'theory axiom') {
-      if (node.activeTime !== null && node.activeTime <= historyState) {
-        return styleTemplates.activeTheoryAxiom;
-      } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
-        return styleTemplates.passiveTheoryAxiom;
-      }
-    }
-    if (node.isFromPreprocessing) {
-      return (node.parents.length > 0) ? styleTemplates.preprocessing : styleTemplates.input;
-    }
-
-    if (node.activeTime !== null && node.activeTime <= historyState) {
-      return styleTemplates.active;
-    } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
-      return styleTemplates.passive;
-    } else if (node.newTime !== null && node.newTime <= historyState) {
-      return styleTemplates.new;
-    }
-
-    return styleTemplates.hidden;
-  };
-
-  toVisNode(node: SatNode, historyState: number): any {
-    const styleData = this.selectStyle(node, historyState);
+  toVisNode(node: SatNode, style: string): any {
+    const styleData = styleTemplates[style];
     const isMarked = this.markers.has(node.id);
     
     return {
@@ -178,6 +185,7 @@ export default class Graph extends React.Component<Props, {}> {
         color : styleData.text,
         multi : true
       },
+      hidden : (style === "hidden"),
       x : Math.round(node.getPosition()[0] * -70),
       y :  Math.round(node.getPosition()[1] * -120)
     };
@@ -198,6 +206,9 @@ export default class Graph extends React.Component<Props, {}> {
     }
   }
 
+
+  // INTERACTION ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   findNodeAt(clickPosition: {layerX: number, layerY: number}): IdType  {
     return this.network!.getNodeAt({
       x: clickPosition.layerX,
@@ -216,7 +227,9 @@ export default class Graph extends React.Component<Props, {}> {
     } else {
       this.markers.add(nodeId);
     }
-    const toggledNode = this.toVisNode(this.props.dag.get(nodeId), this.props.historyState);
+
+    const styleMap = this.computeStyleMap();
+    const toggledNode = this.toVisNode(this.props.dag.get(nodeId), styleMap.get(nodeId));
     this.networkNodes.update(toggledNode);
   }
 

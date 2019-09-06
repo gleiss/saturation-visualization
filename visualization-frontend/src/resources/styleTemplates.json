@@ -13,12 +13,30 @@
     "markedStyle": {
       "background": "#ffaabb",
       "border": "#ee3377"
-    }
+    },
+    "hidden": false
+  },
+  "activatedDeleted": {
+    "defaultStyle": {
+      "background": "#dddddd",
+      "border": "#bbbbbb"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    },
+    "hidden": false
   },
   "passive": {
     "defaultStyle": {
-      "background": "#f1f1f1",
-      "border": "#e3e3e3"
+      "background": "#FDCCCC",
+      "border": "#FFADAD"
     },
     "text": "#999999",
     "shape": "box",
@@ -29,9 +47,10 @@
     "markedStyle": {
       "background": "#ffdde3",
       "border": "#f8adc8"
-    }
+    },
+    "hidden": false
   },
-  "new": {
+  "deletedButContributing": {
     "defaultStyle": {
       "background": "#f8f8f8",
       "border": "#f1f1f1"
@@ -45,9 +64,10 @@
     "markedStyle": {
       "background": "#ffdde3",
       "border": "#f8adc8"
-    }
+    },
+    "hidden": false
   },
-  "activeTheoryAxiom": {
+  "theoryAxiom": {
     "defaultStyle": {
       "background": "#77aadd",
       "border": "#4477aa"
@@ -61,9 +81,10 @@
     "markedStyle": {
       "background": "#ffaabb",
       "border": "#ee3377"
-    }
+    },
+    "hidden": false
   },
-  "passiveTheoryAxiom": {
+  "theoryAxiomDeleted": {
     "defaultStyle": {
       "background": "#c8ddf1",
       "border": "#b4c8dd"
@@ -77,7 +98,8 @@
     "markedStyle": {
       "background": "#ffdde3",
       "border": "#f8adc8"
-    }
+    },
+    "hidden": false
   },
   "input": {
     "defaultStyle": {
@@ -93,7 +115,8 @@
     "markedStyle": {
       "background": "#ffaabb",
       "border": "#ee3377"
-    }
+    },
+    "hidden": false
   },
   "preprocessing": {
     "defaultStyle": {
@@ -109,7 +132,25 @@
     "markedStyle": {
       "background": "#ffaabb",
       "border": "#ee3377"
-    }
+    },
+    "hidden": false
+  },
+  "preprocessingDeleted": {
+    "defaultStyle": {
+      "background": "#abe0d1",
+      "border": "#8cd1c9"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    },
+    "hidden": false
   },
   "hidden": {
     "defaultStyle": {
@@ -125,6 +166,7 @@
     "markedStyle": {
       "background": "#ffffff00",
       "border": "#ffffff00"
-    }
+    },
+    "hidden": true
   }
 }
