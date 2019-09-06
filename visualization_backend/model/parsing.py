@@ -8,7 +8,7 @@ __all__ = 'parse'
 
 LOG = logging.getLogger('VampireParser')
 CLAUSE_REGEX = r'(\d+)\. (.*) \[(\D*) ?([\d,]*)\]( \{[a-z]\w*:\d*(?:,[a-z]\w*:\d*)*\})?'
-OUTPUT_PATTERN_SATURATION = re.compile(r'^\[SA\] ([a-z ]{3,14}): ' + CLAUSE_REGEX + '$')
+OUTPUT_PATTERN_SATURATION = re.compile(r'^\[SA\] ([a-z ]{3,15}): ' + CLAUSE_REGEX + '$')
 OUTPUT_PATTERN_REDUCTIONS = re.compile(r'^     ([a-z ]{5,12}) ' + CLAUSE_REGEX + '$')
 OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^' + CLAUSE_REGEX + '$')
 OUTPUT_PATTERN_KEYVALUE = re.compile(r'([a-z]\w*):(\d*)')
