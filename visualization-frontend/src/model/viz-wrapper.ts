@@ -18,13 +18,17 @@ export class VizWrapper {
     VizWrapper.parseLayoutString(layoutString, dag);
   };
 
+  // encodes layout-problem into dot-language
+  // the solution to the layout-problem contains a position for each node, which either
+  // - is a preprocessing node
+  // - occurs in the derivation of at least one activated clause
   static dagToDotString(dag: Dag): string {
     // TODO: make sure boundary nodes are handled properly
-    // TODO: document
+    const nodesInActiveDag = dag.computeNodesInActiveDag(Number.MAX_SAFE_INTEGER);
+
     const inputStrings = new Array<string>();
     const preprocessingStrings = new Array<string>();
-    const otherStrings = new Array<string>();
-    const edgeStrings = new Array<string>();
+    const otherStrings = new Array<string>();    
     for (const node of dag.nodes.values()) {
       assert(node.position === null, "the dag has already been layouted!");
       if (node.isFromPreprocessing) {
@@ -33,17 +37,19 @@ export class VizWrapper {
         } else {
           preprocessingStrings.push(`${node.id} [label="${node.toString()}"]`);
         }
-      }
-    }
-    for (const node of dag.nodes.values()) {
-      if (!node.isFromPreprocessing) {
-        otherStrings.push(`${node.id} [label="${node.toString()}"]`);
+      } else  {
+        if (nodesInActiveDag.has(node.id)) {
+          otherStrings.push(`${node.id} [label="${node.toString()}"]`);
+        }
       }
     }
 
+    const edgeStrings = new Array<string>();
     for (const node of dag.nodes.values()) {
-      for (const parentId of node.parents) {
-        edgeStrings.push(`${parentId} -> ${node.id}`)
+      if (node.isFromPreprocessing || nodesInActiveDag.has(node.id)) {
+        for (const parentId of node.parents) {
+          edgeStrings.push(`${parentId} -> ${node.id}`)
+        }
       }
     }
 

@@ -105,26 +105,6 @@ function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
 	return new SatNode(node.id, node.unit, "Boundary", [], node.statistics, node.isFromPreprocessing, node.newTime, node.passiveTime, node.activeTime, node.deletionTime, node.deletionParents);
 }
 
-
-
-// remove all nodes, which are not used to derive any clause which is activated at some point
-// (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have
-// never been added to passive)
-export function filterNonActiveDerivingNodes(dag: Dag): Dag {
-	
-	// collect all activated nodes
-	const activatedNodes = new Set<number>();
-	for (const [nodeId, node] of dag.nodes) {
-		if(node.activeTime !== null) {
-			activatedNodes.add(nodeId);
-		}
-	}
-
-    // remove all nodes which are not transitive parents of activated nodes
-	const transformedDag = filterNonParents(dag, activatedNodes);
-	return transformedDag;
-}
-
 // vampire performs preprocessing in multiple steps
 // we are only interested in
 // 1) the input-formulas (and axioms added by Vampire)
@@ -152,7 +132,9 @@ export function mergePreprocessing(dag: Dag): Dag {
 
 				if (parentNode.parents.length === 0) {
 					// small optimization: remove choice axioms, which should not been added to the proof by Vampire in the first place
-					if (parentNode.inferenceRule !== "choice axiom") {
+					if (parentNode.inferenceRule === "choice axiom") {
+						nodeIdsToRemove.add(parentId);
+					} else {
 						updatedParents.push(parentId);
 					}
 				} else {

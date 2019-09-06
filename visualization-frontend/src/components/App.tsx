@@ -7,7 +7,7 @@ import Dag from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences, filterNonActiveDerivingNodes, mergePreprocessing } from '../model/transformations';
+import { filterNonParents, filterNonConsequences, mergePreprocessing } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
 import {VizWrapper} from '../model/viz-wrapper';
 import { ParsedLine } from '../model/dag';
@@ -145,8 +145,7 @@ class App extends Component<{}, State> {
       }
 
       const dag = Dag.fromParsedLines(parsedLines, null);
-      const filteredDag = filterNonActiveDerivingNodes(dag);
-      const mergedDag = mergePreprocessing(filteredDag);
+      const mergedDag = mergePreprocessing(dag);
 
       await VizWrapper.layout(mergedDag);
 
@@ -245,7 +244,7 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps(),
+      historyState: dags[0].numberOfHistorySteps(), // TODO: should probably keep the current historyState
     });
   }
 
@@ -254,7 +253,7 @@ class App extends Component<{}, State> {
 
     this.setState((state, props) => ({
       dags: state.dags.slice(0, state.dags.length-1),
-      historyState: state.dags[0].numberOfHistorySteps() // TODO: construct history steps properly for each subgraph
+      historyState: state.dags[0].numberOfHistorySteps() // TODO: should probably keep the current historyState
     }));
   }
 }

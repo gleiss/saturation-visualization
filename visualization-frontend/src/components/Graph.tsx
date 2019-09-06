@@ -168,27 +168,35 @@ export default class Graph extends React.Component<Props, {}> {
     const styleData = styleTemplates[style];
     const isMarked = this.markers.has(node.id);
     
-    return {
-      id : node.id,
-      label : node.toHTMLString(),
-      labelHighlightBold : false,
-      shape : "box",
-      color : {
-        border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
-        background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
-        highlight : {
-          border : styleData.highlightStyle.border,
-          background : styleData.highlightStyle.background
-        }
-      },
-      font : {
-        color : styleData.text,
-        multi : true
-      },
-      hidden : (style === "hidden"),
-      x : Math.round(node.getPosition()[0] * -70),
-      y :  Math.round(node.getPosition()[1] * -120)
-    };
+    if (style == "hidden") {
+      return {
+        id : node.id,
+        hidden : true
+      };
+    } else {
+      return {
+        id : node.id,
+        label : node.toHTMLString(),
+        labelHighlightBold : false,
+        shape : "box",
+        color : {
+          border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
+          background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
+          highlight : {
+            border : styleData.highlightStyle.border,
+            background : styleData.highlightStyle.background
+          }
+        },
+        font : {
+          color : styleData.text,
+          multi : true
+        },
+        hidden : false,
+        x : Math.round(node.getPosition()[0] * -70),
+        y :  Math.round(node.getPosition()[1] * -120)
+      };
+    }
+
   }
 
   toVisEdge(edgeId: number, parentNodeId: number, nodeId: number, hidden: boolean) {

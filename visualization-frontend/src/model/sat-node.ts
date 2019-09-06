@@ -50,7 +50,7 @@ export default class SatNode {
   }
 
   getPosition(): [number,number] {
-    assert(this.position !== null);
+    assert(this.position !== null, `accessing position of node with id ${this.id}, which has not been computed`);
     return this.position as [number,number];
   }
 
