@@ -32,6 +32,7 @@ export default class Main extends React.Component<Props, {}> {
           historyLength={this.props.historyLength}
           historyState={this.props.historyState}
           onHistoryStateChange={this.props.onHistoryStateChange}
+          enabled={!this.props.dag.isPassiveDag}
         />
       </main>
     );
