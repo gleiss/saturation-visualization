@@ -1,5 +1,9 @@
 """The application entry point."""
 
+import sys
+if sys.version_info.major < 3:
+    raise Exception("User error: This application only supports Python 3, so please use python3 instead of python!")
+
 import json
 
 from flask import Flask, request
