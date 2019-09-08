@@ -1,6 +1,6 @@
 
 import { assert } from "./util";
-import Dag from "./dag";
+import { Dag } from "./dag";
 import SatNode from "./sat-node";
 
 // iterator for traversing DAG, where each node is visited only after all parents are visited

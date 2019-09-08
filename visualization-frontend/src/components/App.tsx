@@ -3,14 +3,13 @@ import {Component} from 'react';
 
 import Main from './Main';
 import Aside from './Aside';
-import Dag from '../model/dag';
+import { Dag, ParsedLine } from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences, mergePreprocessing } from '../model/transformations';
+import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
-import {VizWrapper} from '../model/viz-wrapper';
-import { ParsedLine } from '../model/dag';
+import { VizWrapper } from '../model/viz-wrapper';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -59,6 +58,8 @@ class App extends Component<{}, State> {
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
+          onShowPassiveDag={this.showPassiveDag.bind(this)}
+          onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
         />
       );
     } else if (isLoading || error) {
@@ -147,7 +148,7 @@ class App extends Component<{}, State> {
       const dag = Dag.fromParsedLines(parsedLines, null);
       const mergedDag = mergePreprocessing(dag);
 
-      await VizWrapper.layout(mergedDag);
+      await VizWrapper.layout(mergedDag, true);
 
       this.setState({
         dags: [mergedDag],
@@ -179,7 +180,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonParents(currentDag, new Set(nodeSelection));
-    await VizWrapper.layout(newDag);
+    await VizWrapper.layout(newDag, true);
 
     this.pushDag(newDag);
   }
@@ -189,9 +190,25 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
-    await VizWrapper.layout(newDag);
+    await VizWrapper.layout(newDag, true);
 
     this.pushDag(newDag);
+  }
+
+  // PASSIVE DAG ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  async showPassiveDag(selection: Set<number>, currentTime: number) {
+    const {dags} = this.state;
+    const currentDag = dags[dags.length - 1];
+    
+    const passiveDag = passiveDagForSelection(currentDag, selection, currentTime);
+    await VizWrapper.layout(passiveDag, false);
+
+    this.pushDag(passiveDag);
+  }
+
+  dismissPassiveDag() {
+    this.popDag();
   }
 
 
@@ -238,13 +255,21 @@ class App extends Component<{}, State> {
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   // push a new dag on the stack of dags
-  // Precondition: the layout for newDag has already been computed using VizWrapper.layout()
+  // Precondition: the layout for newDag has already been computed
   private pushDag(newDag: Dag) {
-    const {dags} = this.state;
+    const {dags, nodeSelection} = this.state;
+    
+    // filter out selected nodes which don't occur in new graph
+    const selectedNodesInNewDag = new Array<number>();
+    for (const nodeId of nodeSelection) {
+      if (newDag.nodes.has(nodeId)) {
+        selectedNodesInNewDag.push(nodeId);
+      }
+    }
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps(), // TODO: should probably keep the current historyState
+      nodeSelection: selectedNodesInNewDag
     });
   }
 
@@ -252,8 +277,7 @@ class App extends Component<{}, State> {
     assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
     this.setState((state, props) => ({
-      dags: state.dags.slice(0, state.dags.length-1),
-      historyState: state.dags[0].numberOfHistorySteps() // TODO: should probably keep the current historyState
+      dags: state.dags.slice(0, state.dags.length-1)
     }));
   }
 }

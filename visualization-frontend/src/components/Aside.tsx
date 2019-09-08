@@ -3,7 +3,7 @@ import * as React from 'react';
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 
 
 type Props = {

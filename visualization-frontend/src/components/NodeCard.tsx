@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import NodeMenu from './NodeMenu';
 import Search from './Search';
 import './NodeCard.css';

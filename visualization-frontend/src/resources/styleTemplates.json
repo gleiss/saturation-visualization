@@ -1,4 +1,21 @@
 {
+  "boundary": {
+    "defaultStyle": {
+      "background": "#77aadd",
+      "border": "#4477aa"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    },
+    "hidden": false
+  },
   "active": {
     "defaultStyle": {
       "background": "#dddddd",
@@ -35,8 +52,25 @@
   },
   "passive": {
     "defaultStyle": {
-      "background": "#FDCCCC",
-      "border": "#FFADAD"
+      "background": "#FF5959",
+      "border": "#FF3232"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#f8cfc1",
+      "border": "#f8cfc1"
+    },
+    "markedStyle": {
+      "background": "#ffdde3",
+      "border": "#f8adc8"
+    },
+    "hidden": false
+  },
+  "deletedButContributing": {
+    "defaultStyle": {
+      "background": "#f8f8f8",
+      "border": "#f1f1f1"
     },
     "text": "#999999",
     "shape": "box",
@@ -50,7 +84,7 @@
     },
     "hidden": false
   },
-  "deletedButContributing": {
+  "deleted": {
     "defaultStyle": {
       "background": "#f8f8f8",
       "border": "#f1f1f1"

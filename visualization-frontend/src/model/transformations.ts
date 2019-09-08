@@ -1,5 +1,5 @@
 import { assert } from "./util";
-import Dag from "./dag";
+import { Dag } from "./dag";
 import SatNode from "./sat-node";
 import { ReversePostOrderTraversal, DFPostOrderTraversal } from "./traversal";
 
@@ -160,3 +160,123 @@ export function mergePreprocessing(dag: Dag): Dag {
 	// return new dag
 	return new Dag(nodes);
 }
+
+  // computes the set of clauses currently in Passive, which are derived as children from nodes in selection (or are in the selection for the special case of final preprocessing nodes which are in passive)
+  // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
+  export function passiveDagForSelection(dag: Dag, selection: Set<number>, currentTime: number): Dag {
+    const passiveDagNodes = new Map<number, SatNode>();
+	const styleMap = new Map<number, "passive" | "deleted" | "boundary">();
+	
+    for (const [nodeId, node] of dag.nodes) {
+      // a node is in passive, if the new-event happened, but neither an active-event nor a deletion-event happened.
+      const nodeIsInPassive = ((node.newTime !== null && node.newTime <= currentTime) && !(node.activeTime !== null && node.activeTime <= currentTime) && !(node.deletionTime !== null && node.deletionTime <= currentTime));
+      if (nodeIsInPassive) {
+        // compute active clauses or final preprocessing clauses from which node was generated
+        const cachedNodes = new Map<number, SatNode>(); // TODO: probably more efficient to delay this
+		const cachedStyles = new Map<number, "passive" | "deleted" | "boundary">();
+
+		cachedNodes.set(nodeId, node);
+		cachedStyles.set(nodeId, "passive");
+
+        let relevantNodeId = nodeId;
+        let relevantNode = dag.get(relevantNodeId);
+        // first go up in the derivation until the current node was not derived using a simplification
+        while (true) {
+          const nodeIdOrNull = nodeWasDerivedUsingSimplification(dag, relevantNode);
+          if (nodeIdOrNull !== null) {
+            assert(dag.get(nodeIdOrNull).deletionTime != null);
+            for (const parentId of relevantNode.parents) {
+              if (parentId !== nodeIdOrNull) {
+				cachedNodes.set(parentId, createBoundaryNode(dag, dag.get(parentId)));
+				cachedStyles.set(parentId, "boundary");
+              }
+            }
+            relevantNodeId = nodeIdOrNull;
+			relevantNode = dag.get(relevantNodeId)
+			
+			cachedNodes.set(relevantNodeId, relevantNode);
+			cachedStyles.set(relevantNodeId, "deleted"); // could be wrong if it is a preprocessing node, but in that case it is corrected later
+          } else {
+            break;
+          }
+        }
+
+        // now either the relevant node is a preprocessing node, or the parents of the current node are active nodes
+        if (relevantNode.isFromPreprocessing) {
+          if (selection.has(relevantNodeId)) {
+			// add cached nodes and styles
+            for (const [nodeId, node] of cachedNodes) {
+              passiveDagNodes.set(nodeId, node.copy());
+            }
+            for (const [nodeId, style] of cachedStyles) {
+				styleMap.set(nodeId, style);
+			}
+			// correct the node and style for preprocessing node
+			passiveDagNodes.set(relevantNodeId, createBoundaryNode(dag, relevantNode));
+			styleMap.set(relevantNodeId, "boundary")
+          }
+        } else {
+          for (const parentId of relevantNode.parents) {
+            const parent = dag.get(parentId);
+            
+            assert(parent.activeTime != null && relevantNode.newTime != null && parent.activeTime <= relevantNode.newTime, `invar violated for node ${node}`);
+          }
+          for (const parentId of relevantNode.parents) {
+            if (selection.has(parentId)) {
+			  // add cached nodes and styles
+			  for (const [nodeId, node] of cachedNodes) {
+                passiveDagNodes.set(nodeId, node.copy());
+			  }
+			  for (const [nodeId, style] of cachedStyles) {
+				styleMap.set(nodeId, style);
+			}
+			  // add all (active) clauses, which participated in the generating inference, as boundary nodes
+              for (const parentId of relevantNode.parents) {
+				passiveDagNodes.set(parentId, createBoundaryNode(dag, dag.get(parentId)));
+				styleMap.set(parentId, "boundary");
+              }
+              break;
+            }
+          }
+        }
+      }
+	}
+	
+	// add the selected nodes themselves as boundary nodes
+	for (const nodeId of selection) {
+		passiveDagNodes.set(nodeId, createBoundaryNode(dag, dag.get(nodeId)));
+		styleMap.set(nodeId, "boundary");
+	}
+
+    return new Dag(passiveDagNodes, true, styleMap);
+  }
+
+  // returns null if node was not derived using simplification
+  // returns id of original node if node was derived using simplification
+  // TODO: we don't know the complete set of simplifying inference rules, since the current set could be extended in the future. Nonetheless we know the standard simplifying and generating inference rules, so we could use that knowledge to speed up the computation of this function.
+  function nodeWasDerivedUsingSimplification(dag: Dag, node: SatNode): number | null {
+    // one of the parents p of node n needs to satisfy the following four properties (independently from the currentTime):
+    for (const parentId of node.parents) {
+      const parent = dag.get(parentId);
+      // 1) p has been deleted
+      // 2) the deletionTime of p matches the newTime of n.
+      // 3) the first deletion parent of p is n
+      // 4) let P be the set of parents of n other than p. Then the deletion parents of p are n and P.
+      if (parent.deletionTime != null && parent.deletionTime == node.newTime && parent.deletionParents[0] === node.id && node.parents.length == parent.deletionParents.length) {
+        const set1 = new Set<number>(node.parents);
+        set1.delete(parentId);
+        const set2 = new Set<number>(parent.deletionParents);
+        set2.delete(parent.deletionParents[0]);
+        let otherParentsMatch = true;
+        for (const e of set1) {
+          if (!set2.has(e)) {
+            otherParentsMatch = false;
+          }
+        }
+        if (otherParentsMatch) {
+          return parentId;
+        }
+      }
+    }
+    return null;
+  }

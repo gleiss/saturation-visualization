@@ -1,4 +1,4 @@
-import Dag from "./dag";
+import { Dag } from "./dag";
 import { DFPostOrderTraversal } from "./traversal";
 
 // return ids of nodes, which have a derivation where each of the nodes in relevantIds occurs

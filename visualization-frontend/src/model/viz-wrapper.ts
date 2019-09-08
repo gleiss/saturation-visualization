@@ -1,14 +1,15 @@
 import { assert } from '../model/util';
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import { runViz } from './callViz';
+import SatNode from './sat-node';
 
 const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 export class VizWrapper {
 
-  static async layout(dag: Dag) {
+  static async layout(dag: Dag, onlyActiveDag: boolean) {
     // generate dot string
-    const dotString = VizWrapper.dagToDotString(dag);
+    const dotString = VizWrapper.dagToDotString(dag, onlyActiveDag);
     
     // use viz to compute layout for dag given as dotstring
     // note that viz returns the layout as a string
@@ -22,9 +23,8 @@ export class VizWrapper {
   // the solution to the layout-problem contains a position for each node, which either
   // - is a preprocessing node
   // - occurs in the derivation of at least one activated clause
-  static dagToDotString(dag: Dag): string {
-    // TODO: make sure boundary nodes are handled properly
-    const nodesInActiveDag = dag.computeNodesInActiveDag(Number.MAX_SAFE_INTEGER);
+  static dagToDotString(dag: Dag, onlyActiveDag: boolean): string {
+    const nodesInActiveDag = onlyActiveDag ? dag.computeNodesInActiveDag(Number.MAX_SAFE_INTEGER) : null;
 
     const inputStrings = new Array<string>();
     const preprocessingStrings = new Array<string>();
@@ -38,7 +38,7 @@ export class VizWrapper {
           preprocessingStrings.push(`${node.id} [label="${node.toString()}"]`);
         }
       } else  {
-        if (nodesInActiveDag.has(node.id)) {
+        if (!onlyActiveDag || (nodesInActiveDag as Set<number>).has(node.id)) {
           otherStrings.push(`${node.id} [label="${node.toString()}"]`);
         }
       }
@@ -46,7 +46,7 @@ export class VizWrapper {
 
     const edgeStrings = new Array<string>();
     for (const node of dag.nodes.values()) {
-      if (node.isFromPreprocessing || nodesInActiveDag.has(node.id)) {
+      if (node.isFromPreprocessing || !onlyActiveDag || (nodesInActiveDag as Set<number>).has(node.id)) {
         for (const parentId of node.parents) {
           edgeStrings.push(`${parentId} -> ${node.id}`)
         }
@@ -86,5 +86,4 @@ export class VizWrapper {
       dag.get(id).position = [x,y];
     }
   }
-
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import Slider from './Slider';
 import Graph from './Graph';
 
@@ -11,7 +11,9 @@ type Props = {
   historyLength: number,
   historyState: number,
   onNodeSelectionChange: (selection: number[]) => void,
-  onHistoryStateChange: (newState: number) => void
+  onHistoryStateChange: (newState: number) => void,
+  onShowPassiveDag: (selection: Set<number>, currentTime: number) => void,
+  onDismissPassiveDag: () => void
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -23,6 +25,8 @@ export default class Main extends React.Component<Props, {}> {
           nodeSelection={this.props.nodeSelection}
           historyState={this.props.historyState}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
+          onShowPassiveDag={this.props.onShowPassiveDag}
+          onDismissPassiveDag={this.props.onDismissPassiveDag}
         />
         <Slider
           historyLength={this.props.historyLength}

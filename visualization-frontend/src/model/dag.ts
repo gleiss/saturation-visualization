@@ -21,16 +21,24 @@ export class ParsedLine {
   }
 }
 
-export default class Dag {
+export class Dag {
 
   // TODO: it seems that the result of Graphviz depends on the order of node- and edge declarations.
   //       the order of these declarations depends on the order in which the nodes occur in the nodes-Map.
   //       therefore it could make sense to normalize the order of nodes in the nodes-Map at construction time of the Dag.
   readonly nodes: Map<number,SatNode>;
   readonly leaves: Set<number>;
+  
+  // invar: if isPassiveDag, then styleMap !== null
+  readonly isPassiveDag: boolean;
+  readonly styleMap: Map<number, "passive" | "deleted" | "boundary"> | null;
 
-  constructor(nodes: Map<number,SatNode>) {
+  constructor(nodes: Map<number,SatNode>, isPassiveDag: boolean = false, styleMap: Map<number, "passive" | "deleted" | "boundary"> | null = null) {
     this.nodes = nodes;
+
+    assert(!isPassiveDag || styleMap !== null)
+    this.isPassiveDag = isPassiveDag;
+    this.styleMap = styleMap;
 
     // sanity check: key and id of node need to match
     for (const [nodeId, node] of nodes) {
@@ -63,8 +71,9 @@ export default class Dag {
   }
 
   get(nodeId: number): SatNode {
-    assert(this.nodes.has(nodeId), "node doesn't occur in Dag");
-    return this.nodes.get(nodeId) as SatNode;
+    const node = this.nodes.get(nodeId);
+    assert(node !== undefined, "node doesn't occur in Dag");
+    return node as SatNode;
   }
 
   numberOfHistorySteps(): number {
@@ -136,13 +145,6 @@ export default class Dag {
     for (const node of nodes) {
       nodeDict.set(node.id,node);
     }
-    return new Dag(nodeDict);
-  }
-
-  static fromDto(dto: any): Dag {
-    const nodeDict = new Map<number,SatNode>();
-
-    Object.values(dto.nodes).forEach((node: any) => nodeDict.set(node.number, SatNode.fromDto(node)));
     return new Dag(nodeDict);
   }
 
@@ -262,82 +264,6 @@ export default class Dag {
     return activeNodeIds;
   }
 
-  // returns null if node was not derived using simplification
-  // returns id of original node if node was derived using simplification
-  nodeWasDerivedUsingSimplification(nodeId: number): number | null {
-    const node = this.get(nodeId);
-
-    // one of the parents p of node n needs to satisfy the following four properties (independently from the currentTime):
-    for (const parentId of node.parents) {
-      const parent = this.get(parentId);
-      // 1) p has been deleted
-      // 2) the deletionTime of p matches the newTime of n.
-      // 3) the first deletion parent of p is n
-      // 4) let P be the set of parents of n other than p. Then the deletion parents of p are n and P.
-      if (parent.deletionTime != null && parent.deletionTime == node.newTime && parent.deletionParents[0] === nodeId && node.parents.length == parent.deletionParents.length) {
-        const set1 = new Set<number>(node.parents);
-        set1.delete(parentId);
-        const set2 = new Set<number>(parent.deletionParents);
-        set2.delete(parent.deletionParents[0]);
-        let otherParentsMatch = true;
-        for (const e of set1) {
-          if (!set2.has(e)) {
-            otherParentsMatch = false;
-          }
-        }
-        if (otherParentsMatch) {
-          return parentId;
-        }
-      }
-    }
-    return null;
-  }
-
-  // computes the set of clauses currently in Passive, which are derived as children from nodes in selection (or are in the selection for the special case of final preprocessing nodes which are in passive)
-  // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
-  computePassiveNodesForSelection(currentTime: number, selection: Set<number>): Set<number> {
-    const passiveNodeIds = new Set<number>();
-
-    for (let [nodeId, node] of this.nodes) {
-      // a node is in passive, if the new-event happened, but neither an active-event nor a deletion-event happened.
-      const nodeIsInPassive = ((node.newTime !== null && node.newTime <= currentTime) && !(node.activeTime !== null && node.activeTime <= currentTime) && !(node.deletionTime !== null && node.deletionTime <= currentTime));
-      if (nodeIsInPassive) {
-        // compute active clauses or final preprocessing clauses from which node was generated
-
-        // first go up in the derivation until the current node was not derived using a simplification
-        while (true) {
-          const nodeIdOrNull = this.nodeWasDerivedUsingSimplification(nodeId);
-          if (nodeIdOrNull !== null) {
-            assert(this.get(nodeIdOrNull).deletionTime != null);
-            nodeId = nodeIdOrNull;
-            node = this.get(nodeId);
-          } else {
-            break;
-          }
-        }
-
-        // now either the current node is a preprocessing node, or the parents of the current node are active nodes
-        if (node.isFromPreprocessing) {
-          if (selection.has(nodeId)) {
-            passiveNodeIds.add(nodeId);
-          }
-        } else {
-          for (const parentId of node.parents) {
-            const parent = this.get(parentId);
-            
-            assert(parent.activeTime != null && node.newTime != null && parent.activeTime <= node.newTime, `invar violated for node ${node}`);
-          }
-          for (const parentId of node.parents) {
-            if (selection.has(parentId)) {
-              passiveNodeIds.add(parentId);
-            }
-          }
-        }
-      }
-    }
-    return passiveNodeIds;
-  }
-
   // Definition: the active dag contains all nodes which occur in the derivation of a currently active node
   computeNodesInActiveDag(currentTime: number) : Set<number> {
     const nodeIds = this.computeActiveNodes(currentTime);
@@ -357,29 +283,4 @@ export default class Dag {
 
     return nodeIds;
   }
-
-  // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
-  computeNodesInActiveAndPassiveDag(currentTime: number, selection: Set<number>) : Set<number> {
-    const nodeIds = this.computeActiveNodes(currentTime);
-    const passiveNodeIds = this.computePassiveNodesForSelection(currentTime, selection);
-    for (const nodeId of passiveNodeIds) {
-      nodeIds.add(nodeId);
-    }
-
-    // add all transitive parents of nodes in nodes
-	  const iterator = new ReversePostOrderTraversal(this);
-	  while (iterator.hasNext()) {
-		  const currentNode = iterator.getNext();
-      const currentNodeId = currentNode.id;
-    
-      if (nodeIds.has(currentNodeId)) {
-        for (const parentId of currentNode.parents) {
-          nodeIds.add(parentId);
-        }
-      }    
-    }
-
-    return nodeIds;
-  }
-
 }

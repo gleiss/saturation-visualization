@@ -4,7 +4,7 @@ import {DataSet, Network, IdType, Node, Edge} from 'vis'
 import './Graph.css'
 import { assert } from '../model/util';
 
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import SatNode from '../model/sat-node';
 
 const styleTemplates = require('../resources/styleTemplates');
@@ -13,7 +13,9 @@ type Props = {
   dag: Dag,
   nodeSelection: number[],
   historyState: number,
-  onNodeSelectionChange: (selection: number[]) => void
+  onNodeSelectionChange: (selection: number[]) => void,
+  onShowPassiveDag: (selection: Set<number>, currentTime: number) => void,
+  onDismissPassiveDag: () => void
 };
 
 export default class Graph extends React.Component<Props, {}> {
@@ -68,41 +70,51 @@ export default class Graph extends React.Component<Props, {}> {
       }
     });
 
-    const {onNodeSelectionChange} = this.props;
-    this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
-    this.network.on('oncontext', (rightClickEvent) => {
-      const nodeId = this.findNodeAt(rightClickEvent.event) as number;
-      if (nodeId) {
-        this.toggleMarker(nodeId);
-      }
-      rightClickEvent.event.preventDefault();
-    });
+    this.network.on('select', (newSelection) => this.props.onNodeSelectionChange(newSelection.nodes));
+    if (!this.props.dag.isPassiveDag) {
+      this.network.on('oncontext', async (rightClickEvent) => {
+        const nodeId = this.findNodeAt(rightClickEvent.event) as number;
+        if (nodeId) {
+          const selection = new Set<number>();
+          selection.add(nodeId);
+          await this.props.onShowPassiveDag(selection, this.props.historyState);
+        }
+        rightClickEvent.event.preventDefault();
+      });
+    }
   }
 
   // updates the network displayed by Vis.js
   // if onlyUpdateStyles is false, all nodes and edges are newly generated.
   // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
   updateNetwork(onlyUpdateStyles: boolean) {
-    const {dag} = this.props;
+    const {dag, historyState} = this.props;
 
     const visNodes = new Array<Node>();
     const visEdges = new Array<Edge>();
     let edgeId = 0;
 
-    const styleMap = this.computeStyleMap();
+    // partition nodes:
+    // for standard dags, compute node partition
+    // for passive dags use style map cached in dag
+    const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, historyState);
 
+    // update network nodes
     for (const [satNodeId, satNode] of dag.nodes) {
-      const nodeStyle = styleMap.get(satNodeId);
-      const visNode = this.toVisNode(satNode, nodeStyle);
-      visNodes.push(visNode);
+      const nodeStyle = nodePartition.get(satNodeId);
+      assert(nodeStyle !== undefined, "invar");
+      if (nodeStyle === "hidden") {
+        const visNode = {id : satNodeId, hidden : true};
+        visNodes.push(visNode);
+      } else {
+        const visNode = this.toVisNode(satNode, nodeStyle, satNode.getPosition());
+        visNodes.push(visNode);
+      }
 
       for (const parentId of satNode.parents) {
-        // TODO: why do we check whether the dag exists and whether the parentId exists?
-        if (dag && dag.get(parentId)) {
-          const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
-          edgeId = edgeId + 1;
-          visEdges.push(visEdge);
-        }
+        const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
+        edgeId = edgeId + 1;
+        visEdges.push(visEdge);
       }
     }
 
@@ -122,80 +134,65 @@ export default class Graph extends React.Component<Props, {}> {
     }
   }
 
-  computeStyleMap(): Map<number, any> {
-    const {dag, historyState, nodeSelection} = this.props;
-    const selection = new Set<number>(nodeSelection.filter(nodeId => (dag.get(nodeId).activeTime !== null && (dag.get(nodeId).activeTime as number) <= historyState || dag.nodeIsInputNode(nodeId))));
-    
-    const passiveNodesForSelection = dag.computePassiveNodesForSelection(historyState, selection);
-    const nodesInActivePassiveDag = dag.computeNodesInActiveAndPassiveDag(historyState, selection);
+  computeNodePartition(dag: Dag, currentTime: number): Map<number, any> {
 
-    const styleMap = new Map<number, any>();
+    const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
+
+    const nodePartition = new Map<number, any>();
     for (const [nodeId, node] of dag.nodes) {
-      const isDeleted = (node.deletionTime !== null && node.deletionTime <= historyState);
+      const isDeleted = (node.deletionTime !== null && node.deletionTime <= currentTime);
 
       if (node.inferenceRule === "theory axiom") {
-        styleMap.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
+        nodePartition.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
         continue;
       }
       if (node.isFromPreprocessing) {
-        styleMap.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+        nodePartition.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
         continue;
       }
 
-      const isActivated = (node.activeTime !== null && node.activeTime <= historyState);
+      const isActivated = (node.activeTime !== null && node.activeTime <= currentTime);
       if (isActivated) {
-        styleMap.set(nodeId, isDeleted ? "activatedDeleted" : "active");
+        nodePartition.set(nodeId, isDeleted ? "activatedDeleted" : "active");
         continue;
       }
 
-      if (!isDeleted && passiveNodesForSelection.has(nodeId)) {
-        styleMap.set(nodeId, "passive");
+      if (nodesInActiveDag.has(nodeId)) {
+        nodePartition.set(nodeId, "deletedButContributing");
         continue;
-      }
+      } 
 
-      if (nodesInActivePassiveDag.has(nodeId)) {
-        styleMap.set(nodeId, "deletedButContributing");
-        continue;
-      }
-
-      styleMap.set(nodeId, "hidden");
+      nodePartition.set(nodeId, "hidden");
     }
 
-    return styleMap;
+    return nodePartition;
   }
 
-  toVisNode(node: SatNode, style: string): any {
+  toVisNode(node: SatNode, style: string, position: [number, number]): any {
     const styleData = styleTemplates[style];
     const isMarked = this.markers.has(node.id);
-    
-    if (style == "hidden") {
-      return {
-        id : node.id,
-        hidden : true
-      };
-    } else {
-      return {
-        id : node.id,
-        label : node.toHTMLString(),
-        labelHighlightBold : false,
-        shape : "box",
-        color : {
-          border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
-          background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
-          highlight : {
-            border : styleData.highlightStyle.border,
-            background : styleData.highlightStyle.background
-          }
-        },
-        font : {
-          color : styleData.text,
-          multi : true
-        },
-        hidden : false,
-        x : Math.round(node.getPosition()[0] * -70),
-        y :  Math.round(node.getPosition()[1] * -120)
-      };
-    }
+
+    return {
+      id : node.id,
+      label : node.toHTMLString(),
+      labelHighlightBold : false,
+      shape : "box",
+      color : {
+        border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
+        background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
+        highlight : {
+          border : styleData.highlightStyle.border,
+          background : styleData.highlightStyle.background
+        }
+      },
+      font : {
+        color : styleData.text,
+        multi : true
+      },
+      hidden : false,
+      x : Math.round(position[0] * -70),
+      y : Math.round(position[1] * -120)
+    };
 
   }
 
@@ -235,10 +232,7 @@ export default class Graph extends React.Component<Props, {}> {
     } else {
       this.markers.add(nodeId);
     }
-
-    const styleMap = this.computeStyleMap();
-    const toggledNode = this.toVisNode(this.props.dag.get(nodeId), styleMap.get(nodeId));
-    this.networkNodes.update(toggledNode);
+    this.updateNetwork(true);
   }
 
 }
