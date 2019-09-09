@@ -13,7 +13,7 @@ OUTPUT_PATTERN_REDUCTIONS = re.compile(r'^     ([a-z ]{5,12}) ' + CLAUSE_REGEX +
 OUTPUT_PATTERN_PREPROCESSING = re.compile(r'^' + CLAUSE_REGEX + '$')
 OUTPUT_PATTERN_KEYVALUE = re.compile(r'([a-z]\w*):(\d*)')
 
-class ParsedLine (dict):
+class ParsedLine (object):
     def __init__(self, lineType, unitId, unitString, inferenceRule, parents, statistics):
         self.lineType = lineType
         self.unitId = unitId
@@ -21,6 +21,16 @@ class ParsedLine (dict):
         self.inferenceRule = inferenceRule
         self.parents = parents
         self.statistics = statistics
+
+    def to_json(self):
+        return {
+            'lineType': self.lineType,
+            'unitId' : self.unitId,
+            'unitString' : self.unitString,
+            'inferenceRule' : self.inferenceRule,
+            'parents' : self.parents,
+            'statistics' : self.statistics
+        }
 
 def parse(lines):
     parsed_lines = []
