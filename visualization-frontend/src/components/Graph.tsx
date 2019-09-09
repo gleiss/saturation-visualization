@@ -15,7 +15,7 @@ type Props = {
   historyState: number,
   onNodeSelectionChange: (selection: number[]) => void,
   onShowPassiveDag: (selection: Set<number>, currentTime: number) => void,
-  onDismissPassiveDag: () => void
+  onDismissPassiveDag: (selectedId: number) => void,
 };
 
 export default class Graph extends React.Component<Props, {}> {
@@ -71,17 +71,23 @@ export default class Graph extends React.Component<Props, {}> {
     });
 
     this.network.on('select', (newSelection) => this.props.onNodeSelectionChange(newSelection.nodes));
-    if (!this.props.dag.isPassiveDag) {
-      this.network.on('oncontext', async (rightClickEvent) => {
-        const nodeId = this.findNodeAt(rightClickEvent.event) as number;
-        if (nodeId) {
+
+    this.network.on('oncontext', async (rightClickEvent) => {
+      rightClickEvent.event.preventDefault();
+      const nodeId = this.findNodeAt(rightClickEvent.event) as number;
+      if (nodeId !== undefined) {
+        if (this.props.dag.isPassiveDag) {
+          const styleMap = this.props.dag.styleMap as Map<number, string>;
+          if (styleMap.get(nodeId) === "passive") {
+            await this.props.onDismissPassiveDag(nodeId);
+          }
+        } else {
           const selection = new Set<number>();
           selection.add(nodeId);
           await this.props.onShowPassiveDag(selection, this.props.historyState);
         }
-        rightClickEvent.event.preventDefault();
-      });
-    }
+      }
+    });
   }
 
   // updates the network displayed by Vis.js

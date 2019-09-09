@@ -115,6 +115,7 @@ function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
 export function mergePreprocessing(dag: Dag): Dag {
 	const nodes = new Map<number, SatNode>(dag.nodes);
 	const nodeIdsToRemove = new Set<number>(); // nodes which should be removed. note that we can't remove them upfront due to the fact that the derivation is a dag and not a tree
+	const mergeMap = new Map<number, Array<number>>(); // maps merged nodes to the replacing nodes, needed for extending the dag later
 
 	const postOrderTraversal = new DFPostOrderTraversal(dag);
 	while (postOrderTraversal.hasNext()) {
@@ -144,6 +145,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 						updatedParents.push(parent2Id);
 					}
 					nodeIdsToRemove.add(parentId);
+					mergeMap.set(parentId, parentNode.parents);
 				}
 			}
 			const updatedNode = new SatNode(currentNode.id, currentNode.unit, currentNode.inferenceRule, updatedParents, currentNode.statistics, currentNode.isFromPreprocessing, currentNode.newTime, currentNode.passiveTime, currentNode.activeTime, currentNode.deletionTime, currentNode.deletionParents);
@@ -157,13 +159,13 @@ export function mergePreprocessing(dag: Dag): Dag {
 		assert(success, "invar violated");
 	}
 
-	// return new dag
-	return new Dag(nodes);
+	return new Dag(nodes, mergeMap);
 }
 
   // computes the set of clauses currently in Passive, which are derived as children from nodes in selection (or are in the selection for the special case of final preprocessing nodes which are in passive)
   // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
   export function passiveDagForSelection(dag: Dag, selection: Set<number>, currentTime: number): Dag {
+
     const passiveDagNodes = new Map<number, SatNode>();
 	const styleMap = new Map<number, "passive" | "deleted" | "boundary">();
 	
@@ -212,8 +214,10 @@ export function mergePreprocessing(dag: Dag): Dag {
 				styleMap.set(nodeId, style);
 			}
 			// correct the node and style for preprocessing node
-			passiveDagNodes.set(relevantNodeId, createBoundaryNode(dag, relevantNode));
-			styleMap.set(relevantNodeId, "boundary")
+			if(relevantNodeId !== nodeId) {
+				passiveDagNodes.set(relevantNodeId, createBoundaryNode(dag, relevantNode));
+				styleMap.set(relevantNodeId, "boundary")
+			}
           }
         } else {
           for (const parentId of relevantNode.parents) {
@@ -245,10 +249,13 @@ export function mergePreprocessing(dag: Dag): Dag {
 	// add the selected nodes themselves as boundary nodes
 	for (const nodeId of selection) {
 		passiveDagNodes.set(nodeId, createBoundaryNode(dag, dag.get(nodeId)));
-		styleMap.set(nodeId, "boundary");
+		// if a node is both in passive and occurs in the selection, use "passive" as style
+		if (!passiveDagNodes.has(nodeId)) {
+			styleMap.set(nodeId, "boundary");
+		}
 	}
 
-    return new Dag(passiveDagNodes, true, styleMap);
+    return new Dag(passiveDagNodes, null, true, styleMap);
   }
 
   // returns null if node was not derived using simplification
@@ -258,11 +265,11 @@ export function mergePreprocessing(dag: Dag): Dag {
     // one of the parents p of node n needs to satisfy the following four properties (independently from the currentTime):
     for (const parentId of node.parents) {
       const parent = dag.get(parentId);
-      // 1) p has been deleted
+      // 1) n has been added to saturation and p has been deleted
       // 2) the deletionTime of p matches the newTime of n.
       // 3) the first deletion parent of p is n
       // 4) let P be the set of parents of n other than p. Then the deletion parents of p are n and P.
-      if (parent.deletionTime != null && parent.deletionTime == node.newTime && parent.deletionParents[0] === node.id && node.parents.length == parent.deletionParents.length) {
+      if (node.newTime != null && parent.deletionTime != null && parent.deletionTime == node.newTime && parent.deletionParents[0] === node.id && node.parents.length == parent.deletionParents.length) {
         const set1 = new Set<number>(node.parents);
         set1.delete(parentId);
         const set2 = new Set<number>(parent.deletionParents);

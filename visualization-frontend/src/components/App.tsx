@@ -128,14 +128,15 @@ class App extends Component<{}, State> {
     return parsedLines;
   }
 
-  async runVampire(fileContent: string | ArrayBuffer) {
+  async runVampire(fileContent: string | ArrayBuffer, manualCS=false) {
     this.setState({
       error: false,
       isLoading: true,
       isLoaded: false
     });
 
-    const fetchedJSON = await fetch('http://localhost:5000/vampire/start', {
+    manualCS = true
+    const fetchedJSON = await fetch(manualCS ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -149,7 +150,7 @@ class App extends Component<{}, State> {
       const json = await fetchedJSON.json();
       const parsedLines = this.jsonToParsedLines(json);
 
-      const dag = Dag.fromParsedLines(parsedLines, null);
+      const [dag, newNodes] = Dag.fromParsedLines(parsedLines, null);
       const mergedDag = mergePreprocessing(dag);
 
       await VizWrapper.layout(mergedDag, true);
@@ -163,6 +164,49 @@ class App extends Component<{}, State> {
         isLoading: false
       });
 
+    // } catch (error) {
+    //   this.setState({
+    //     error,
+    //     isLoaded: true,
+    //     isLoading: false
+    //   });
+    // }
+  }
+
+  async selectClause(selectedId: number) {
+    const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: selectedId})
+    });
+
+    // try {
+      const json = await fetchedJSON.json();
+      const parsedLines = this.jsonToParsedLines(json);
+
+      assert(this.state.dags.length === 1);
+      const currentDag = this.state.dags[0];
+
+      assert(currentDag.mergeMap != null);
+      const [dag, newNodes] = Dag.fromParsedLines(parsedLines, currentDag);
+      for (const nodeId of newNodes) {
+        const node = dag.get(nodeId);
+        node.position = [0,0];
+      }
+      // await VizWrapper.layout(dag, true);
+
+      this.setState({
+        dags: [dag],
+        nodeSelection: [],
+        historyState: dag.numberOfHistorySteps(),
+        error: false,
+        isLoaded: true,
+        isLoading: false
+      });
     // } catch (error) {
     //   this.setState({
     //     error,
@@ -211,8 +255,12 @@ class App extends Component<{}, State> {
     this.pushDag(passiveDag);
   }
 
-  dismissPassiveDag() {
+  async dismissPassiveDag(selectedId: number) {
+    // pop the passive dag
     this.popDag();
+
+    // switch to dag resulting from selecting selectedId
+    await this.selectClause(selectedId);
   }
 
 

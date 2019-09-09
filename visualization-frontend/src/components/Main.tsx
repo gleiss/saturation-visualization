@@ -13,7 +13,7 @@ type Props = {
   onNodeSelectionChange: (selection: number[]) => void,
   onHistoryStateChange: (newState: number) => void,
   onShowPassiveDag: (selection: Set<number>, currentTime: number) => void,
-  onDismissPassiveDag: () => void
+  onDismissPassiveDag: (selectedId: number) => void,
 };
 export default class Main extends React.Component<Props, {}> {
 
