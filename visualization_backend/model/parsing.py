@@ -42,7 +42,6 @@ def parse_line(line):
     # '[SA] new: Clause', '[SA] passive: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
     try:
         line_type, unit_id, unit_string, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_SATURATION, line).groups()
-        # line_type = line_type.split(']')[1].strip()
 
     except AttributeError:
         # next try to parse line as output from preprocessing
