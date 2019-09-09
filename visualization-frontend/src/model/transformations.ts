@@ -250,12 +250,17 @@ export function mergePreprocessing(dag: Dag): Dag {
 	for (const nodeId of selection) {
 		passiveDagNodes.set(nodeId, createBoundaryNode(dag, dag.get(nodeId)));
 		// if a node is both in passive and occurs in the selection, use "passive" as style
-		if (!passiveDagNodes.has(nodeId)) {
+		const style = styleMap.get(nodeId);
+		if (style === undefined) {
 			styleMap.set(nodeId, "boundary");
+		} else {
+			assert(style === "passive");
 		}
 	}
 
-    return new Dag(passiveDagNodes, null, true, styleMap);
+	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap);
+	console.log(passiveDag);
+    return passiveDag;
   }
 
   // returns null if node was not derived using simplification
