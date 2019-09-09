@@ -31,15 +31,20 @@ class ParsedLine (object):
             'statistics' : self.statistics
         }
 
-def parse(vampire_output):
-    lines = vampire_output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
-    lines2 = []
+def parse(lines):
+    parsed_lines = []
     for line in lines:
+        parsed_line = parse_line(line)
+        if parsed_line is not None:
+            parsed_lines.append(parsed_line)
+
+        # we need to use the option proof_extra full, so that Vampire outputs statistics for each clause
+        # as a sideeffect, this option triggers the output of the proof if saturation finishes
+        # the lines of the proof must be ignored, since they violate invariants we check during parsing for the other lines.
         if line.startswith("% Refutation found. Thanks to"):
             break
-        else:
-            lines2.append(line)
-    return [parsed_line for parsed_line in (parse_line(line) for line in lines2) if parsed_line]
+
+    return parsed_lines
 
 def parse_line(line):
     # first try to parse line as standard output line from saturation, i.e. line has form

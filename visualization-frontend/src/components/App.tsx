@@ -87,7 +87,7 @@ class App extends Component<{}, State> {
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
-          onUploadFile={this.uploadFile.bind(this)}
+          onUploadFile={this.runVampire.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
@@ -113,15 +113,29 @@ class App extends Component<{}, State> {
 
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  jsonToParsedLines(json: any): Array<ParsedLine> {
+    const parsedLines = new Array<ParsedLine>();
+    for (const line of json.lines) {
+      const statistics = new Map<string,number>();
+      for (const key in line.statistics) {
+        const val = line.statistics[key];
+        if (typeof val === "number"){
+          statistics.set(key, val);
+        }
+      }
+      parsedLines.push(new ParsedLine(line.lineType, line.unitId, line.unitString, line.inferenceRule, line.parents, statistics));
+    }
+    return parsedLines;
+  }
 
-  async uploadFile(fileContent: string | ArrayBuffer) {
+  async runVampire(fileContent: string | ArrayBuffer) {
     this.setState({
       error: false,
       isLoading: true,
       isLoaded: false
     });
 
-    const fetchedJSON = await fetch('http://localhost:5000', {
+    const fetchedJSON = await fetch('http://localhost:5000/vampire/start', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -131,19 +145,9 @@ class App extends Component<{}, State> {
       body: JSON.stringify({file: fileContent})
     });
 
-    try {
+    // try {
       const json = await fetchedJSON.json();
-      const parsedLines = new Array<ParsedLine>();
-      for (const line of json.lines) {
-        const statistics = new Map<string,number>();
-        for (const key in line.statistics) {
-          const val = line.statistics[key];
-          if (typeof val === "number"){
-            statistics.set(key, val);
-          }
-        }
-        parsedLines.push(new ParsedLine(line.lineType, line.unitId, line.unitString, line.inferenceRule, line.parents, statistics));
-      }
+      const parsedLines = this.jsonToParsedLines(json);
 
       const dag = Dag.fromParsedLines(parsedLines, null);
       const mergedDag = mergePreprocessing(dag);
@@ -159,13 +163,13 @@ class App extends Component<{}, State> {
         isLoading: false
       });
 
-    } catch (error) {
-      this.setState({
-        error,
-        isLoaded: true,
-        isLoading: false
-      });
-    }
+    // } catch (error) {
+    //   this.setState({
+    //     error,
+    //     isLoaded: true,
+    //     isLoading: false
+    //   });
+    // }
   }
 
 

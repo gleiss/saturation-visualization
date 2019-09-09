@@ -12,6 +12,8 @@ from flask_cors import CORS
 from model.parsing import parse
 from model.vampire import VampireWrapper
 
+import tempfile
+
 app = Flask(__name__)
 app.config.from_object(__name__)
 CORS(app)
@@ -26,22 +28,33 @@ def handle_file_upload():
     return json.dumps({'lines': [line.to_json() for line in lines]})
 
 @app.route('/vampire/start', methods=['POST'])
-def handle_startVampire():    
+def handle_startVampire():  
+    # TODO: proper exception handling for all POST requests  
     request_params = request.get_json()
-    inputFile = request_params.get('file', '')
+    fileContent = request_params.get('file', '')
     
-    output = vampireWrapper.start(inputFile)
-    lines = []
-    for line in output.split("\n"):
-        lines.append(line)
-    return json.dumps({'output' : lines})
+    temporaryFile = tempfile.NamedTemporaryFile()
+    temporaryFile.write(str.encode(fileContent))
+    temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
+    output = vampireWrapper.start(temporaryFile.name)
+    lines = parse(output)
+    temporaryFile.close()
+
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines]})
 
 @app.route('/vampire/startmanualcs', methods=['POST'])
 def handle_startVampireManualCS():
     request_params = request.get_json()
-    inputFile = request_params.get('file', '')
-    newLines = vampireWrapper.startManualCS(inputFile)
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'newLines' : newLines, 'remainingChoices' : vampireWrapper.remainingChoices})
+    fileContent = request_params.get('file', '')
+    
+    temporaryFile = tempfile.NamedTemporaryFile()
+    temporaryFile.write(str.encode(fileContent))
+    temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
+    output = vampireWrapper.startManualCS(temporaryFile.name)
+    lines = parse(output)
+    temporaryFile.close()
+
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})
 
 
 @app.route('/vampire/select', methods=['POST'])
@@ -51,14 +64,16 @@ def handle_selection():
 
     if(vampireWrapper.vampireState != "running"):
         print("Vampire is not running, so it makes no sense to perform selection!")
-        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'newLines' : None, 'remainingChoices' : None})
+        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : None, 'remainingChoices' : None})
     if(not selectedId in vampireWrapper.remainingChoices):
         print("The remaining choices are: " + str(vampireWrapper.remainingChoices))
         print("Selected id " + str(selectedId) + " is not a valid choice and will be ignored!")
-        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'newLines' : None, 'remainingChoices' : vampireWrapper.remainingChoices})
+        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : None, 'remainingChoices' : vampireWrapper.remainingChoices})
 
-    newLines = vampireWrapper.select(selectedId)
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'newLines' : newLines, 'remainingChoices' : vampireWrapper.remainingChoices})  
+    output = vampireWrapper.select(selectedId)
+    lines = parse(output)
+
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})  
 
 if __name__ == '__main__':
     app.run()

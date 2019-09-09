@@ -9,8 +9,24 @@ class VampireWrapper:
 	def start(self, inputFile):
 		if self.vampireProcess != None:
 			self.vampireProcess.kill()
-		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on"], stdout=PIPE, stderr=STDOUT, text=True).stdout
-		return output
+		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "-t", "3"], stdout=PIPE, stderr=STDOUT, text=True).stdout
+		lines = output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+		state = "none"
+		for line in lines:
+			if line.startswith("% Refutation found. Thanks to"): # TODO: use SZS status instead?
+				state = "refutation"
+				break
+			elif line.startswith("% SZS status Satisfiable"):
+				state = "saturation"
+				break
+			elif line.startswith("User error: "):
+				state = "error"
+				break
+		if state == "none":
+			self.vampireState = "error"
+		else:
+			self.vampireState = state
+		return lines
 
 	# start Vampire with manual clause selection on the given input file, until Vampire asks for a clause to select or finishes execution
 	# return the output generated before asking for a clause
