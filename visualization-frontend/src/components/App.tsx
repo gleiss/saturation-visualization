@@ -190,12 +190,12 @@ class App extends Component<{}, State> {
 
       assert(this.state.dags.length === 1);
       const currentDag = this.state.dags[0];
+      const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
 
       assert(currentDag.mergeMap !== null);
       const newDag = Dag.fromParsedLines(parsedLines, currentDag);
-
       const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
-      const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps());
+
       const newNodes = new Array<number>();
       for (const [nodeId, node] of newDag.nodes) {
         if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
@@ -203,6 +203,8 @@ class App extends Component<{}, State> {
         }
       }
 
+      // naive heuristic for laying out new nodes of active dag
+      // TODO: improve
       for (const nodeId of newNodes) {
         const node = newDag.get(nodeId);
         node.position = [0,0];

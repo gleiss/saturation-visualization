@@ -256,8 +256,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 	}
 
 	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap);
-	console.log(passiveDag);
-    return passiveDag;
+	return passiveDag;
   }
 
   // returns null if node was not derived using simplification
