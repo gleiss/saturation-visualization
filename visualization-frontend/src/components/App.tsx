@@ -150,7 +150,7 @@ class App extends Component<{}, State> {
       const json = await fetchedJSON.json();
       const parsedLines = this.jsonToParsedLines(json);
 
-      const [dag, newNodes] = Dag.fromParsedLines(parsedLines, null);
+      const dag = Dag.fromParsedLines(parsedLines, null);
       const mergedDag = mergePreprocessing(dag);
 
       await VizWrapper.layout(mergedDag, true);
@@ -192,17 +192,26 @@ class App extends Component<{}, State> {
       const currentDag = this.state.dags[0];
 
       assert(currentDag.mergeMap != null);
-      const [dag, newNodes] = Dag.fromParsedLines(parsedLines, currentDag);
+      const newDag = Dag.fromParsedLines(parsedLines, currentDag);
+
+      const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
+      const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps());
+      const newNodes = new Array<number>();
+      for (const [nodeId, node] of newDag.nodes) {
+        if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
+          newNodes.push(nodeId);
+        }
+      }
+
       for (const nodeId of newNodes) {
-        const node = dag.get(nodeId);
+        const node = newDag.get(nodeId);
         node.position = [0,0];
       }
-      // await VizWrapper.layout(dag, true);
 
       this.setState({
-        dags: [dag],
+        dags: [newDag],
         nodeSelection: [],
-        historyState: dag.numberOfHistorySteps(),
+        historyState: newDag.numberOfHistorySteps(),
         error: false,
         isLoaded: true,
         isLoading: false
