@@ -40,7 +40,7 @@ def handle_startVampire():
     lines = parse(output)
     temporaryFile.close()
 
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines]})
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : lines})
 
 @app.route('/vampire/startmanualcs', methods=['POST'])
 def handle_startVampireManualCS():
@@ -54,7 +54,7 @@ def handle_startVampireManualCS():
     lines = parse(output)
     temporaryFile.close()
 
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : lines, 'remainingChoices' : vampireWrapper.remainingChoices})
 
 
 @app.route('/vampire/select', methods=['POST'])
@@ -73,7 +73,7 @@ def handle_selection():
     output = vampireWrapper.select(selectedId)
     lines = parse(output)
 
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})  
+    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : lines, 'remainingChoices' : vampireWrapper.remainingChoices})  
 
 if __name__ == '__main__':
     app.run()
