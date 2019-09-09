@@ -72,7 +72,7 @@ export class FunctionApplication {
 		} else {
 			const ignoreAssociativity = true;
 			if(ignoreAssociativity) {
-				if(name == "+"){
+				if(name === "+"){
 					return this.args.map(arg => arg.toString()).join("+");
 				}
 			}

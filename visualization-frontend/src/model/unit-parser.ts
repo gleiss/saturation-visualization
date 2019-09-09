@@ -51,7 +51,7 @@ export class UnitParser {
 		// need to handle equality separately, since it is written in infix-notation
 		// all other predicates are written in prefix-notation
 		const equalityPosition = string.search("=");
-		if(equalityPosition != -1)
+		if(equalityPosition !== -1)
 		{
 			if(string[equalityPosition - 1] === "!") {
 				assert(string[equalityPosition - 2] === " ", `negated equality not surrounded by spaces in string ${string}`);

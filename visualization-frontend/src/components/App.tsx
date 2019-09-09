@@ -191,7 +191,7 @@ class App extends Component<{}, State> {
       assert(this.state.dags.length === 1);
       const currentDag = this.state.dags[0];
 
-      assert(currentDag.mergeMap != null);
+      assert(currentDag.mergeMap !== null);
       const newDag = Dag.fromParsedLines(parsedLines, currentDag);
 
       const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
