@@ -66,15 +66,15 @@ export default class GraphMenu extends React.Component<Props, {}> {
   }
 
   updateProofFile(event: React.ChangeEvent<HTMLInputElement>) {
-    if (event.target.files) {
+    if (event.target.files !== null && event.target.files.length > 0) {
       const file = event.target.files[0];
+      
       const reader = new FileReader();
-
-      reader.readAsText(file);
       reader.onloadend = () => {
         const text = reader.result ? reader.result : '';
         this.props.onUploadFile(text);
       };
+      reader.readAsText(file);
     }
   }
 
