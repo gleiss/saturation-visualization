@@ -164,7 +164,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 
   // computes the set of clauses currently in Passive, which are derived as children from nodes in selection (or are in the selection for the special case of final preprocessing nodes which are in passive)
   // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
-  export function passiveDagForSelection(dag: Dag, selection: Set<number>, currentTime: number): Dag {
+  export function passiveDagForSelection(dag: Dag, selectionId: number, currentTime: number): Dag {
 
     const passiveDagNodes = new Map<number, SatNode>();
 	const styleMap = new Map<number, "passive" | "deleted" | "boundary">();
@@ -205,7 +205,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 
         // now either the relevant node is a preprocessing node, or the parents of the current node are active nodes
         if (relevantNode.isFromPreprocessing) {
-          if (selection.has(relevantNodeId)) {
+          if (selectionId === relevantNodeId) {
 			// add cached nodes and styles
             for (const [nodeId, node] of cachedNodes) {
               passiveDagNodes.set(nodeId, node.copy());
@@ -226,7 +226,7 @@ export function mergePreprocessing(dag: Dag): Dag {
             assert(parent.activeTime !== null && relevantNode.newTime !== null && parent.activeTime <= relevantNode.newTime, `invar violated for node ${node}`);
           }
           for (const parentId of relevantNode.parents) {
-            if (selection.has(parentId)) {
+            if (selectionId === parentId) {
 			  // add cached nodes and styles
 			  for (const [nodeId, node] of cachedNodes) {
                 passiveDagNodes.set(nodeId, node.copy());
@@ -246,13 +246,10 @@ export function mergePreprocessing(dag: Dag): Dag {
       }
 	}
 	
-	// add the selected nodes themselves as boundary nodes
-	for (const nodeId of selection) {
-		passiveDagNodes.set(nodeId, createBoundaryNode(dag, dag.get(nodeId)));
-		// if a node occurs in the selection, but is not already assigned passive as style, assign boundary to it as style
-		if (styleMap.get(nodeId) === undefined) {
-			styleMap.set(nodeId, "boundary");
-		}
+	// add the selected node itself as boundary nodes
+	passiveDagNodes.set(selectionId, createBoundaryNode(dag, dag.get(selectionId)));
+	if (styleMap.get(selectionId) === undefined) { // don't overwrite style "passive"
+		styleMap.set(selectionId, "boundary");
 	}
 
 	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap);

@@ -256,11 +256,11 @@ class App extends Component<{}, State> {
 
   // PASSIVE DAG ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  async showPassiveDag(selection: Set<number>, currentTime: number) {
+  async showPassiveDag(selectionId: number, currentTime: number) {
     const {dags} = this.state;
     const currentDag = dags[dags.length - 1];
     
-    const passiveDag = passiveDagForSelection(currentDag, selection, currentTime);
+    const passiveDag = passiveDagForSelection(currentDag, selectionId, currentTime);
     await VizWrapper.layout(passiveDag, false);
 
     this.pushDag(passiveDag);

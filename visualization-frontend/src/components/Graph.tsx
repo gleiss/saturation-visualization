@@ -14,7 +14,7 @@ type Props = {
   nodeSelection: number[],
   historyState: number,
   onNodeSelectionChange: (selection: number[]) => void,
-  onShowPassiveDag: (selection: Set<number>, currentTime: number) => void,
+  onShowPassiveDag: (selectionId: number, currentTime: number) => void,
   onDismissPassiveDag: (selectedId: number) => void,
 };
 
@@ -82,9 +82,7 @@ export default class Graph extends React.Component<Props, {}> {
             await this.props.onDismissPassiveDag(nodeId);
           }
         } else {
-          const selection = new Set<number>();
-          selection.add(nodeId);
-          await this.props.onShowPassiveDag(selection, this.props.historyState);
+          await this.props.onShowPassiveDag(nodeId, this.props.historyState);
         }
       }
     });
