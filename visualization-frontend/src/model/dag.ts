@@ -147,6 +147,29 @@ export class Dag {
     return true;
   }
 
+  // heuristics to determine whether a node is a theory axiom
+  // note: Vampire uses "theory axiom" for some of the internal theory axioms
+  // the internal theory axioms added for term algebras do not follow this convention
+  // even more, one of those term algebra axioms (the exhaustiveness axiom) is added as formula (in contrast to all other axioms which are added as clauses)
+  // in particular, the exhaustiveness axiom consists of a formula labelled "term algebras exhaustiveness" and a child node which is labelled cnf transformation
+  nodeIsTheoryAxiom(nodeId: number): boolean {
+    const node = this.get(nodeId);
+    assert(node !== undefined, "node doesn't occur in Dag");
+
+    if (!node.isFromPreprocessing) {
+      return false;
+    }
+    if (node.inferenceRule === "theory axiom" || 
+        node.inferenceRule === "term algebras injectivity" || 
+        node.inferenceRule === "term algebras distinctness" ||
+        node.inferenceRule === "term algebras exhaustiveness" ||
+        (node.parents.length === 1 && this.get(node.parents[0]).inferenceRule ===  "term algebras exhaustiveness")) {
+      return true;
+    }
+
+    return false;
+  }
+
   // either 1) create a new dag given an array of parsed lines and no existing dag,
   // or     2) extend an existing dag with an array of parsed lines
   // In case 2) we assume that all the parsedLines are generated during Saturation, i.e. no additional preprocessing occurs.

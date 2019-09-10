@@ -148,7 +148,7 @@ export default class Graph extends React.Component<Props, {}> {
     for (const [nodeId, node] of dag.nodes) {
       const isDeleted = (node.deletionTime !== null && node.deletionTime <= currentTime);
 
-      if (node.inferenceRule === "theory axiom") {
+      if (dag.nodeIsTheoryAxiom(nodeId)) {
         nodePartition.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
         continue;
       }
