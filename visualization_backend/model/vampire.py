@@ -9,7 +9,7 @@ class VampireWrapper:
 	def start(self, inputFile):
 		if self.vampireProcess != None:
 			self.vampireProcess.kill()
-		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full", "-t", "3"], stdout=PIPE, stderr=STDOUT, text=True).stdout
+		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full"], stdout=PIPE, stderr=STDOUT, text=True).stdout
 		lines = output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
 		state = "none"
 		for line in lines:
@@ -33,7 +33,7 @@ class VampireWrapper:
 	def startManualCS(self, inputFile):
 		if self.vampireProcess != None:
 			self.vampireProcess.kill()
-		self.vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "on", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full"], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+		self.vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", "smtlib2", "-av", "off", inputFile, "--manual_cs", "on", "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full", "--time_limit", "0"], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
 		
 		newLines = self.collectOutput()
 		return newLines
