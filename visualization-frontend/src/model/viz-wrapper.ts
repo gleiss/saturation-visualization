@@ -7,7 +7,7 @@ const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 export class VizWrapper {
 
-  static async layout(dag: Dag, onlyActiveDag: boolean) {
+  static async layoutDag(dag: Dag, onlyActiveDag: boolean) {
     // generate dot string
     const dotString = VizWrapper.dagToDotString(dag, onlyActiveDag);
     
@@ -16,8 +16,20 @@ export class VizWrapper {
     const layoutString = await runViz(dotString);
 
     // parse the layout string into array of network-nodes
-    VizWrapper.parseLayoutString(layoutString, dag);
+    VizWrapper.parseLayoutString(layoutString, dag.nodes);
   };
+
+  static async layoutNodes(nodes: Map<number, SatNode>) {
+    // generate dot string
+    const dotString = VizWrapper.nodesToDotString(nodes);
+
+    // use viz to compute layout for nodes given as dotstring
+    // note that viz returns the layout as a string
+    const layoutString = await runViz(dotString);
+
+    // parse the layout string into array of network-nodes
+    VizWrapper.parseLayoutString(layoutString, nodes);
+  }
 
   // encodes layout-problem into dot-language
   // the solution to the layout-problem contains a position for each node, which either
@@ -63,7 +75,28 @@ export class VizWrapper {
     return dotString;
   };
 
-  static parseLayoutString(layoutString: string, dag: Dag) {
+  static nodesToDotString(nodes: Map<number, SatNode>): string {
+    const nodeStrings = new Array<string>();
+    for (const node of nodes.values()) {
+      assert(node.position === null, "the node has already been layouted!");
+      nodeStrings.push(`${node.id} [label="${node.toString()}"]`);
+    }
+
+    const edgeStrings = new Array<string>();
+    for (const node of nodes.values()) {
+      for (const parentId of node.parents) {
+        if (nodes.has(parentId)) {
+          edgeStrings.push(`${parentId} -> ${node.id}`)
+        }
+      }
+    }
+
+    const dotString =  "digraph {\n   " + nodeStrings.join(";\n   ") + "\n\n   " + edgeStrings.join(";\n   ") + "\n}";
+    console.log(dotString);
+    return dotString;
+  };
+
+  static parseLayoutString(layoutString: string, nodes: Map<number, SatNode>) {
     let firstEdgeLineIndex = layoutString.includes('\nedge') ? layoutString.indexOf('\nedge') : layoutString.length;
     // split layoutString to array of strings describing positions of nodes
     const parsedNodeLines = layoutString
@@ -82,8 +115,8 @@ export class VizWrapper {
       const id = parseInt(idString, 10);
       const x = parseFloat(xString);
       const y = parseFloat(yString);
-
-      dag.get(id).position = [x,y];
+      const node = nodes.get(id) as SatNode;
+      node.position = [x,y];
     }
   }
 }

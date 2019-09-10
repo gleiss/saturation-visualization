@@ -33,14 +33,19 @@ export class Dag {
   // invar: if isPassiveDag, then styleMap !== null
   readonly isPassiveDag: boolean;
   readonly styleMap: Map<number, "passive" | "deleted" | "boundary"> | null;
+  readonly activeNodeId: number | null; // the id of the node for which passiveDag was computed
 
-  constructor(nodes: Map<number,SatNode>, mergeMap: Map<number, Array<number>> | null = null, isPassiveDag: boolean = false, styleMap: Map<number, "passive" | "deleted" | "boundary"> | null = null) {
+  constructor(nodes: Map<number,SatNode>, mergeMap: Map<number, Array<number>> | null = null, isPassiveDag: boolean = false, styleMap: Map<number, "passive" | "deleted" | "boundary"> | null = null, activeNodeId: number | null = null) {
     this.nodes = nodes;
     this.mergeMap = mergeMap;
 
-    assert(!isPassiveDag || styleMap !== null)
+    assert(!isPassiveDag || styleMap !== null);
+    assert(!isPassiveDag || activeNodeId !== null);
+    assert(!isPassiveDag || nodes.has(activeNodeId as number));
+
     this.isPassiveDag = isPassiveDag;
     this.styleMap = styleMap;
+    this.activeNodeId = activeNodeId;
 
     // sanity check: key and id of node need to match
     for (const [nodeId, node] of nodes) {

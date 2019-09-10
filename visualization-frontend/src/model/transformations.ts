@@ -162,7 +162,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 	return new Dag(nodes, mergeMap);
 }
 
-  // computes the set of clauses currently in Passive, which are derived as children from nodes in selection (or are in the selection for the special case of final preprocessing nodes which are in passive)
+  // computes the set of clauses currently in Passive, which are derived as children from nodes in selectionId (or are selectionId for the special case of final preprocessing nodes which are in passive)
   // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
   export function passiveDagForSelection(dag: Dag, selectionId: number, currentTime: number): Dag {
 
@@ -252,7 +252,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 		styleMap.set(selectionId, "boundary");
 	}
 
-	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap);
+	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap, selectionId);
 	return passiveDag;
   }
 

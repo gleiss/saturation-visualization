@@ -153,7 +153,7 @@ class App extends Component<{}, State> {
       const dag = Dag.fromParsedLines(parsedLines, null);
       const mergedDag = mergePreprocessing(dag);
 
-      await VizWrapper.layout(mergedDag, true);
+      await VizWrapper.layoutDag(mergedDag, true);
 
       this.setState({
         dags: [mergedDag],
@@ -174,6 +174,11 @@ class App extends Component<{}, State> {
   }
 
   async selectClause(selectedId: number) {
+    // pop passive Dag (without refreshing ui)
+    console.log(this.state.dags);
+    assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "selectClause() must only be called while a passive dag is the topmost dag of this.state.dags");
+    const passiveDag = this.state.dags[this.state.dags.length-1];
+
     const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
       method: 'POST',
       mode: 'cors',
@@ -188,27 +193,57 @@ class App extends Component<{}, State> {
       const json = await fetchedJSON.json();
       const parsedLines = this.jsonToParsedLines(json);
 
-      assert(this.state.dags.length === 1);
-      const currentDag = this.state.dags[0];
+      const currentDag = this.state.dags[this.state.dags.length-2]; // this.state.dags[this.state.dags.length-1] corresponds to passiveDag
       const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
 
       assert(currentDag.mergeMap !== null);
       const newDag = Dag.fromParsedLines(parsedLines, currentDag);
       const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
 
-      const newNodes = new Array<number>();
+      const newNodes = new Map<number, SatNode>();
       for (const [nodeId, node] of newDag.nodes) {
         if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
-          newNodes.push(nodeId);
+          newNodes.set(nodeId, node);
         }
       }
 
-      // naive heuristic for laying out new nodes of active dag
-      // TODO: improve
-      for (const nodeId of newNodes) {
-        const node = newDag.get(nodeId);
-        node.position = [0,0];
+      if (newNodes.size > 0) {
+        // naive heuristic for laying out new nodes of active dag:
+        // 1) layout new nodes while ignoring existing nodes
+        await VizWrapper.layoutNodes(newNodes);
+
+        // 2) then shift new nodes closer to selectedNode
+        let sourceNode: SatNode | null = null;
+        for (const node of newNodes.values()) {
+          let isSourceNode = true;
+          for (const parentId of node.parents) {
+            if (newNodes.has(parentId)) {
+              isSourceNode = false;
+              break;
+            }
+          }
+          if (isSourceNode) {
+            sourceNode = node;
+            break;
+          }
+        }
+        assert(sourceNode !== null);
+        assert((sourceNode as SatNode).position !== null);
+        console.log(sourceNode);
+        console.log(newDag.get(selectedId));
+
+        const [posSelectedX, posSelectedY] = passiveDag.get(passiveDag.activeNodeId as number).getPosition();
+        const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
+        const deltaX = posSelectedX-posSourceX;
+        const deltaY = (posSelectedY - posSourceY) - 1;
+        for (const node of newNodes.values()) {
+          assert(node.position != null);
+          const position = node.position as [number, number];
+          node.position = [position[0] + deltaX, position[1] + deltaY];
+        }
       }
+
+
 
       this.setState({
         dags: [newDag],
@@ -239,7 +274,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonParents(currentDag, new Set(nodeSelection));
-    await VizWrapper.layout(newDag, true);
+    await VizWrapper.layoutDag(newDag, true);
 
     this.pushDag(newDag);
   }
@@ -249,7 +284,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
-    await VizWrapper.layout(newDag, true);
+    await VizWrapper.layoutDag(newDag, true);
 
     this.pushDag(newDag);
   }
@@ -261,7 +296,7 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
     
     const passiveDag = passiveDagForSelection(currentDag, selectionId, currentTime);
-    await VizWrapper.layout(passiveDag, false);
+    await VizWrapper.layoutDag(passiveDag, false);
 
     // shift dag so that selected node keeps position
     const [posCurrentX, posCurrentY] = currentDag.get(selectionId).getPosition();
@@ -278,9 +313,6 @@ class App extends Component<{}, State> {
   }
 
   async dismissPassiveDag(selectedId: number) {
-    // pop the passive dag
-    this.popDag();
-
     // switch to dag resulting from selecting selectedId
     await this.selectClause(selectedId);
   }
