@@ -133,8 +133,10 @@ export default class Graph extends React.Component<Props, {}> {
       this.networkEdges.clear();
       this.networkEdges.add(visEdges);
 
-      // center the dag
-      this.network!.fit();
+      // center the dag for standard dag, keep view position for passive dag
+      if (!this.props.dag.isPassiveDag) {
+        this.network!.fit();
+      }
     }
   }
 

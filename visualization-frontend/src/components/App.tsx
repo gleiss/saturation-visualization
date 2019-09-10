@@ -263,6 +263,17 @@ class App extends Component<{}, State> {
     const passiveDag = passiveDagForSelection(currentDag, selectionId, currentTime);
     await VizWrapper.layout(passiveDag, false);
 
+    // shift dag so that selected node keeps position
+    const [posCurrentX, posCurrentY] = currentDag.get(selectionId).getPosition();
+    const [posPassiveX, posPassiveY] = passiveDag.get(selectionId).getPosition();
+    const deltaX = posCurrentX-posPassiveX;
+    const deltaY = posCurrentY-posPassiveY;
+    for (const [nodeId, node] of passiveDag.nodes) {
+      assert(node.position != null);
+      const position = node.position as [number, number];
+      node.position = [position[0] + deltaX, position[1] + deltaY];
+    }
+
     this.pushDag(passiveDag);
   }
 
