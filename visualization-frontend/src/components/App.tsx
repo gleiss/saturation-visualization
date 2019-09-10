@@ -4,11 +4,11 @@ import {Component} from 'react';
 import Main from './Main';
 import Aside from './Aside';
 import Dag from '../model/dag';
-import SatNode from '../model/sat-node';
 import './App.css';
-import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences } from '../model/transformations';
-import { findCommonConsequences } from '../model/find-node';
+import {assert} from '../model/util';
+import {filterNonConsequences, filterNonParents} from '../model/transformations';
+import {findCommonConsequences} from '../model/find-node';
+import {Literal} from '../model/literal';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -45,15 +45,15 @@ class App extends Component<{}, State> {
       isLoaded,
       isLoading
     } = this.state;
-    
+
     let main;
     if (!error && isLoaded) {
-      const dag = dags[dags.length-1];
+      const dag = dags[dags.length - 1];
       main = (
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
-          historyLength={dags[0].numberOfHistorySteps()-1}
+          historyLength={dags[0].numberOfHistorySteps() - 1}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
@@ -80,7 +80,7 @@ class App extends Component<{}, State> {
       <div className="app">
         {main}
         <Aside
-          dag={dags[dags.length-1]}
+          dag={dags[dags.length - 1]}
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
@@ -91,6 +91,7 @@ class App extends Component<{}, State> {
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
           onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
+          onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
         />
       </div>
     );
@@ -211,28 +212,36 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newSelection = findCommonConsequences(currentDag, new Set(nodeSelection));
-    
+
     this.updateNodeSelection(newSelection);
   }
 
 
+  // LITERALS //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  private changeLiteralOrientation(literal: Literal, isConclusion: boolean) {
+    literal.setOrientation(isConclusion);
+    this.setState({dags: this.state.dags})
+  }
+
+
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   private pushDag(newDag: Dag) {
     const {dags} = this.state;
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps()-1,
+      historyState: dags[0].numberOfHistorySteps() - 1
     });
   }
 
   private popDag() {
-    assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
+    assert(this.state.dags.length > 1, 'Undo last step must only be called if there exist at least two dags');
 
     this.setState((state, props) => ({
-      dags: state.dags.slice(0, state.dags.length-1),
-      historyState: state.dags[0].numberOfHistorySteps()-1 // TODO: construct history steps properly for each subgraph
+      dags: state.dags.slice(0, state.dags.length - 1),
+      historyState: state.dags[0].numberOfHistorySteps() - 1 // TODO: construct history steps properly for each subgraph
     }));
   }
 }

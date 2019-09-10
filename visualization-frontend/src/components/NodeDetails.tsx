@@ -1,11 +1,15 @@
 import * as React from 'react';
+import Sortable from 'react-sortablejs';
+import {Clause, Formula} from '../model/unit';
+import {Literal} from '../model/literal';
 
 import Dag from '../model/dag';
 import './NodeDetails.css';
 
 type Props = {
   dag: Dag,
-  nodeSelection: number[]
+  nodeSelection: number[],
+  onLiteralOrientationChange: (literal: Literal, isConclusion: boolean) => void
 };
 export default class NodeDetails extends React.Component<Props, {}> {
 
@@ -23,7 +27,23 @@ export default class NodeDetails extends React.Component<Props, {}> {
             <article>
               <h2>Node <strong>{selectedNode.id}</strong></h2>
               <h3>{selectedNode.inferenceRule}</h3>
-              <p>{selectedNode.toString()}</p>
+              {
+                selectedNode.unit instanceof Formula ? (
+                  <section className={'literal-wrapper'}>
+                    selectedNode.toString()
+                  </section>
+                ) : (
+                  <section className={'literal-wrapper'}>
+                    {
+                      this.toList(selectedNode.unit, false)
+                    }
+                    <br/>
+                    {
+                      this.toList(selectedNode.unit, true)
+                    }
+                  </section>
+                )
+              }
             </article>
           )
         }
@@ -33,5 +53,27 @@ export default class NodeDetails extends React.Component<Props, {}> {
       </section>
     );
   }
+
+  toList = (clause: Clause, isConclusion: boolean) => {
+    const literals = clause.literals.filter(entry => entry.orientationIsConclusion === isConclusion);
+
+    return (
+      <Sortable
+        options={{
+          group: 'shared',
+          onRemove: (event) => this.props.onLiteralOrientationChange(literals[event.oldIndex], isConclusion)
+        }}
+        tag="ul"
+      >
+        {
+          literals.map((entry, i) => this.toListItem(entry, i))
+        }
+      </Sortable>
+    )
+  };
+
+  toListItem = (literal: Literal, index: number) => {
+    return <li key={index} data-id={index}>{literal.toString()}</li>
+  };
 
 }

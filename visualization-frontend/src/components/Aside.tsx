@@ -4,6 +4,7 @@ import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
 import Dag from '../model/dag';
+import {Literal} from '../model/literal';
 
 
 type Props = {
@@ -17,7 +18,8 @@ type Props = {
   onRenderChildrenOnly: () => void,
   onSelectParents: () => void,
   onSelectChildren: () => void,
-  onSelectCommonConsequences: () => void
+  onSelectCommonConsequences: () => void,
+  onLiteralOrientationChange: (literal: Literal, isConclusion: boolean) => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -43,6 +45,7 @@ export default class Aside extends React.Component<Props, {}> {
         <NodeDetails
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
+          onLiteralOrientationChange={this.props.onLiteralOrientationChange}
         />
       </aside>
     );
