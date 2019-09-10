@@ -60,6 +60,7 @@ class App extends Component<{}, State> {
           onHistoryStateChange={this.updateHistoryState.bind(this)}
           onShowPassiveDag={this.showPassiveDag.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
+          onUpdateNodePosition={this.updateNodePosition.bind(this)}
         />
       );
     } else if (isLoading || error) {
@@ -360,6 +361,16 @@ class App extends Component<{}, State> {
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   
+  updateNodePosition(nodeId: number, delta: [number, number]) {
+    const dags = this.state.dags
+    assert(this.state.dags.length > 0);
+    const dag = dags[dags.length - 1];
+    const node = dag.get(nodeId);
+    assert(node.position !== null);
+
+    node.position = [node.position![0] + delta[0], node.position![1] + delta[1]];
+  }
+
   // push a new dag on the stack of dags
   // Precondition: the layout for newDag has already been computed
   private pushDag(newDag: Dag) {

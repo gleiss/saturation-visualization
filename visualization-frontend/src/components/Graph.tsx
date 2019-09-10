@@ -16,6 +16,7 @@ type Props = {
   onNodeSelectionChange: (selection: number[]) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
   onDismissPassiveDag: (selectedId: number) => void,
+  onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
 };
 
 export default class Graph extends React.Component<Props, {}> {
@@ -25,6 +26,8 @@ export default class Graph extends React.Component<Props, {}> {
   networkNodes = new DataSet<Node>([]);
   networkEdges = new DataSet<Edge>([]);
   graphContainer = React.createRef<HTMLDivElement>();
+  dragStartPosition: [number, number] | null = null;
+  dragStartNodeId: number | null = null;
 
   componentDidMount() {
     this.generateNetwork();
@@ -74,7 +77,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     this.network.on('oncontext', async (rightClickEvent) => {
       rightClickEvent.event.preventDefault();
-      const nodeId = this.findNodeAt(rightClickEvent.event) as number;
+      const nodeId = this.findNodeAt(rightClickEvent.event) as number | undefined;
       if (nodeId !== undefined) {
         if (this.props.dag.isPassiveDag) {
           const styleMap = this.props.dag.styleMap as Map<number, string>;
@@ -83,6 +86,26 @@ export default class Graph extends React.Component<Props, {}> {
           }
         } else {
           await this.props.onShowPassiveDag(nodeId, this.props.historyState);
+        }
+      }
+    });
+
+    this.network.on('dragStart', (dragStartEvent) => {
+      const nodeId = dragStartEvent.nodes[0];
+      if(nodeId !== null) {
+        this.dragStartNodeId = nodeId;
+        this.dragStartPosition = [dragStartEvent.pointer.canvas.x, dragStartEvent.pointer.canvas.y];
+      }
+    });
+
+    this.network.on('dragEnd', (dragEndEvent) => {
+      if (this.dragStartNodeId !== null) {
+        assert(this.dragStartPosition !== null);
+        
+        if (!this.props.dag.isPassiveDag) {
+          const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartPosition![0];
+          const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartPosition![1];
+          this.props.onUpdateNodePosition(this.dragStartNodeId as number, [deltaX / (-70), deltaY / (-120)]);
         }
       }
     });

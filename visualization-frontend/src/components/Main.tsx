@@ -14,6 +14,7 @@ type Props = {
   onHistoryStateChange: (newState: number) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
   onDismissPassiveDag: (selectedId: number) => void,
+  onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -27,6 +28,7 @@ export default class Main extends React.Component<Props, {}> {
           onNodeSelectionChange={this.props.onNodeSelectionChange}
           onShowPassiveDag={this.props.onShowPassiveDag}
           onDismissPassiveDag={this.props.onDismissPassiveDag}
+          onUpdateNodePosition={this.props.onUpdateNodePosition}
         />
         <Slider
           historyLength={this.props.historyLength}
