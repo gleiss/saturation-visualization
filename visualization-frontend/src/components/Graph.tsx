@@ -17,6 +17,7 @@ const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 type Props = {
   dag: Dag,
   nodeSelection: number[],
+  changedNode?: number,
   historyState: number,
   onNodeSelectionChange: (selection: number[]) => void
 };
@@ -46,6 +47,9 @@ export default class Graph extends React.Component<Props, {}> {
       }
       if (this.props.historyState !== prevProps.historyState) {
         this.updateNodeStyles();
+      }
+      if (this.props.changedNode) {
+        // TODO
       }
     }
   }

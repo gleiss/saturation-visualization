@@ -19,7 +19,7 @@ type Props = {
   onSelectParents: () => void,
   onSelectChildren: () => void,
   onSelectCommonConsequences: () => void,
-  onLiteralOrientationChange: (literal: Literal, isConclusion: boolean) => void
+  onLiteralOrientationChange: (node: number, literal: Literal, isConclusion: boolean) => void
 };
 export default class Aside extends React.Component<Props, {}> {
 

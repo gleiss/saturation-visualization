@@ -9,7 +9,7 @@ import './NodeDetails.css';
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  onLiteralOrientationChange: (literal: Literal, isConclusion: boolean) => void
+  onLiteralOrientationChange: (node: number, literal: Literal, isConclusion: boolean) => void
 };
 export default class NodeDetails extends React.Component<Props, {}> {
 
@@ -35,11 +35,11 @@ export default class NodeDetails extends React.Component<Props, {}> {
                 ) : (
                   <section className={'literal-wrapper'}>
                     {
-                      this.toList(selectedNode.unit, false)
+                      this.toList(selectedNode.id, selectedNode.unit, false)
                     }
                     <br/>
                     {
-                      this.toList(selectedNode.unit, true)
+                      this.toList(selectedNode.id, selectedNode.unit, true)
                     }
                   </section>
                 )
@@ -54,14 +54,14 @@ export default class NodeDetails extends React.Component<Props, {}> {
     );
   }
 
-  toList = (clause: Clause, isConclusion: boolean) => {
+  toList = (nodeId: number, clause: Clause, isConclusion: boolean) => {
     const literals = clause.literals.filter(entry => entry.orientationIsConclusion === isConclusion);
 
     return (
       <Sortable
         options={{
           group: 'shared',
-          onRemove: (event) => this.props.onLiteralOrientationChange(literals[event.oldIndex], isConclusion)
+          onRemove: (event) => this.props.onLiteralOrientationChange(nodeId, literals[event.oldIndex], !isConclusion)
         }}
         tag="ul"
       >

@@ -19,10 +19,11 @@ import {Literal} from '../model/literal';
 type State = {
   dags: Dag[],
   nodeSelection: number[],
+  changedNode?: number,
   historyState: number,
   error: any,
   isLoaded: boolean,
-  isLoading: boolean
+  isLoading: boolean,
 };
 
 class App extends Component<{}, State> {
@@ -30,6 +31,7 @@ class App extends Component<{}, State> {
   state: State = {
     dags: [],
     nodeSelection: [],
+    changedNode: undefined,
     historyState: 0,
     error: null,
     isLoaded: false,
@@ -40,6 +42,7 @@ class App extends Component<{}, State> {
     const {
       dags,
       nodeSelection,
+      changedNode,
       historyState,
       error,
       isLoaded,
@@ -53,6 +56,7 @@ class App extends Component<{}, State> {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
+          changedNode={changedNode}
           historyLength={dags[0].numberOfHistorySteps() - 1}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
@@ -135,6 +139,7 @@ class App extends Component<{}, State> {
           this.setState({
             dags: [dag],
             nodeSelection: [],
+            changedNode: undefined,
             historyState: dag.numberOfHistorySteps() - 1,
             error: false,
             isLoaded: true,
@@ -219,9 +224,9 @@ class App extends Component<{}, State> {
 
   // LITERALS //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private changeLiteralOrientation(literal: Literal, isConclusion: boolean) {
+  private changeLiteralOrientation(node: number, literal: Literal, isConclusion: boolean) {
     literal.setOrientation(isConclusion);
-    this.setState({dags: this.state.dags})
+    this.setState({changedNode: node})
   }
 
 
@@ -232,7 +237,8 @@ class App extends Component<{}, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps() - 1
+      historyState: dags[0].numberOfHistorySteps() - 1,
+      changedNode: undefined
     });
   }
 
@@ -241,7 +247,8 @@ class App extends Component<{}, State> {
 
     this.setState((state, props) => ({
       dags: state.dags.slice(0, state.dags.length - 1),
-      historyState: state.dags[0].numberOfHistorySteps() - 1 // TODO: construct history steps properly for each subgraph
+      historyState: state.dags[0].numberOfHistorySteps() - 1, // TODO: construct history steps properly for each subgraph
+      changedNode: undefined
     }));
   }
 }
