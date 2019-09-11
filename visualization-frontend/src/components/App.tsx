@@ -3,12 +3,14 @@ import {Component} from 'react';
 
 import Main from './Main';
 import Aside from './Aside';
-import Dag from '../model/dag';
+import { Dag, ParsedLine } from '../model/dag';
+import SatNode from '../model/sat-node';
 import './App.css';
-import {assert} from '../model/util';
-import {filterNonConsequences, filterNonParents} from '../model/transformations';
-import {findCommonConsequences} from '../model/find-node';
-import {Literal} from '../model/literal';
+import { assert } from '../model/util';
+import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
+import { findCommonConsequences } from '../model/find-node';
+import { VizWrapper } from '../model/viz-wrapper';
+import { Clause } from '../model/unit';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -19,11 +21,11 @@ import {Literal} from '../model/literal';
 type State = {
   dags: Dag[],
   nodeSelection: number[],
-  changedNode?: number,
+  changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   historyState: number,
   error: any,
   isLoaded: boolean,
-  isLoading: boolean,
+  isLoading: boolean
 };
 
 class App extends Component<{}, State> {
@@ -31,7 +33,7 @@ class App extends Component<{}, State> {
   state: State = {
     dags: [],
     nodeSelection: [],
-    changedNode: undefined,
+    changedNodeEvent: undefined,
     historyState: 0,
     error: null,
     isLoaded: false,
@@ -42,25 +44,28 @@ class App extends Component<{}, State> {
     const {
       dags,
       nodeSelection,
-      changedNode,
+      changedNodeEvent,
       historyState,
       error,
       isLoaded,
       isLoading
     } = this.state;
-
+    
     let main;
     if (!error && isLoaded) {
-      const dag = dags[dags.length - 1];
+      const dag = dags[dags.length-1];
       main = (
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
-          changedNode={changedNode}
-          historyLength={dags[0].numberOfHistorySteps() - 1}
+          changedNodeEvent={changedNodeEvent}
+          historyLength={dags[0].numberOfHistorySteps()}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
+          onShowPassiveDag={this.showPassiveDag.bind(this)}
+          onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
+          onUpdateNodePosition={this.updateNodePosition.bind(this)}
         />
       );
     } else if (isLoading || error) {
@@ -84,11 +89,11 @@ class App extends Component<{}, State> {
       <div className="app">
         {main}
         <Aside
-          dag={dags[dags.length - 1]}
+          dag={dags[dags.length-1]}
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
-          onUploadFile={this.uploadFile.bind(this)}
+          onUploadFile={this.runVampire.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
@@ -115,15 +120,30 @@ class App extends Component<{}, State> {
 
 
   // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
+  jsonToParsedLines(json: any): Array<ParsedLine> {
+    const parsedLines = new Array<ParsedLine>();
+    for (const line of json.lines) {
+      const statistics = new Map<string,number>();
+      for (const key in line.statistics) {
+        const val = line.statistics[key];
+        if (typeof val === "number"){
+          statistics.set(key, val);
+        }
+      }
+      parsedLines.push(new ParsedLine(line.lineType, line.unitId, line.unitString, line.inferenceRule, line.parents, statistics));
+    }
+    return parsedLines;
+  }
 
-  uploadFile(fileContent: string | ArrayBuffer) {
+  async runVampire(fileContent: string | ArrayBuffer, manualCS=false) {
     this.setState({
       error: false,
       isLoading: true,
       isLoaded: false
     });
 
-    fetch('http://localhost:5000', {
+    manualCS = true
+    const fetchedJSON = await fetch(manualCS ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -131,29 +151,122 @@ class App extends Component<{}, State> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({file: fileContent})
-    })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          const dag = Dag.fromDto(result.dag);
-          this.setState({
-            dags: [dag],
-            nodeSelection: [],
-            changedNode: undefined,
-            historyState: dag.numberOfHistorySteps() - 1,
-            error: false,
-            isLoaded: true,
-            isLoading: false
-          });
-        },
-        (error) => {
-          this.setState({
-            error,
-            isLoaded: true,
-            isLoading: false
-          });
+    });
+
+    // try {
+      const json = await fetchedJSON.json();
+      const parsedLines = this.jsonToParsedLines(json);
+
+      const dag = Dag.fromParsedLines(parsedLines, null);
+      const mergedDag = mergePreprocessing(dag);
+
+      await VizWrapper.layoutDag(mergedDag, true);
+
+      this.setState({
+        dags: [mergedDag],
+        nodeSelection: [],
+        historyState: mergedDag.numberOfHistorySteps(),
+        error: false,
+        isLoaded: true,
+        isLoading: false
+      });
+
+    // } catch (error) {
+    //   this.setState({
+    //     error,
+    //     isLoaded: true,
+    //     isLoading: false
+    //   });
+    // }
+  }
+
+  async selectClause(selectedId: number) {
+    // pop passive Dag (without refreshing ui)
+    console.log(this.state.dags);
+    assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "selectClause() must only be called while a passive dag is the topmost dag of this.state.dags");
+    const passiveDag = this.state.dags[this.state.dags.length-1];
+
+    const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: selectedId})
+    });
+
+    // try {
+      const json = await fetchedJSON.json();
+      const parsedLines = this.jsonToParsedLines(json);
+
+      const currentDag = this.state.dags[this.state.dags.length-2]; // this.state.dags[this.state.dags.length-1] corresponds to passiveDag
+      const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
+
+      assert(currentDag.mergeMap !== null);
+      const newDag = Dag.fromParsedLines(parsedLines, currentDag);
+      const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
+
+      const newNodes = new Map<number, SatNode>();
+      for (const [nodeId, node] of newDag.nodes) {
+        if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
+          newNodes.set(nodeId, node);
         }
-      )
+      }
+
+      if (newNodes.size > 0) {
+        // naive heuristic for laying out new nodes of active dag:
+        // 1) layout new nodes while ignoring existing nodes
+        await VizWrapper.layoutNodes(newNodes);
+
+        // 2) then shift new nodes closer to selectedNode
+        let sourceNode: SatNode | null = null;
+        for (const node of newNodes.values()) {
+          let isSourceNode = true;
+          for (const parentId of node.parents) {
+            if (newNodes.has(parentId)) {
+              isSourceNode = false;
+              break;
+            }
+          }
+          if (isSourceNode) {
+            sourceNode = node;
+            break;
+          }
+        }
+        assert(sourceNode !== null);
+        assert((sourceNode as SatNode).position !== null);
+        console.log(sourceNode);
+        console.log(newDag.get(selectedId));
+
+        const [posSelectedX, posSelectedY] = passiveDag.get(passiveDag.activeNodeId as number).getPosition();
+        const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
+        const deltaX = posSelectedX-posSourceX;
+        const deltaY = (posSelectedY - posSourceY) - 1;
+        for (const node of newNodes.values()) {
+          assert(node.position != null);
+          const position = node.position as [number, number];
+          node.position = [position[0] + deltaX, position[1] + deltaY];
+        }
+      }
+
+
+
+      this.setState({
+        dags: [newDag],
+        nodeSelection: [],
+        historyState: newDag.numberOfHistorySteps(),
+        error: false,
+        isLoaded: true,
+        isLoading: false
+      });
+    // } catch (error) {
+    //   this.setState({
+    //     error,
+    //     isLoaded: true,
+    //     isLoading: false
+    //   });
+    // }
   }
 
 
@@ -163,22 +276,52 @@ class App extends Component<{}, State> {
     this.popDag();
   }
 
-  renderParentsOnly() {
+  async renderParentsOnly() {
     const {dags, nodeSelection} = this.state;
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonParents(currentDag, new Set(nodeSelection));
+    await VizWrapper.layoutDag(newDag, true);
 
     this.pushDag(newDag);
   }
 
-  renderChildrenOnly() {
+  async renderChildrenOnly() {
     const {dags, nodeSelection} = this.state;
     const currentDag = dags[dags.length - 1];
 
     const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
+    await VizWrapper.layoutDag(newDag, true);
 
     this.pushDag(newDag);
+  }
+
+  // PASSIVE DAG ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  async showPassiveDag(selectionId: number, currentTime: number) {
+    const {dags} = this.state;
+    const currentDag = dags[dags.length - 1];
+    
+    const passiveDag = passiveDagForSelection(currentDag, selectionId, currentTime);
+    await VizWrapper.layoutDag(passiveDag, false);
+
+    // shift dag so that selected node keeps position
+    const [posCurrentX, posCurrentY] = currentDag.get(selectionId).getPosition();
+    const [posPassiveX, posPassiveY] = passiveDag.get(selectionId).getPosition();
+    const deltaX = posCurrentX-posPassiveX;
+    const deltaY = posCurrentY-posPassiveY;
+    for (const [nodeId, node] of passiveDag.nodes) {
+      assert(node.position != null);
+      const position = node.position as [number, number];
+      node.position = [position[0] + deltaX, position[1] + deltaY];
+    }
+
+    this.pushDag(passiveDag);
+  }
+
+  async dismissPassiveDag(selectedId: number) {
+    // switch to dag resulting from selecting selectedId
+    await this.selectClause(selectedId);
   }
 
 
@@ -217,38 +360,60 @@ class App extends Component<{}, State> {
     const currentDag = dags[dags.length - 1];
 
     const newSelection = findCommonConsequences(currentDag, new Set(nodeSelection));
-
+    
     this.updateNodeSelection(newSelection);
   }
 
+  // LITERALS ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // LITERALS //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  private changeLiteralOrientation(node: number, literal: Literal, isConclusion: boolean) {
-    literal.setOrientation(isConclusion);
-    this.setState({changedNode: node})
+  private changeLiteralOrientation(nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) {
+    const dags = this.state.dags;
+    assert(dags.length > 0);
+    const node = dags[0].nodes.get(nodeId);
+    if(node !== undefined) {
+      assert(node.unit.type === "Clause");
+      const clause = node.unit as Clause;
+      clause.changeLiteralOrientation(oldPosition, newPosition);
+    }
+    this.setState({changedNodeEvent: [Math.random(), nodeId]});
   }
 
-
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  updateNodePosition(nodeId: number, delta: [number, number]) {
+    const dags = this.state.dags
+    assert(this.state.dags.length > 0);
+    const dag = dags[dags.length - 1];
+    const node = dag.get(nodeId);
+    assert(node.position !== null);
 
+    node.position = [node.position![0] + delta[0], node.position![1] + delta[1]];
+  }
+
+  // push a new dag on the stack of dags
+  // Precondition: the layout for newDag has already been computed
   private pushDag(newDag: Dag) {
-    const {dags} = this.state;
+    const {dags, nodeSelection} = this.state;
+    
+    // filter out selected nodes which don't occur in new graph
+    const selectedNodesInNewDag = new Array<number>();
+    for (const nodeId of nodeSelection) {
+      if (newDag.nodes.has(nodeId)) {
+        selectedNodesInNewDag.push(nodeId);
+      }
+    }
 
     this.setState({
       dags: dags.concat([newDag]),
-      historyState: dags[0].numberOfHistorySteps() - 1,
-      changedNode: undefined
+      nodeSelection: selectedNodesInNewDag
     });
   }
 
   private popDag() {
-    assert(this.state.dags.length > 1, 'Undo last step must only be called if there exist at least two dags');
+    assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
     this.setState((state, props) => ({
-      dags: state.dags.slice(0, state.dags.length - 1),
-      historyState: state.dags[0].numberOfHistorySteps() - 1, // TODO: construct history steps properly for each subgraph
-      changedNode: undefined
+      dags: state.dags.slice(0, state.dags.length-1)
     }));
   }
 }

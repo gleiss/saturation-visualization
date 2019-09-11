@@ -1,55 +1,64 @@
 import * as React from 'react';
-import {DataSet, Network, IdType, Node} from 'vis'
+import {DataSet, Network, IdType, Node, Edge} from 'vis'
 
-import {Color, ColorStyle, EdgeColor, FontStyle} from '../model/network/network-style';
 import './Graph.css'
 import { assert } from '../model/util';
 
-import { runViz } from '../model/callViz';
-import Dag from '../model/dag';
-import NetworkNode from '../model/network/network-node';
-import NetworkEdge from '../model/network/network-edge';
+import { Dag } from '../model/dag';
 import SatNode from '../model/sat-node';
 
 const styleTemplates = require('../resources/styleTemplates');
-const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  changedNode?: number,
+  changedNodeEvent?: [number, number],
   historyState: number,
-  onNodeSelectionChange: (selection: number[]) => void
+  onNodeSelectionChange: (selection: number[]) => void,
+  onShowPassiveDag: (selectionId: number, currentTime: number) => void,
+  onDismissPassiveDag: (selectedId: number) => void,
+  onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
 };
 
 export default class Graph extends React.Component<Props, {}> {
 
-  markers = new Array<number>();
+  markers = new Set<number>();
   network: Network | null = null;
-  networkNodes = new DataSet<any>([]);
-  networkEdges = new DataSet<NetworkEdge>([]);
+  networkNodes = new DataSet<Node>([]);
+  networkEdges = new DataSet<Edge>([]);
   graphContainer = React.createRef<HTMLDivElement>();
+  dragStartPosition: [number, number] | null = null;
+  dragStartNodeId: number | null = null;
+  cachedNodeEvent?: [number, number] = undefined;
 
-  layoutCache = new Map<Dag, Array<{id: number, x: number, y: number}>>();
-
-  async componentDidMount() {
+  componentDidMount() {
     this.generateNetwork();
-    await this.updateNetwork();
+    this.updateNetwork(false);
   }
 
-  async componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
-      await this.updateNetwork();
+      this.updateNetwork(false);
       this.network!.selectNodes(this.props.nodeSelection);
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
         this.network!.selectNodes(this.props.nodeSelection);
       }
       if (this.props.historyState !== prevProps.historyState) {
-        this.updateNodeStyles();
+        this.updateNetwork(true);
       }
-      if (this.props.changedNode) {
-        // TODO
+      if (this.props.changedNodeEvent !== prevProps.changedNodeEvent) {
+        assert(this.props.changedNodeEvent != undefined);
+        if (this.cachedNodeEvent === undefined || this.props.changedNodeEvent![0] !== this.cachedNodeEvent[0]) {
+          const incomingEvent = this.props.changedNodeEvent;
+          this.cachedNodeEvent = incomingEvent;
+
+          const updatedNetworkNode = {
+            id : incomingEvent![1],
+            label : this.props.dag.get(incomingEvent![1]).toHTMLString()
+          };
+          this.networkNodes.update(updatedNetworkNode);
+        }
       }
     }
   }
@@ -63,14 +72,15 @@ export default class Graph extends React.Component<Props, {}> {
   }
 
 
-  // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   generateNetwork() {
     assert(this.graphContainer.current);
     assert(!this.network); // should only be called once
 
     this.network = new Network(this.graphContainer.current!, {
-      nodes: [],
-      edges: []
+      nodes: this.networkNodes,
+      edges: this.networkEdges
     }, {
       physics: false,
       interaction: {
@@ -78,66 +88,175 @@ export default class Graph extends React.Component<Props, {}> {
       }
     });
 
-    const {onNodeSelectionChange} = this.props;
-    this.network.on('select', (newSelection) => onNodeSelectionChange(newSelection.nodes));
-    this.network.on('oncontext', (rightClickEvent) => {
-      const nodeId = this.findNodeAt(rightClickEvent.event) as number;
-      if (nodeId) {
-        this.toggleMarker(nodeId);
-      }
+    this.network.on('select', (newSelection) => this.props.onNodeSelectionChange(newSelection.nodes));
+
+    this.network.on('oncontext', async (rightClickEvent) => {
       rightClickEvent.event.preventDefault();
-    });
-
-    this.applyStoredMarkers(this.networkNodes);
-  }
-
-  async updateNetwork() {
-
-    // generate node and edge data
-    const {dag, historyState} = this.props;
-    const networkNodes = new Array<NetworkNode>();
-    const networkEdges = new Array<NetworkEdge>();
-
-    // lookup or compute positions
-    let positions;
-    if(this.layoutCache.has(dag))
-    {
-      positions = this.layoutCache.get(dag);
-    }
-    else
-    {
-      positions = await this.computePositions(dag);
-      this.layoutCache.set(dag, positions);
-    }
-
-    // generate network-nodes as combination of nodes and their positions
-    positions.forEach(position => {
-      assert(dag.get(position.id));
-      const node = dag.get(position.id);
-
-      networkNodes.push(this.toNetworkNode(node, position, historyState));
-
-      const edgesVisible = node.isFromPreprocessing || !!(node.newTime !== null && node.newTime <= historyState);
-      node
-        .parents
-        .forEach(parentId => {
-          if (dag && dag.get(parentId)) {
-            networkEdges.push(this.toNetworkEdge(parentId, node.id, edgesVisible))
+      const nodeId = this.findNodeAt(rightClickEvent.event) as number | undefined;
+      if (nodeId !== undefined) {
+        if (this.props.dag.isPassiveDag) {
+          const styleMap = this.props.dag.styleMap as Map<number, string>;
+          if (styleMap.get(nodeId) === "passive") {
+            await this.props.onDismissPassiveDag(nodeId);
           }
-        });
+        } else {
+          await this.props.onShowPassiveDag(nodeId, this.props.historyState);
+        }
+      }
     });
 
-    // update networkNodes and networkEdges
-    // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
-    // TODO: can we get altogether get rid of DataSet and use a standard dict or array instead?
-    this.networkNodes.clear();
-    this.networkEdges.clear();
-    this.networkNodes.add(networkNodes);
-    this.networkEdges.add(networkEdges);
+    this.network.on('dragStart', (dragStartEvent) => {
+      const nodeId = dragStartEvent.nodes[0];
+      if(nodeId !== null) {
+        this.dragStartNodeId = nodeId;
+        this.dragStartPosition = [dragStartEvent.pointer.canvas.x, dragStartEvent.pointer.canvas.y];
+      }
+    });
 
-    // force a rerender (TODO: this should not be necessary)
-    this.network!.setData({nodes: networkNodes as any as Array<Node>, edges: networkEdges});
+    this.network.on('dragEnd', (dragEndEvent) => {
+      if (this.dragStartNodeId !== null) {
+        assert(this.dragStartPosition !== null);
+        
+        if (!this.props.dag.isPassiveDag) {
+          const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartPosition![0];
+          const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartPosition![1];
+          this.props.onUpdateNodePosition(this.dragStartNodeId as number, [deltaX / (-70), deltaY / (-120)]);
+        }
+      }
+    });
   }
+
+  // updates the network displayed by Vis.js
+  // if onlyUpdateStyles is false, all nodes and edges are newly generated.
+  // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
+  updateNetwork(onlyUpdateStyles: boolean) {
+    const {dag, historyState} = this.props;
+
+    const visNodes = new Array<Node>();
+    const visEdges = new Array<Edge>();
+    let edgeId = 0;
+
+    // partition nodes:
+    // for standard dags, compute node partition
+    // for passive dags use style map cached in dag
+    const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, historyState);
+
+    // update network nodes
+    for (const [satNodeId, satNode] of dag.nodes) {
+      const nodeStyle = nodePartition.get(satNodeId);
+      assert(nodeStyle !== undefined, "invar");
+      if (nodeStyle === "hidden") {
+        const visNode = {id : satNodeId, hidden : true};
+        visNodes.push(visNode);
+      } else {
+        const visNode = this.toVisNode(satNode, nodeStyle, satNode.getPosition());
+        visNodes.push(visNode);
+      }
+
+      for (const parentId of satNode.parents) {
+        const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
+        edgeId = edgeId + 1;
+        visEdges.push(visEdge);
+      }
+    }
+
+    if(onlyUpdateStyles) {
+      // QUESTION: it seems that using a single call to update is faster than separately updating each node. is this true?
+      this.networkNodes.update(visNodes);
+      this.networkEdges.update(visEdges);
+    } else {
+      // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
+      this.networkNodes.clear();
+      this.networkNodes.add(visNodes);
+      this.networkEdges.clear();
+      this.networkEdges.add(visEdges);
+
+      // center the dag for standard dag, keep view position for passive dag
+      if (!this.props.dag.isPassiveDag) {
+        this.network!.fit();
+      }
+    }
+  }
+
+  computeNodePartition(dag: Dag, currentTime: number): Map<number, any> {
+
+    const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
+
+    const nodePartition = new Map<number, any>();
+    for (const [nodeId, node] of dag.nodes) {
+      const isDeleted = (node.deletionTime !== null && node.deletionTime <= currentTime);
+
+      if (dag.nodeIsTheoryAxiom(nodeId)) {
+        nodePartition.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
+        continue;
+      }
+      if (node.isFromPreprocessing) {
+        nodePartition.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+        continue;
+      }
+
+      const isActivated = (node.activeTime !== null && node.activeTime <= currentTime);
+      if (isActivated) {
+        nodePartition.set(nodeId, isDeleted ? "activatedDeleted" : "active");
+        continue;
+      }
+
+      if (nodesInActiveDag.has(nodeId)) {
+        nodePartition.set(nodeId, "deletedButContributing");
+        continue;
+      } 
+
+      nodePartition.set(nodeId, "hidden");
+    }
+
+    return nodePartition;
+  }
+
+  toVisNode(node: SatNode, style: string, position: [number, number]): any {
+    const styleData = styleTemplates[style];
+    const isMarked = this.markers.has(node.id);
+
+    return {
+      id : node.id,
+      label : node.toHTMLString(),
+      labelHighlightBold : false,
+      shape : "box",
+      color : {
+        border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
+        background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
+        highlight : {
+          border : styleData.highlightStyle.border,
+          background : styleData.highlightStyle.background
+        }
+      },
+      font : {
+        color : styleData.text,
+        multi : true
+      },
+      hidden : false,
+      x : Math.round(position[0] * -70),
+      y : Math.round(position[1] * -120)
+    };
+
+  }
+
+  toVisEdge(edgeId: number, parentNodeId: number, nodeId: number, hidden: boolean) {
+    return {
+      id : edgeId,
+      arrows : "to",
+      color : {
+        color : "#dddddd",
+        highlight : "#f8cfc1",
+      },
+      from : parentNodeId,
+      to : nodeId,
+      smooth : false,
+      hidden : hidden
+    }
+  }
+
+
+  // INTERACTION ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   findNodeAt(clickPosition: {layerX: number, layerY: number}): IdType  {
     return this.network!.getNodeAt({
@@ -147,189 +266,17 @@ export default class Graph extends React.Component<Props, {}> {
   }
 
 
-  // POSITIONING ///////////////////////////////////////////////////////////////////////////////////////////////////////
-  async computePositions(dag: Dag): Promise<Array<{id: number, x: number, y: number}>> {
-    // generate dot string
-    const dotString = this.dagToDotString(dag);
-    
-    // use viz to compute layout for dag given as dotstring
-    // note that viz returns the layout as a string
-    const layoutString = await runViz(dotString);
-
-    // parse the layout string into array of network-nodes
-    return this.parseLayoutString(layoutString);
-  };
-
-  dagToDotString(dag: Dag): string {
-    // TODO: make sure boundary nodes are handled properly
-    // TODO: document
-    const inputStrings = new Array<string>();
-    const preprocessingStrings = new Array<string>();
-    const otherStrings = new Array<string>();
-    const edgeStrings = new Array<string>();
-    for (const node of dag.nodes.values()) {
-      if (node.isFromPreprocessing) {
-        if(dag.nodeIsInputNode(node.id)) {
-          inputStrings.push(`${node.id} [label="${node.toString()}"]`);
-        } else {
-          preprocessingStrings.push(`${node.id} [label="${node.toString()}"]`);
-        }
-      }
-    }
-    for (const node of dag.nodes.values()) {
-      if (!node.isFromPreprocessing) {
-        otherStrings.push(`${node.id} [label="${node.toString()}"]`);
-      }
-    }
-
-    for (const node of dag.nodes.values()) {
-      for (const parentId of node.parents) {
-        edgeStrings.push(`${parentId} -> ${node.id}`)
-      }
-    }
-
-    const inputString = "   subgraph inputgraph {\n      rank=source;\n      " + inputStrings.join(";\n      ") + "\n   }";
-    const preprocessingString = "   subgraph preprocessinggraph {\n      rank=same;\n      " + preprocessingStrings.join(";\n      ") + "\n   }";
-    const otherstring = "   subgraph othergraph {\n      " + otherStrings.join(";\n      ") + "\n   }";
-    const edgeString = edgeStrings.join(";\n   ");
-
-    const dotString =  "digraph {\n\n" + inputString + "\n\n" + preprocessingString + "\n\n" + otherstring + "\n\n   " + edgeString + "\n}";
-    
-    return dotString;
-  };
-
-  parseLayoutString(layoutString: string): Array<{id: number, x: number, y: number}> {
-    let firstEdgeLineIndex = layoutString.includes('\nedge') ? layoutString.indexOf('\nedge') : layoutString.length;
-    // split layoutString to array of strings describing positions of nodes
-    const parsedNodeLines = layoutString
-      .substr(0, firstEdgeLineIndex) // ignore remaining part of string describing edges
-      .split('\nnode ') //split lines
-      .slice(1) // ignore first line describing graph
-      .map(line => line.substr(0, line.indexOf('"'))) // ignore remaining part of line causing problems with line breaks
-      .map((line) => line.matchAll(PLAIN_PATTERN).next().value); // parse each remaining line
-    parsedNodeLines.forEach(line => {
-      assert(line !== undefined); // check that each remaining line was successfully parsed
-    });
-    // generate network node for each nodeString
-    return parsedNodeLines
-      .map((match) => {
-        const [, number, x, y] = match;
-        return {
-          id: parseInt(number, 10),
-          x: parseFloat(x),
-          y: parseFloat(y)
-        };
-      });
-  }
-
-  // STYLING ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  selectStyle = (node: SatNode, historyState: number) => {
-    if (node.inferenceRule === 'theory axiom') {
-      if (node.activeTime !== null && node.activeTime <= historyState) {
-        return styleTemplates.activeTheoryAxiom;
-      } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
-        return styleTemplates.passiveTheoryAxiom;
-      }
-    }
-
-    if (node.isFromPreprocessing) {
-      return node.parents ? styleTemplates.preprocessing : styleTemplates.input;
-    }
-
-    if (node.activeTime !== null && node.activeTime <= historyState) {
-      return styleTemplates.active;
-    } else if (node.passiveTime !== null && node.passiveTime <= historyState) {
-      return styleTemplates.passive;
-    } else if (node.newTime !== null && node.newTime <= historyState) {
-      return styleTemplates.new;
-    }
-
-    return styleTemplates.hidden;
-  };
-
-  getColorStyle = (styleData): ColorStyle => {
-    return new ColorStyle(
-      styleData.defaultStyle.background,
-      styleData.defaultStyle.border,
-      new Color(styleData.defaultStyle.background, styleData.defaultStyle.border),
-      new Color(styleData.highlightStyle.background, styleData.highlightStyle.border),
-      new Color(styleData.markedStyle.background, styleData.markedStyle.border)
-    )
-  };
-
-
-  setStyle = (node: NetworkNode, newStyleKey: string) => {
-    const newStyle = node.color.get(newStyleKey);
-
-    node.color.background = newStyle.background;
-    node.color.border = newStyle.border;
-  };
-
-  toNetworkNode = (node: SatNode, position: {id: number, x: number, y: number}, historyState: number): NetworkNode => {
-    const styleData = this.selectStyle(node, historyState);
-
-    const styleColor = this.getColorStyle(styleData);
-    const styleFont = new FontStyle(styleData.text);
-    const styleShape = styleData.shape;
-    
-
-    return new NetworkNode(node.id, styleColor, styleFont, node.toHTMLString(), node.inferenceRule, styleShape, Math.round(position.x * -70), Math.round(position.y * -120));
-  };
-
-  toNetworkEdge = (fromNode: number, toNode: number, visible: boolean): NetworkEdge => {
-    return new NetworkEdge('to', new EdgeColor(visible ? 1.0 : 0.0, '#dddddd'), fromNode, toNode);
-  };
-
-  updateNodeStyles() {
-    const updatedNetworkNodes = new Array<NetworkNode>();
-    for (const satNode of this.props.dag.nodes.values()) {
-      const networkNode = this.networkNodes.get(satNode.id);
-      assert(networkNode);
-
-      const styleData = this.selectStyle(satNode, this.props.historyState);
-      networkNode.color = this.getColorStyle(styleData);
-      networkNode.font = new FontStyle(styleData.text);
-      networkNode.shape = styleData.shape;
-
-      assert(!!networkNode);
-      updatedNetworkNodes.push(networkNode);
-    }
-    this.networkNodes.update(updatedNetworkNodes);
-  }
-
-
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  applyStoredMarkers(availableNodes: any) {
-    this.markers
-      .map(nodeId => availableNodes.get(nodeId))
-      .forEach(node => {
-        if (node) {
-          this.setStyle(node, 'markedStyle');
-          availableNodes.update(node);
-        }
-      });
-  };
-
   toggleMarker(nodeId: number) {
-    if (!this.networkNodes) {
-      return;
-    }
-    const node = this.networkNodes.get(nodeId);
-    const markerSet = new Set(this.markers);
+    assert(this.networkNodes);
 
-    if (node) {
-      if (markerSet.has(node.id)) {
-        markerSet.delete(node.id);
-        this.setStyle(node, 'defaultStyle');
-      } else {
-        markerSet.add(node.id);
-        this.setStyle(node, 'markedStyle');
-      }
-      this.markers = Array.from(markerSet);
-      this.networkNodes.update(node);
+    if (this.markers.has(nodeId)) {
+      this.markers.delete(nodeId);
+    } else {
+      this.markers.add(nodeId);
     }
-  };
+    this.updateNetwork(true);
+  }
 
 }

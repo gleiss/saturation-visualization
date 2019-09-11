@@ -1,16 +1,17 @@
 import * as React from 'react';
-import Sortable from 'react-sortablejs';
-import {Clause, Formula} from '../model/unit';
-import {Literal} from '../model/literal';
 
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import './NodeDetails.css';
+import Sortable from 'react-sortablejs';
+import { Clause } from '../model/unit';
+import { Literal } from '../model/literal';
 
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  onLiteralOrientationChange: (node: number, literal: Literal, isConclusion: boolean) => void
+  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void
 };
+
 export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
@@ -28,18 +29,20 @@ export default class NodeDetails extends React.Component<Props, {}> {
               <h2>Node <strong>{selectedNode.id}</strong></h2>
               <h3>{selectedNode.inferenceRule}</h3>
               {
-                selectedNode.unit instanceof Formula ? (
+                selectedNode.unit.type === "Formula" ? (
                   <section className={'literal-wrapper'}>
-                    selectedNode.toString()
+                    {
+                      selectedNode.toString()
+                    }
                   </section>
                 ) : (
                   <section className={'literal-wrapper'}>
                     {
-                      this.toList(selectedNode.id, selectedNode.unit, false)
+                      this.toList(selectedNode.id, selectedNode.unit as Clause, false)
                     }
                     <br/>
                     {
-                      this.toList(selectedNode.id, selectedNode.unit, true)
+                      this.toList(selectedNode.id, selectedNode.unit as Clause, true)
                     }
                   </section>
                 )
@@ -55,25 +58,30 @@ export default class NodeDetails extends React.Component<Props, {}> {
   }
 
   toList = (nodeId: number, clause: Clause, isConclusion: boolean) => {
-    const literals = clause.literals.filter(entry => entry.orientationIsConclusion === isConclusion);
-
+    const literals = isConclusion ? clause.conclusionLiterals : clause.premiseLiterals;
+  
     return (
       <Sortable
         options={{
           group: 'shared',
-          onRemove: (event) => this.props.onLiteralOrientationChange(nodeId, literals[event.oldIndex], !isConclusion)
+          onAdd: (event) => {
+            this.props.onLiteralOrientationChange(nodeId, [!isConclusion, event.oldIndex], [event.from === event.to ? !isConclusion : isConclusion, event.newIndex])
+          ;},
+          onUpdate: (event) => {
+            this.props.onLiteralOrientationChange(nodeId, [isConclusion, event.oldIndex], [isConclusion, event.newIndex])
+          ;}
         }}
-        tag="ul"
+        tag={"ul"}
+        id={isConclusion ? "id2" : "id1"}
       >
         {
-          literals.map((entry, i) => this.toListItem(entry, i))
+          literals.map((literal, index) => this.toListItem(literal, index, isConclusion))
         }
       </Sortable>
-    )
+      )
+    };
+  
+  toListItem = (literal: Literal, index: number, inConclusion: boolean) => {
+    return <li key={index} data-id={index}>{literal.toString(inConclusion)}</li>
   };
-
-  toListItem = (literal: Literal, index: number) => {
-    return <li key={index} data-id={index}>{literal.toString()}</li>
-  };
-
 }

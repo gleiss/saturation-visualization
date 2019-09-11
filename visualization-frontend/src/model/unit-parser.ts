@@ -6,7 +6,6 @@ import {Literal, FunctionApplication} from './literal'
 export class UnitParser {
 
 	static parseUnit(string: string, isFromPreprocessing: boolean, statistics: Map<string,number>): Unit {
-		
 		// heuristic to determine whether unit is a clause:
 		// if unit is not from preprocessing, it has to be a clause
 		// if unit only contains certain symbols, it has to be a clause
@@ -22,10 +21,11 @@ export class UnitParser {
 		  return new Formula(string);
 		}
 	}
+
 	static parseClause(string: string, numberOfSelectedLiterals: number | null): Clause {
 		if(string === "$false") {
 			assert(numberOfSelectedLiterals === null);
-			return new Clause([], numberOfSelectedLiterals); // empty clause
+			return new Clause([], []); // empty clause
 		}
 		const literalStrings = string.split(" | ")
 
@@ -38,25 +38,30 @@ export class UnitParser {
 		// simple heuristic for orienting literals: negated literal which are no equalities are premise-literals, all other literals are conclusion-literals
 		const conclusionLiteralRemains = literals.reduce((acc, literal) => acc || (!literal.negated || literal.name === "="),false);
 		if (conclusionLiteralRemains) {
+			const premiseLiterals = new Array<Literal>();
+			const conclusionLiterals = new Array<Literal>();
 			for (const literal of literals) {
 				if (literal.negated && literal.name !== "=") {
-					literal.setOrientation(false);
+					premiseLiterals.push(literal);
+				} else {
+					conclusionLiterals.push(literal);
 				}
 			}
+			return new Clause(premiseLiterals, conclusionLiterals);
+		} else {
+			return new Clause([], literals);
 		}
-
-		return new Clause(literals, numberOfSelectedLiterals);
 	}
 
 	static parseLiteral(string: string, isSelected: boolean): Literal {
 		// need to handle equality separately, since it is written in infix-notation
 		// all other predicates are written in prefix-notation
 		const equalityPosition = string.search("=");
-		if(equalityPosition != -1)
+		if(equalityPosition !== -1)
 		{
 			if(string[equalityPosition - 1] === "!") {
-				assert(string[equalityPosition - 2] === " ", "negated equality must be surrounded by spaces");
-				assert(string[equalityPosition + 1] === " ", "negated equality must be surrounded by spaces");
+				assert(string[equalityPosition - 2] === " ", `negated equality not surrounded by spaces in string ${string}`);
+				assert(string[equalityPosition + 1] === " ", `negated equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 2);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
@@ -65,8 +70,8 @@ export class UnitParser {
 			}
 			else
 			{
-				assert(string[equalityPosition - 1] === " ", "equality must be surrounded by spaces");
-				assert(string[equalityPosition + 1] === " ", "equality must be surrounded by spaces");
+				assert(string[equalityPosition - 1] === " ", `equality not surrounded by spaces in string ${string}`);
+				assert(string[equalityPosition + 1] === " ", `equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 1);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);

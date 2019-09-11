@@ -5,16 +5,17 @@ import { UnitParser } from './unit-parser';
 export default class SatNode {
 
   readonly id: number;
-  readonly unit: Unit;
+  unit: Unit;
   readonly inferenceRule: string;
   readonly parents: number[];
-  readonly statistics: Map<string,number>;
+  statistics: Map<string,number>;
   readonly isFromPreprocessing: boolean;
-  readonly newTime: number;
-  readonly passiveTime: number;
-  readonly activeTime: number;
-  readonly deletionTime: number;
-  readonly deletionParents: number[];
+  newTime: number | null;
+  passiveTime: number | null;
+  activeTime: number | null;
+  deletionTime: number | null;
+  deletionParents: number[];
+  position: [number,number] | null;
 
   constructor(
     id: number,
@@ -23,10 +24,10 @@ export default class SatNode {
     parents: number[],
     statistics: Map<string,number>,
     isFromPreprocessing: boolean,
-    newTime: number,
-    passiveTime: number,
-    activeTime: number,
-    deletionTime: number,
+    newTime: number | null,
+    passiveTime: number | null,
+    activeTime: number | null,
+    deletionTime: number | null,
     deletionParents: number[]
   ) {
     this.id = id;
@@ -40,6 +41,17 @@ export default class SatNode {
     this.activeTime = activeTime;
     this.deletionTime = deletionTime;
     this.deletionParents = deletionParents;
+    this.position = null;
+  }
+
+  // return a copy of this node, where the position is null
+  copy(): SatNode {
+    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.passiveTime, this.activeTime, this.deletionTime, this.deletionParents);
+  }
+
+  getPosition(): [number,number] {
+    assert(this.position !== null, `accessing position of node with id ${this.id}, which has not been computed`);
+    return this.position as [number,number];
   }
 
   toString(): string {

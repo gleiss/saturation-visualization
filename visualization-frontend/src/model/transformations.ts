@@ -1,5 +1,5 @@
 import { assert } from "./util";
-import Dag from "./dag";
+import { Dag } from "./dag";
 import SatNode from "./sat-node";
 import { ReversePostOrderTraversal, DFPostOrderTraversal } from "./traversal";
 
@@ -30,7 +30,13 @@ export function filterNonParents(dag: Dag, relevantIds: Set<number>) {
 		}
 	}
 
-	return new Dag(remainingNodes);
+	// create deep copy of nodes
+	// needed so that layout computation for the transformed dag does not overwrite the layout of the original dag
+	const remainingNodesDeepCopy = new Map<number, SatNode>();
+	for (const [nodeId,node] of remainingNodes) {
+		remainingNodesDeepCopy.set(nodeId, node.copy());
+	}
+	return new Dag(remainingNodesDeepCopy);
 }
 
 // returns a new dag containing only the nodes which either
@@ -39,7 +45,7 @@ export function filterNonParents(dag: Dag, relevantIds: Set<number>) {
 // additionally keeps boundary nodes
 export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 	// use new set to avoid mutating relevantIds
-	const transitiveChildrenIds = new Set(relevantIds);
+	const transitiveChildrenIds = new Set<number>(relevantIds);
 
 	// need to compute remaining nodes
 	const remainingNodes = new Map<number, SatNode>();
@@ -85,7 +91,13 @@ export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 		} 
 	}
 
-	return new Dag(remainingNodes);
+	// create deep copy of nodes
+	// needed so that layout computation for the transformed dag does not overwrite the layout of the original dag
+	const remainingNodesDeepCopy = new Map<number, SatNode>();
+	for (const [nodeId,node] of remainingNodes) {
+		remainingNodesDeepCopy.set(nodeId, node.copy());
+	}
+	return new Dag(remainingNodesDeepCopy);
 }
 
 // create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents
@@ -93,63 +105,183 @@ function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
 	return new SatNode(node.id, node.unit, "Boundary", [], node.statistics, node.isFromPreprocessing, node.newTime, node.passiveTime, node.activeTime, node.deletionTime, node.deletionParents);
 }
 
+// vampire performs preprocessing in multiple steps
+// we are only interested in
+// 1) the input-formulas (and axioms added by Vampire)
+// 2) the clauses resulting from them
+// We therefore merge together all preprocessing steps into single steps
+// from input-formulas/vapire-added-axioms to final-preprocessing-clauses
+// additionally remove all choice axiom parents, since we treat them as part of the background theory
+export function mergePreprocessing(dag: Dag): Dag {
+	const nodes = new Map<number, SatNode>(dag.nodes);
+	const nodeIdsToRemove = new Set<number>(); // nodes which should be removed. note that we can't remove them upfront due to the fact that the derivation is a dag and not a tree
+	const mergeMap = new Map<number, Array<number>>(); // maps merged nodes to the replacing nodes, needed for extending the dag later
 
+	const postOrderTraversal = new DFPostOrderTraversal(dag);
+	while (postOrderTraversal.hasNext()) {
+		// note: the ids are still valid, but the nodes may have been replaced by new node
+		const currentNodeId = postOrderTraversal.getNext().id;
+		const currentNode = nodes.get(currentNodeId) as SatNode;
 
-// # remove all nodes, which are not used to derive any clause which is activated at some point
-// # (note that the derivation of an activated clause can contain never activated passive nodes or even clauses which have
-// # never been added to passive)
-// def filter_non_active_deriving_nodes(dag):
-//     # collect all active nodes
-//     activated_nodes = set()
-//     for _, node in dag.nodes.items():
-//         if node.active_time is not None:
-//             activated_nodes.add(node.number)
+		// if there is a preprocessing node n1 with a parent node n2 which has itself a parent node n3,
+		// then replace n2 by n3 in the parents of n1 and add n2 to the nodes which should be removed
+		if (currentNode.isFromPreprocessing) {
+			const updatedParents = new Array<number>();
+			for (const parentId of currentNode.parents) {
+				const parentNode = nodes.get(parentId) as SatNode;
+				assert(parentNode.isFromPreprocessing, "invariant violated");
 
-//     # remove all nodes which are not transitive parents of activated nodes
-//     transformed_dag = filter_non_parents(dag, activated_nodes)
+				if (parentNode.parents.length === 0) {
+					// small optimization: remove choice axioms, which should not been added to the proof by Vampire in the first place
+					if (parentNode.inferenceRule === "choice axiom") {
+						nodeIdsToRemove.add(parentId);
+					} else {
+						updatedParents.push(parentId);
+					}
+				} else {
+					for (const parent2Id of parentNode.parents) {
+						const parent2Node = nodes.get(parent2Id) as SatNode;
+						assert(parent2Node.isFromPreprocessing, "invariant violated");
+						updatedParents.push(parent2Id);
+					}
+					nodeIdsToRemove.add(parentId);
+					mergeMap.set(parentId, parentNode.parents);
+				}
+			}
+			const updatedNode = new SatNode(currentNode.id, currentNode.unit, currentNode.inferenceRule, updatedParents, currentNode.statistics, currentNode.isFromPreprocessing, currentNode.newTime, currentNode.passiveTime, currentNode.activeTime, currentNode.deletionTime, currentNode.deletionParents);
+			nodes.set(currentNodeId, updatedNode);
+		}
+	}
 
-//     return transformed_dag
+	// remove merged nodes
+	for (const nodeIdToRemove of nodeIdsToRemove) {
+		const success = nodes.delete(nodeIdToRemove);
+		assert(success, "invar violated");
+	}
 
+	return new Dag(nodes, mergeMap);
+}
 
-// # vampire performs preprocessing in multiple steps
-// # we are only interested in
-// # 1) the input-formulas (and axioms added by Vampire)
-// # 2) the clauses resulting from them
-// # We therefore merge together all preprocessing steps into single steps
-// # from input-formulas/vapire-added-axioms to final-preprocessing-clauses
-// # additionally remove all choice axiom parents, since we treat them as part of the background theory
-// def merge_preprocessing(dag):
-//     post_order_traversal = DFPostOrderTraversal(dag)
-//     while post_order_traversal.has_next():
-//         current_node = post_order_traversal.get_next()
+  // computes the set of clauses currently in Passive, which are derived as children from nodes in selectionId (or are selectionId for the special case of final preprocessing nodes which are in passive)
+  // precondition: selection contains only ids from nodes which either 1) have already been activated or 2) are final preprocessing clauses
+  export function passiveDagForSelection(dag: Dag, selectionId: number, currentTime: number): Dag {
 
-//         # if there is a preprocessing node n1 with a parent node n2 which has itself a parent node n3,
-//         # then replace n2 by n3 in the parents of n1
-//         if current_node.is_from_preprocessing:
-//             new_parents = []
-//             for parent_id in current_node.parents:
-//                 parent_node = dag.get(parent_id)
-//                 assert parent_node.is_from_preprocessing
+    const passiveDagNodes = new Map<number, SatNode>();
+	const styleMap = new Map<number, "passive" | "deleted" | "boundary">();
+	
+    for (const [nodeId, node] of dag.nodes) {
+      // a node is in passive, if the new-event happened, but neither an active-event nor a deletion-event happened.
+      const nodeIsInPassive = ((node.newTime !== null && node.newTime <= currentTime) && !(node.activeTime !== null && node.activeTime <= currentTime) && !(node.deletionTime !== null && node.deletionTime <= currentTime));
+      if (nodeIsInPassive) {
+        // compute active clauses or final preprocessing clauses from which node was generated
+        const cachedNodes = new Map<number, SatNode>(); // TODO: probably more efficient to delay this
+		const cachedStyles = new Map<number, "passive" | "deleted" | "boundary">();
 
-//                 if len(parent_node.parents) == 0:
-//                     if parent_node.inference_rule != "choice axiom":
-//                         new_parents.append(parent_id)
+		cachedNodes.set(nodeId, node);
+		cachedStyles.set(nodeId, "passive");
 
-//                 for parent_2_id in parent_node.parents:
-//                     parent_2_node = dag.get(parent_2_id)
-//                     assert parent_2_node.is_from_preprocessing
+        let relevantNodeId = nodeId;
+        let relevantNode = dag.get(relevantNodeId);
+        // first go up in the derivation until the current node was not derived using a simplification
+        while (true) {
+          const nodeIdOrNull = nodeWasDerivedUsingSimplification(dag, relevantNode);
+          if (nodeIdOrNull !== null) {
+            assert(dag.get(nodeIdOrNull).deletionTime !== null);
+            for (const parentId of relevantNode.parents) {
+              if (parentId !== nodeIdOrNull) {
+				cachedNodes.set(parentId, createBoundaryNode(dag, dag.get(parentId)));
+				cachedStyles.set(parentId, "boundary");
+              }
+            }
+            relevantNodeId = nodeIdOrNull;
+			relevantNode = dag.get(relevantNodeId)
+			
+			cachedNodes.set(relevantNodeId, relevantNode);
+			cachedStyles.set(relevantNodeId, "deleted"); // could be wrong if it is a preprocessing node, but in that case it is corrected later
+          } else {
+            break;
+          }
+        }
 
-//                     new_parents.append(parent_2_id)
+        // now either the relevant node is a preprocessing node, or the parents of the current node are active nodes
+        if (relevantNode.isFromPreprocessing) {
+          if (selectionId === relevantNodeId) {
+			// add cached nodes and styles
+            for (const [nodeId, node] of cachedNodes) {
+              passiveDagNodes.set(nodeId, node.copy());
+            }
+            for (const [nodeId, style] of cachedStyles) {
+				styleMap.set(nodeId, style);
+			}
+			// correct the node and style for preprocessing node
+			if(relevantNodeId !== nodeId) {
+				passiveDagNodes.set(relevantNodeId, createBoundaryNode(dag, relevantNode));
+				styleMap.set(relevantNodeId, "boundary")
+			}
+          }
+        } else {
+          for (const parentId of relevantNode.parents) {
+            const parent = dag.get(parentId);
+            
+            assert(parent.activeTime !== null && relevantNode.newTime !== null && parent.activeTime <= relevantNode.newTime, `invar violated for node ${node}`);
+          }
+          for (const parentId of relevantNode.parents) {
+            if (selectionId === parentId) {
+			  // add cached nodes and styles
+			  for (const [nodeId, node] of cachedNodes) {
+                passiveDagNodes.set(nodeId, node.copy());
+			  }
+			  for (const [nodeId, style] of cachedStyles) {
+				styleMap.set(nodeId, style);
+			}
+			  // add all (active) clauses, which participated in the generating inference, as boundary nodes
+              for (const parentId of relevantNode.parents) {
+				passiveDagNodes.set(parentId, createBoundaryNode(dag, dag.get(parentId)));
+				styleMap.set(parentId, "boundary");
+              }
+              break;
+            }
+          }
+        }
+      }
+	}
+	
+	// add the selected node itself as boundary nodes
+	passiveDagNodes.set(selectionId, createBoundaryNode(dag, dag.get(selectionId)));
+	if (styleMap.get(selectionId) === undefined) { // don't overwrite style "passive"
+		styleMap.set(selectionId, "boundary");
+	}
 
-//             current_node.parents = new_parents
+	const passiveDag = new Dag(passiveDagNodes, null, true, styleMap, selectionId);
+	return passiveDag;
+  }
 
-//     # remove unused nodes like n2.
-//     # not that they are now not reachable anymore from the leaves of the dag
-//     remaining_nodes = dict()
-//     post_order_traversal_2 = DFPostOrderTraversal(dag)
-//     while post_order_traversal_2.has_next():
-//         current_node = post_order_traversal_2.get_next()
-//         current_id = current_node.number
-//         remaining_nodes[current_id] = current_node
-
-//     return Dag(remaining_nodes)
+  // returns null if node was not derived using simplification
+  // returns id of original node if node was derived using simplification
+  // TODO: we don't know the complete set of simplifying inference rules, since the current set could be extended in the future. Nonetheless we know the standard simplifying and generating inference rules, so we could use that knowledge to speed up the computation of this function.
+  function nodeWasDerivedUsingSimplification(dag: Dag, node: SatNode): number | null {
+    // one of the parents p of node n needs to satisfy the following four properties (independently from the currentTime):
+    for (const parentId of node.parents) {
+      const parent = dag.get(parentId);
+      // 1) n has been added to saturation and p has been deleted
+      // 2) the deletionTime of p matches the newTime of n.
+      // 3) the first deletion parent of p is n
+      // 4) let P be the set of parents of n other than p. Then the deletion parents of p are n and P.
+      if (node.newTime !== null && parent.deletionTime !== null && parent.deletionTime === node.newTime && parent.deletionParents[0] === node.id && node.parents.length === parent.deletionParents.length) {
+        const set1 = new Set<number>(node.parents);
+        set1.delete(parentId);
+        const set2 = new Set<number>(parent.deletionParents);
+        set2.delete(parent.deletionParents[0]);
+        let otherParentsMatch = true;
+        for (const e of set1) {
+          if (!set2.has(e)) {
+            otherParentsMatch = false;
+          }
+        }
+        if (otherParentsMatch) {
+          return parentId;
+        }
+      }
+    }
+    return null;
+  }

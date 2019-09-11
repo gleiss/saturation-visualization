@@ -1,17 +1,63 @@
 import SatNode from './sat-node';
 import { assert } from './util';
+import { UnitParser } from './unit-parser';
+import { ReversePostOrderTraversal } from "./traversal";
 
-export default class Dag {
+export class ParsedLine {
+  readonly type: "preprocessing" | "new" | "passive" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using";
+  readonly id: number;
+  readonly unitString: string;
+  readonly inferenceRule: string;
+  parents: Array<number>;
+  readonly statistics: Map<any, any>; 
+
+  constructor(type: "preprocessing" | "new" | "passive" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using", id: number, unitString: string, inferenceRule: string, parents: Array<number>, statistics: Map<any, any>) {
+    this.type = type;
+    this.id = id;
+    this.unitString = unitString;
+    this.inferenceRule = inferenceRule;
+    this.parents = parents;
+    this.statistics = statistics;
+  }
+}
+
+export class Dag {
 
   // TODO: it seems that the result of Graphviz depends on the order of node- and edge declarations.
   //       the order of these declarations depends on the order in which the nodes occur in the nodes-Map.
   //       therefore it could make sense to normalize the order of nodes in the nodes-Map at construction time of the Dag.
   readonly nodes: Map<number,SatNode>;
   readonly leaves: Set<number>;
+  readonly mergeMap: Map<number, Array<number>> | null;
+  
+  // invar: if isPassiveDag, then styleMap !== null
+  readonly isPassiveDag: boolean;
+  readonly styleMap: Map<number, "passive" | "deleted" | "boundary"> | null;
+  readonly activeNodeId: number | null; // the id of the node for which passiveDag was computed
 
-  constructor(nodes: Map<number,SatNode>) {
+  constructor(nodes: Map<number,SatNode>, mergeMap: Map<number, Array<number>> | null = null, isPassiveDag: boolean = false, styleMap: Map<number, "passive" | "deleted" | "boundary"> | null = null, activeNodeId: number | null = null) {
     this.nodes = nodes;
+    this.mergeMap = mergeMap;
 
+    assert(!isPassiveDag || styleMap !== null);
+    assert(!isPassiveDag || activeNodeId !== null);
+    assert(!isPassiveDag || nodes.has(activeNodeId as number));
+
+    this.isPassiveDag = isPassiveDag;
+    this.styleMap = styleMap;
+    this.activeNodeId = activeNodeId;
+
+    // sanity check: key and id of node need to match
+    for (const [nodeId, node] of nodes) {
+      assert(nodeId === node.id, `key ${nodeId} and id ${node.id} of node ${node} don't match!`);
+    }
+
+    // sanity check: each parentId needs to occur in the derivation as node
+    for (const [nodeId, node] of nodes) {
+      for (const parentId of node.parents) {
+        assert(nodes.has(parentId), `node ${nodeId} has parent ${parentId} which does not occur as node in the dag!`);
+      }
+    }
     // compute leaves
     const leaves: Set<number> = new Set();
     const nonLeaves: Set<number> = new Set();
@@ -32,8 +78,9 @@ export default class Dag {
   }
 
   get(nodeId: number): SatNode {
-    assert(this.nodes.has(nodeId), "node doesn't occur in Dag");
-    return this.nodes.get(nodeId) as SatNode;
+    const node = this.nodes.get(nodeId);
+    assert(node !== undefined, "node doesn't occur in Dag");
+    return node as SatNode;
   }
 
   numberOfHistorySteps(): number {
@@ -100,19 +147,182 @@ export default class Dag {
     return true;
   }
 
-  static fromSetOfNodes(nodes: Set<SatNode>): Dag {
-    const nodeDict = new Map<number,SatNode>();
-    for (const node of nodes) {
-      nodeDict.set(node.id,node);
+  // heuristics to determine whether a node is a theory axiom
+  // note: Vampire uses "theory axiom" for some of the internal theory axioms
+  // the internal theory axioms added for term algebras do not follow this convention
+  // even more, one of those term algebra axioms (the exhaustiveness axiom) is added as formula (in contrast to all other axioms which are added as clauses)
+  // in particular, the exhaustiveness axiom consists of a formula labelled "term algebras exhaustiveness" and a child node which is labelled cnf transformation
+  nodeIsTheoryAxiom(nodeId: number): boolean {
+    const node = this.get(nodeId);
+    assert(node !== undefined, "node doesn't occur in Dag");
+
+    if (!node.isFromPreprocessing) {
+      return false;
     }
-    return new Dag(nodeDict);
+    if (node.inferenceRule === "theory axiom" || 
+        node.inferenceRule === "term algebras injectivity" || 
+        node.inferenceRule === "term algebras distinctness" ||
+        node.inferenceRule === "term algebras exhaustiveness" ||
+        (node.parents.length === 1 && this.get(node.parents[0]).inferenceRule ===  "term algebras exhaustiveness")) {
+      return true;
+    }
+
+    return false;
   }
 
-  static fromDto(dto: any): Dag {
-    const nodeDict = new Map<number,SatNode>();
+  // either 1) create a new dag given an array of parsed lines and no existing dag,
+  // or     2) extend an existing dag with an array of parsed lines
+  // In case 2) we assume that all the parsedLines are generated during Saturation, i.e. no additional preprocessing occurs.
+  static fromParsedLines(parsedLines: Array<ParsedLine>, existingDag: Dag | null): Dag {
+    const nodes = (existingDag === null) ? new Map<number, SatNode>() : new Map<number, SatNode>(existingDag.nodes);
 
-    Object.values(dto.nodes).forEach((node: any) => nodeDict.set(node.number, SatNode.fromDto(node)));
-    return new Dag(nodeDict);
+    let currentNode: SatNode | null = null;
+    let currentTime = (existingDag === null) ? 0 : existingDag.numberOfHistorySteps();
+
+    let emptyClauseNode: SatNode | null = null;
+
+    for (const line of parsedLines) {
+
+      // some preprocessing nodes have potentially been merged, and there could be parsedLines which still reference the ids of these nodes.
+      // we therefore convert those ids using the merge-map
+      if (existingDag !== null && existingDag.mergeMap !== null) {
+        assert(existingDag.mergeMap.get(line.id) === undefined, `found line with id ${line.id} of node deleted during merge of preprocessing nodes!`);
+        const parentsAfterMerge = new Array<number>();
+        for (const parentId of line.parents) {
+          const mergedParentsOrUndefined = existingDag.mergeMap.get(parentId);
+          if (mergedParentsOrUndefined !== undefined) {
+            parentsAfterMerge.push(...mergedParentsOrUndefined);
+          } else {
+            parentsAfterMerge.push(parentId);
+          }
+        }
+        line.parents = parentsAfterMerge;
+      }
+
+      if (line.type === "preprocessing") {
+        // line represents the generation of a clause during preprocessing
+        assert(existingDag === null, "no new preprocessing lines should occur while extending existing dag with new nodes from saturation")
+        assert(!nodes.has(line.id), "each clause must be generated by preprocessing only once");
+        const unit = UnitParser.parseUnit(line.unitString, true, line.statistics);
+        currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, true, null, null, null, null, []);
+        nodes.set(currentNode.id, currentNode);
+      }
+      else if (line.type === "new") {
+        if (!nodes.has(line.id)) {
+          // line represents the generation of a new clause (which wasn't generated in preprocessing) during saturation
+          
+          // create new node
+          const unit = UnitParser.parseUnit(line.unitString, false, line.statistics);
+          currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, null, []);
+          nodes.set(currentNode.id, currentNode);
+
+          if(line.unitString === "$false") {
+            emptyClauseNode = currentNode;
+          }
+        } else {
+          // line represents a final clause from preprocessing, which now is added into saturation
+          assert(existingDag === null, "no new final clauses from preprocessing should occur during the extension of an existing dag")
+          currentNode = nodes.get(line.id) as SatNode;
+          assert(currentNode.isFromPreprocessing, "a newly added clause can only already exist if it was generated during preprocessing");
+          assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
+          currentNode.newTime = currentTime;
+        }
+      }
+      else if (line.type === "passive") {
+        // line represents the insertion of an already generated clause into the set of passive clauses
+        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was added to passive, but wasn't added as new before. Maybe you forgot to output the new clauses?`);
+        currentNode = nodes.get(line.id) as SatNode;
+        assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
+        assert(line.parents.length === currentNode.parents.length, "number of parents differs between line and existing node");
+        for (let i = 0; i < line.parents.length; i++) {
+          assert(line.parents[i] === currentNode.parents[i], `line and node differ on parent ${i}, which is ${line.parents[i]} resp. ${currentNode.parents[i]}.`);
+        }
+        assert(currentNode.newTime !== null, "for each event [SA] passive ... there has to be an earlier event of the form [SA] new ... with the same clause!")
+        assert((currentNode.newTime as number) <= currentTime, "invar");
+        assert(currentNode.passiveTime === null, "there must only be 1 event of the form [SA] passive ... for each clause");
+        currentNode.passiveTime = currentTime;
+      }
+      else if (line.type === "active") {
+        // line represents the removal of an already generated clause from passive and the addition of that clause to active
+        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was added to active, but wasn't added to passive before. Maybe you forgot to output the passive clauses?`);
+        currentNode = nodes.get(line.id) as SatNode;
+        assert(line.id === currentNode.id, "id differs between line and existing node");
+        assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
+        assert(line.parents.length === currentNode.parents.length, "number of parents differs between line and existing node");
+        for (let i = 0; i < line.parents.length; i++) {
+          assert(line.parents[i] === currentNode.parents[i], `line and node differ on parent ${i}, which is ${line.parents[i]} resp. ${currentNode.parents[i]}.`);
+        }
+        assert(currentNode.newTime !== null, "for each event [SA] active ... there has to be an earlier event of the form [SA] new ... with the same clause!")
+        assert(currentNode.passiveTime !== null, "for each event [SA] active ... there has to be an earlier event of the form [SA] passive ... with the same clause!")
+        assert((currentNode.passiveTime as number) <= currentTime, "invar");
+        assert(currentNode.activeTime === null, "there must only be 1 event of the form [SA] active ... for each clause");
+
+        currentNode.statistics = line.statistics
+        currentNode.unit = UnitParser.parseUnit(line.unitString, false, line.statistics);
+
+        currentTime = currentTime + 1;
+        currentNode.activeTime = currentTime;
+      }
+      else if (line.type === "forward reduce" || line.type === "backward reduce") {
+        // line represents the removal of a clause from saturation
+        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was deleted, but wasn't added as new before. Maybe you forgot to output the new clauses?`);
+        currentNode = nodes.get(line.id) as SatNode;
+        currentNode.deletionTime = currentTime;
+      }
+      else if (line.type === "replaced by" || line.type === "using") {
+        // line represents one of the clauses which allowed to remove the clause represented by currentNode from saturation
+        assert(currentNode !== null, "invar");
+        (currentNode as SatNode).deletionParents.push(line.id);
+      }
+      else {
+        assert(false, `invalid line: ${line.unitString}`);
+      }
+    }
+
+    // hack: pretend that empty clause was added to passive and then activated
+    // note that this can only be done after all lines are parsed, since a new-event with the empty clause often triggers a deletion-event
+    if (emptyClauseNode !== null) {
+      emptyClauseNode.passiveTime = currentTime;
+      currentTime = currentTime + 1;
+      emptyClauseNode.activeTime = currentTime;
+      nodes.set(emptyClauseNode.id, emptyClauseNode);
+    }
+
+    const extendedDag = new Dag(nodes, existingDag === null ? null : existingDag.mergeMap);
+
+    return extendedDag;
   }
 
+  // note: includes nodes which have been activated, but have also been deleted
+  computeActiveNodes(currentTime: number) : Set<number> {
+    const activeNodeIds = new Set<number>();
+    for (const [nodeId, node] of this.nodes) {
+      const nodeIsActive = (node.activeTime !== null && node.activeTime <= currentTime);
+      if (nodeIsActive) {
+        activeNodeIds.add(nodeId);
+      }
+    }
+
+    return activeNodeIds;
+  }
+
+  // Definition: the active dag contains all nodes which occur in the derivation of a currently active node
+  computeNodesInActiveDag(currentTime: number) : Set<number> {
+    const nodeIds = this.computeActiveNodes(currentTime);
+
+	  // add all transitive parents of nodeIds to nodeIds
+	  const iterator = new ReversePostOrderTraversal(this);
+	  while (iterator.hasNext()) {
+		  const currentNode = iterator.getNext();
+      const currentNodeId = currentNode.id;
+    
+      if (nodeIds.has(currentNodeId)) {
+        for (const parentId of currentNode.parents) {
+          nodeIds.add(parentId);
+        }
+      }    
+    }
+
+    return nodeIds;
+  }
 }

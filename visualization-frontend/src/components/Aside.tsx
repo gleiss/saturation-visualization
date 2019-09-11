@@ -3,8 +3,7 @@ import * as React from 'react';
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
-import Dag from '../model/dag';
-import {Literal} from '../model/literal';
+import { Dag } from '../model/dag';
 
 
 type Props = {
@@ -19,7 +18,7 @@ type Props = {
   onSelectParents: () => void,
   onSelectChildren: () => void,
   onSelectCommonConsequences: () => void,
-  onLiteralOrientationChange: (node: number, literal: Literal, isConclusion: boolean) => void
+  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -27,8 +26,10 @@ export default class Aside extends React.Component<Props, {}> {
     return (
       <aside>
         <GraphMenu
+          undoEnabled={this.props.multipleVersions}
+          filterUpEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
+          filterDownEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
           nodeSelection={this.props.nodeSelection}
-          multipleVersions={this.props.multipleVersions}
           onUploadFile={this.props.onUploadFile}
           onUndo={this.props.onUndo}
           onRenderParentsOnly={this.props.onRenderParentsOnly}

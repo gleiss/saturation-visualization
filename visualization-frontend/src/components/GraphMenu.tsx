@@ -6,8 +6,10 @@ import './GraphMenu.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
+  undoEnabled: boolean,
+  filterUpEnabled: boolean,
+  filterDownEnabled: boolean,
   nodeSelection: number[],
-  multipleVersions: boolean,
   onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
@@ -31,20 +33,20 @@ export default class GraphMenu extends React.Component<Props, {}> {
           </svg>
         </button>
 
-        <button title="Undo last graph transformation" disabled={!this.props.multipleVersions} onClick={this.props.onUndo}>
+        <button title="Undo last graph transformation" disabled={!this.props.undoEnabled} onClick={this.props.onUndo}>
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-undo`}/>
           </svg>
         </button>
 
-        <button title="Render selection only (up)" disabled={!this.props.nodeSelection.length}
+        <button title="Render selection only (up)" disabled={!this.props.filterUpEnabled}
                 onClick={this.props.onRenderParentsOnly}>
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-up`}/>
           </svg>
         </button>
 
-        <button title="Render selection only (down)" disabled={!this.props.nodeSelection.length}
+        <button title="Render selection only (down)" disabled={!this.props.filterDownEnabled}
                 onClick={this.props.onRenderChildrenOnly}>
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-down`}/>
@@ -64,15 +66,15 @@ export default class GraphMenu extends React.Component<Props, {}> {
   }
 
   updateProofFile(event: React.ChangeEvent<HTMLInputElement>) {
-    if (event.target.files) {
+    if (event.target.files !== null && event.target.files.length > 0) {
       const file = event.target.files[0];
+      
       const reader = new FileReader();
-
-      reader.readAsText(file);
       reader.onloadend = () => {
         const text = reader.result ? reader.result : '';
         this.props.onUploadFile(text);
       };
+      reader.readAsText(file);
     }
   }
 

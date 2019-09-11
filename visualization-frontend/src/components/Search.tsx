@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Dag from '../model/dag';
+import { Dag } from '../model/dag';
 import './Search.css';
 import SatNode from '../model/sat-node';
 
