@@ -21,10 +21,11 @@ export class UnitParser {
 		  return new Formula(string);
 		}
 	}
+
 	static parseClause(string: string, numberOfSelectedLiterals: number | null): Clause {
 		if(string === "$false") {
 			assert(numberOfSelectedLiterals === null);
-			return new Clause([], numberOfSelectedLiterals); // empty clause
+			return new Clause([], []); // empty clause
 		}
 		const literalStrings = string.split(" | ")
 
@@ -37,14 +38,19 @@ export class UnitParser {
 		// simple heuristic for orienting literals: negated literal which are no equalities are premise-literals, all other literals are conclusion-literals
 		const conclusionLiteralRemains = literals.reduce((acc, literal) => acc || (!literal.negated || literal.name === "="),false);
 		if (conclusionLiteralRemains) {
+			const premiseLiterals = new Array<Literal>();
+			const conclusionLiterals = new Array<Literal>();
 			for (const literal of literals) {
 				if (literal.negated && literal.name !== "=") {
-					literal.setOrientation(false);
+					premiseLiterals.push(literal);
+				} else {
+					conclusionLiterals.push(literal);
 				}
 			}
+			return new Clause(premiseLiterals, conclusionLiterals);
+		} else {
+			return new Clause([], literals);
 		}
-
-		return new Clause(literals, numberOfSelectedLiterals);
 	}
 
 	static parseLiteral(string: string, isSelected: boolean): Literal {

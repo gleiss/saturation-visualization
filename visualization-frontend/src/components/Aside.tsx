@@ -17,7 +17,8 @@ type Props = {
   onRenderChildrenOnly: () => void,
   onSelectParents: () => void,
   onSelectChildren: () => void,
-  onSelectCommonConsequences: () => void
+  onSelectCommonConsequences: () => void,
+  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -45,6 +46,7 @@ export default class Aside extends React.Component<Props, {}> {
         <NodeDetails
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
+          onLiteralOrientationChange={this.props.onLiteralOrientationChange}
         />
       </aside>
     );

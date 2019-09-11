@@ -5,7 +5,6 @@ export class Literal {
 	readonly args: FunctionApplication[];
 	readonly negated: boolean;
 	readonly isSelected: boolean;
-	orientationIsConclusion: boolean;
 	representation: number;
 
 	constructor(name:string, args: FunctionApplication[], negated: boolean, isSelected: boolean){
@@ -13,12 +12,7 @@ export class Literal {
 		this.args = args;
 		this.negated = negated;
 		this.isSelected = isSelected;
-		this.orientationIsConclusion = true; // at the beginning all clauses are in clausal orientation.
 		this.representation = 0; // 0 represents standard representation. Some literals may define other representations
-	}
-
-	setOrientation(orientationIsConclusion: boolean) {
-		this.orientationIsConclusion = orientationIsConclusion;
 	}
 
 	switchToNextRepresentation() {
@@ -31,8 +25,8 @@ export class Literal {
 		}
 	}
 
-	toString() : string {
-		const occursNegated = this.orientationIsConclusion ? this.negated : !this.negated;
+	toString(orientationIsConclusion: boolean) : string {
+		const occursNegated = orientationIsConclusion ? this.negated : !this.negated;
 		if (this.name === "=") {
 			assert(this.args.length === 2, "equalities must have exactly two arguments");
 			return this.args[0].toString() + (occursNegated ? " != " : " = ") + this.args[1].toString();

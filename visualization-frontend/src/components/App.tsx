@@ -10,6 +10,7 @@ import { assert } from '../model/util';
 import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
+import { Clause } from '../model/unit';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -20,6 +21,7 @@ import { VizWrapper } from '../model/viz-wrapper';
 type State = {
   dags: Dag[],
   nodeSelection: number[],
+  changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   historyState: number,
   error: any,
   isLoaded: boolean,
@@ -31,6 +33,7 @@ class App extends Component<{}, State> {
   state: State = {
     dags: [],
     nodeSelection: [],
+    changedNodeEvent: undefined,
     historyState: 0,
     error: null,
     isLoaded: false,
@@ -41,6 +44,7 @@ class App extends Component<{}, State> {
     const {
       dags,
       nodeSelection,
+      changedNodeEvent,
       historyState,
       error,
       isLoaded,
@@ -54,6 +58,7 @@ class App extends Component<{}, State> {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
+          changedNodeEvent={changedNodeEvent}
           historyLength={dags[0].numberOfHistorySteps()}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
@@ -95,6 +100,7 @@ class App extends Component<{}, State> {
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
           onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
+          onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
         />
       </div>
     );
@@ -358,6 +364,19 @@ class App extends Component<{}, State> {
     this.updateNodeSelection(newSelection);
   }
 
+  // LITERALS ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  private changeLiteralOrientation(nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) {
+    const dags = this.state.dags;
+    assert(dags.length > 0);
+    const node = dags[0].nodes.get(nodeId);
+    if(node !== undefined) {
+      assert(node.unit.type === "Clause");
+      const clause = node.unit as Clause;
+      clause.changeLiteralOrientation(oldPosition, newPosition);
+    }
+    this.setState({changedNodeEvent: [Math.random(), nodeId]});
+  }
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   
