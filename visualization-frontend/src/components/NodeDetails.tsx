@@ -5,13 +5,16 @@ import './NodeDetails.css';
 import Sortable from 'react-sortablejs';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
+import { assert } from '../model/util';
 
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void
+  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void,
+  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 };
 
+// TODO: refactor zero and multiple selections into parent component
 export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
@@ -82,6 +85,8 @@ export default class NodeDetails extends React.Component<Props, {}> {
     };
   
   toListItem = (literal: Literal, index: number, inConclusion: boolean) => {
-    return <li key={index} data-id={index}>{literal.toString(inConclusion)}</li>
+    assert(this.props.nodeSelection.length === 1);
+    const selectedNodeId = this.props.nodeSelection[0];
+    return <li key={index} data-id={index} onDoubleClick={() => this.props.onLiteralRepresentationChange(selectedNodeId, literal)}>{literal.toString(inConclusion)}</li>
   };
 }

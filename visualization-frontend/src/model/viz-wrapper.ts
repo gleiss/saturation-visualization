@@ -92,7 +92,6 @@ export class VizWrapper {
     }
 
     const dotString =  "digraph {\n   " + nodeStrings.join(";\n   ") + "\n\n   " + edgeStrings.join(";\n   ") + "\n}";
-    console.log(dotString);
     return dotString;
   };
 

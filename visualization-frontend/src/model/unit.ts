@@ -37,8 +37,7 @@ export class Clause {
   }
 
   changeLiteralOrientation(oldPosition: [boolean, number], newPosition: [boolean, number]) {
-    console.log(oldPosition);
-    console.log(newPosition);
+
     // remove literal from old position
     let removedLiterals: Array<Literal> | null = null;
     if (oldPosition[0]) {
@@ -61,16 +60,6 @@ export class Clause {
       assert(0 <= newPosition[1]);
       assert(newPosition[1] <= this.premiseLiterals.length);
       this.premiseLiterals.splice(newPosition[1], 0, removedLiterals[0]);
-    }
-
-    console.log("premise:");
-    for (const literal of this.premiseLiterals) {
-      console.log(literal.toString(false));
-    }
-
-    console.log("conclusion:");
-    for (const literal of this.conclusionLiterals) {
-      console.log(literal.toString(true));
     }
   }
 

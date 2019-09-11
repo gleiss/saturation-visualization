@@ -11,6 +11,7 @@ import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDag
 import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
+import { Literal } from '../model/literal';
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
@@ -101,6 +102,7 @@ class App extends Component<{}, State> {
           onSelectChildren={this.selectChildren.bind(this)}
           onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
           onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
+          onLiteralRepresentationChange={this.changeLiteralRepresentation.bind(this)}
         />
       </div>
     );
@@ -182,7 +184,6 @@ class App extends Component<{}, State> {
 
   async selectClause(selectedId: number) {
     // pop passive Dag (without refreshing ui)
-    console.log(this.state.dags);
     assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "selectClause() must only be called while a passive dag is the topmost dag of this.state.dags");
     const passiveDag = this.state.dags[this.state.dags.length-1];
 
@@ -236,8 +237,6 @@ class App extends Component<{}, State> {
         }
         assert(sourceNode !== null);
         assert((sourceNode as SatNode).position !== null);
-        console.log(sourceNode);
-        console.log(newDag.get(selectedId));
 
         const [posSelectedX, posSelectedY] = passiveDag.get(passiveDag.activeNodeId as number).getPosition();
         const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
@@ -370,11 +369,23 @@ class App extends Component<{}, State> {
     const dags = this.state.dags;
     assert(dags.length > 0);
     const node = dags[0].nodes.get(nodeId);
-    if(node !== undefined) {
-      assert(node.unit.type === "Clause");
-      const clause = node.unit as Clause;
-      clause.changeLiteralOrientation(oldPosition, newPosition);
-    }
+    assert(node !== undefined);
+    assert(node!.unit.type === "Clause");
+    const clause = node!.unit as Clause;
+
+    clause.changeLiteralOrientation(oldPosition, newPosition);
+  
+    this.setState({changedNodeEvent: [Math.random(), nodeId]});
+  }
+
+  private changeLiteralRepresentation(nodeId: number, literal: Literal) {
+    const dags = this.state.dags;
+    assert(dags.length > 0);
+    const node = dags[0].nodes.get(nodeId);
+    assert(node !== undefined);
+
+    literal.switchToNextRepresentation();
+    
     this.setState({changedNodeEvent: [Math.random(), nodeId]});
   }
 

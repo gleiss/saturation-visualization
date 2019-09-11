@@ -4,6 +4,7 @@ import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
 import { Dag } from '../model/dag';
+import { Literal } from '../model/literal';
 
 
 type Props = {
@@ -18,7 +19,8 @@ type Props = {
   onSelectParents: () => void,
   onSelectChildren: () => void,
   onSelectCommonConsequences: () => void,
-  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void
+  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void,
+  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -47,6 +49,7 @@ export default class Aside extends React.Component<Props, {}> {
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
           onLiteralOrientationChange={this.props.onLiteralOrientationChange}
+          onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
         />
       </aside>
     );
