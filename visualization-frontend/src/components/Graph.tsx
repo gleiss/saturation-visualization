@@ -107,7 +107,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     this.network.on('dragStart', (dragStartEvent) => {
       const nodeId = dragStartEvent.nodes[0];
-      if(nodeId !== null) {
+      if(nodeId !== null && nodeId !== undefined) {
         this.dragStartNodeId = nodeId;
         this.dragStartPosition = [dragStartEvent.pointer.canvas.x, dragStartEvent.pointer.canvas.y];
       }
