@@ -191,7 +191,11 @@ export default class Graph extends React.Component<Props, {}> {
         continue;
       }
       if (node.isFromPreprocessing) {
-        nodePartition.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+        if (node.inferenceRule === "negated conjecture") {
+          nodePartition.set(nodeId, "conjecture");
+        } else {
+          nodePartition.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+        }
         continue;
       }
 
