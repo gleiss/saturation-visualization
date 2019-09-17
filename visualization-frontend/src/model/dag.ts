@@ -2,6 +2,7 @@ import SatNode from './sat-node';
 import { assert } from './util';
 import { UnitParser } from './unit-parser';
 import { ReversePostOrderTraversal } from "./traversal";
+import { Clause } from './unit';
 
 export class ParsedLine {
   readonly type: "preprocessing" | "new" | "passive" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using";
@@ -324,5 +325,16 @@ export class Dag {
     }
 
     return nodeIds;
+  }
+
+  isRefutation(): boolean {
+    for (const node of this.nodes.values()) {
+      if(node.unit.type == "Clause" && 
+          (node.unit as Clause).premiseLiterals.length == 0 && 
+          (node.unit as Clause).conclusionLiterals.length == 0) {
+            return true;
+          }
+    }
+    return false;
   }
 }
