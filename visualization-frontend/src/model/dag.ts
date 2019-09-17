@@ -121,29 +121,16 @@ export class Dag {
    *
    * this function decides for a given node whether it should be treated as input node, using the following idea:
    * 1) input nodes occur before saturation is started and are therefore tagged with "isFromPreprocessing"
-   * 2) in order to distinguish inputNodes from preprocessingResultNodes:
-   *    - if node has a parent, it must be a preprocessingResultNode
-   *    - if node has no parent, but a child which is not tagged "isFromPreprocessing", it must be a preprocessingResultNode (e.g. an internally added theory axiom)
-   *    - otherwise assume it is an input node
-   *    - if a node has no parents (as done for e.g. internal theory axioms), and if it has no children (which should happen rarily, in particular not for theory axioms),
-   *      then this could wrongly classify a preprocessingResultNode as inputNode.
+   * 2) preprocessingResultNodes are used as input for saturation, so their newTime is set
    */ 
   nodeIsInputNode(nodeId: number): boolean {
-    assert(this.nodes.has(nodeId), "node doesn't occur in Dag");
     const node = this.get(nodeId);
 
     if (!node.isFromPreprocessing) {
       return false;
     }
-    if(node.parents.length > 0) {
+    if(node.newTime !== null) {
       return false;
-    }
-    const childrenIds = this.getChildren(nodeId);
-    for (const childId of childrenIds) {
-      const childNode = this.get(childId);
-      if (!childNode.isFromPreprocessing) {
-        return false;
-      }
     }
     return true;
   }
