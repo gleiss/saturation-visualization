@@ -1,61 +1,45 @@
 import * as React from 'react';
 
-import { Dag } from '../model/dag';
 import './NodeDetails.css';
 import Sortable from 'react-sortablejs';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
-import { assert } from '../model/util';
+import SatNode from '../model/sat-node';
 
 type Props = {
-  dag: Dag,
-  nodeSelection: number[],
+  node: SatNode,
   onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void,
   onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 };
 
-// TODO: refactor zero and multiple selections into parent component
 export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
-    const oneNodeSelected = this.props.nodeSelection.length === 1;
-    const selectedNode = oneNodeSelected ?
-      this.props.dag.get(this.props.nodeSelection[0]) :
-      undefined;
-    const nodeInfo = oneNodeSelected ? '1 node' : `${this.props.nodeSelection.length} nodes`;
-
     return (
-      <section className={`component-node-details ${oneNodeSelected ? 'details' : 'overview'}`}>
-        {
-          selectedNode && (
-            <article>
-              <h2>Node <strong>{selectedNode.id}</strong></h2>
-              <h3>{selectedNode.inferenceRule}</h3>
-              {
-                selectedNode.unit.type === "Formula" ? (
-                  <section className={'literal-wrapper'}>
-                    {
-                      selectedNode.toString()
-                    }
-                  </section>
-                ) : (
-                  <section className={'literal-wrapper'}>
-                    {
-                      this.toList(selectedNode.id, selectedNode.unit as Clause, false)
-                    }
-                    <br/>
-                    {
-                      this.toList(selectedNode.id, selectedNode.unit as Clause, true)
-                    }
-                  </section>
-                )
-              }
-            </article>
-          )
-        }
-        {
-          !selectedNode && <small id="nodeInfo"><strong>{nodeInfo}</strong> selected</small>
-        }
+      <section className={'component-node-details details'}>
+        <article>
+          <h2>Node <strong>{this.props.node.id}</strong></h2>
+          <h3>{this.props.node.inferenceRule}</h3>
+          {
+            this.props.node.unit.type === "Formula" ? (
+              <section className={'literal-wrapper'}>
+                {
+                  this.props.node.toString()
+                }
+              </section>
+            ) : (
+              <section className={'literal-wrapper'}>
+                {
+                  this.toList(this.props.node.id, this.props.node.unit as Clause, false)
+                }
+                <br/>
+                {
+                  this.toList(this.props.node.id, this.props.node.unit as Clause, true)
+                }
+              </section>
+            )
+          }
+        </article>
       </section>
     );
   }
@@ -85,10 +69,8 @@ export default class NodeDetails extends React.Component<Props, {}> {
     };
   
   toListItem = (literal: Literal, index: number, inConclusion: boolean) => {
-    assert(this.props.nodeSelection.length === 1);
-    const selectedNodeId = this.props.nodeSelection[0];
     return <li key={index} data-id={index} onDoubleClick={(event) => {
-      this.props.onLiteralRepresentationChange(selectedNodeId, literal);
+      this.props.onLiteralRepresentationChange(this.props.node.id, literal);
       event.currentTarget.innerText = literal.toString(inConclusion);
     }}>{literal.toString(inConclusion)}</li>
   };

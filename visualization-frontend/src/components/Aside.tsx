@@ -25,6 +25,22 @@ type Props = {
 export default class Aside extends React.Component<Props, {}> {
 
   render() {
+    let nodeDetails;
+    if (this.props.nodeSelection.length === 1) {
+      const node = this.props.dag.get(this.props.nodeSelection[0]);
+      nodeDetails = 
+      <NodeDetails
+        node={node}
+        onLiteralOrientationChange={this.props.onLiteralOrientationChange}
+        onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
+      />;
+    } else {
+      nodeDetails = 
+      <section className={'component-node-details overview'}>
+        <small id="nodeInfo"><strong>{`${this.props.nodeSelection.length} nodes`}</strong> selected</small>
+      </section>
+    }
+
     return (
       <aside>
         <GraphMenu
@@ -45,12 +61,7 @@ export default class Aside extends React.Component<Props, {}> {
           onSelectChildren={this.props.onSelectChildren}
           onSelectCommonConsequences={this.props.onSelectCommonConsequences}
         />
-        <NodeDetails
-          dag={this.props.dag}
-          nodeSelection={this.props.nodeSelection}
-          onLiteralOrientationChange={this.props.onLiteralOrientationChange}
-          onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
-        />
+        {nodeDetails}
       </aside>
     );
   }
