@@ -182,11 +182,17 @@ class App extends Component<{}, State> {
     // }
   }
 
-  async selectClause(selectedId: number) {
-    // pop passive Dag (without refreshing ui)
-    assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "selectClause() must only be called while a passive dag is the topmost dag of this.state.dags");
-    const passiveDag = this.state.dags[this.state.dags.length-1];
+  // select the clause with id 'selectedId', then compute incremental layout for resulting dag
+  // the incremental layout first computes the positions for the newly generated nodes while ignoring the existing ones.
+  // then, all newly generated nodes are shifted by the same amount so that one of the source nodes of the graph of newly 
+  // generated nodes occurs closely under the position indicated by the positioning hint.
+  async selectClause(selectedId: number, positioningHint: [number, number]) {
+    assert(this.state.dags.length >= 1);
+    const currentDag = this.state.dags[this.state.dags.length-1];
+    const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
+    assert(currentDag.mergeMap !== null);
 
+    // ask server to select clause and await resulting saturation events
     const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
       method: 'POST',
       mode: 'cors',
@@ -201,13 +207,11 @@ class App extends Component<{}, State> {
       const json = await fetchedJSON.json();
       const parsedLines = this.jsonToParsedLines(json);
 
-      const currentDag = this.state.dags[this.state.dags.length-2]; // this.state.dags[this.state.dags.length-1] corresponds to passiveDag
-      const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
-
-      assert(currentDag.mergeMap !== null);
+      // extend existing dag with new saturation events from server
       const newDag = Dag.fromParsedLines(parsedLines, currentDag);
-      const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
 
+      // compute which nodes have been newly generated
+      const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
       const newNodes = new Map<number, SatNode>();
       for (const [nodeId, node] of newDag.nodes) {
         if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
@@ -216,11 +220,11 @@ class App extends Component<{}, State> {
       }
 
       if (newNodes.size > 0) {
-        // naive heuristic for laying out new nodes of active dag:
+        // compute incremental layout for newly generated nodes using the following heuristic:
         // 1) layout new nodes while ignoring existing nodes
         await VizWrapper.layoutNodes(newNodes);
 
-        // 2) then shift new nodes closer to selectedNode
+        // 2) find a source node of the dag of newly generated nodes
         let sourceNode: SatNode | null = null;
         for (const node of newNodes.values()) {
           let isSourceNode = true;
@@ -238,7 +242,9 @@ class App extends Component<{}, State> {
         assert(sourceNode !== null);
         assert((sourceNode as SatNode).position !== null);
 
-        const [posSelectedX, posSelectedY] = passiveDag.get(passiveDag.activeNodeId as number).getPosition();
+        // 3) shift subgraph of newly generated nodes, so that the source node of the subgraph
+        //    is shifted to a position closely under the position indicated by the positioning hint.
+        const [posSelectedX, posSelectedY] = positioningHint;
         const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
         const deltaX = posSelectedX-posSourceX;
         const deltaY = (posSelectedY - posSourceY) - 1;
@@ -248,8 +254,6 @@ class App extends Component<{}, State> {
           node.position = [position[0] + deltaX, position[1] + deltaY];
         }
       }
-
-
 
       this.setState({
         dags: [newDag],
@@ -319,8 +323,18 @@ class App extends Component<{}, State> {
   }
 
   async dismissPassiveDag(selectedId: number) {
+    assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "dismissPassiveDag() must only be called while a passive dag is the topmost dag of this.state.dags");
+    const passiveDag = this.state.dags[this.state.dags.length-1];
+    assert(passiveDag.isPassiveDag);
+    const currentDag = this.state.dags[this.state.dags.length-2];
+    
+    const positioningHint = currentDag.get(passiveDag.activeNodeId as number).position;
+    assert(positioningHint !== null);
+  
+    this.popDag();
+
     // switch to dag resulting from selecting selectedId
-    await this.selectClause(selectedId);
+    await this.selectClause(selectedId, positioningHint as [number, number]);
   }
 
 
