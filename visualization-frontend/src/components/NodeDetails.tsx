@@ -87,6 +87,9 @@ export default class NodeDetails extends React.Component<Props, {}> {
   toListItem = (literal: Literal, index: number, inConclusion: boolean) => {
     assert(this.props.nodeSelection.length === 1);
     const selectedNodeId = this.props.nodeSelection[0];
-    return <li key={index} data-id={index} onDoubleClick={() => this.props.onLiteralRepresentationChange(selectedNodeId, literal)}>{literal.toString(inConclusion)}</li>
+    return <li key={index} data-id={index} onDoubleClick={(event) => {
+      this.props.onLiteralRepresentationChange(selectedNodeId, literal);
+      event.currentTarget.innerText = literal.toString(inConclusion);
+    }}>{literal.toString(inConclusion)}</li>
   };
 }
