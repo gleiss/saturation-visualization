@@ -14,6 +14,7 @@ type Props = {
 
 export default class NodeDetails extends React.Component<Props, {}> {
 
+  // BUG: labels of list items get out of sync as soon as a literal is dragged to another listss
   render() {
     return (
       <section className={'component-node-details details'}>
