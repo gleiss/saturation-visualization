@@ -173,6 +173,8 @@ class App extends Component<{}, State> {
         isLoading: false
       });
 
+      this.selectFinalPreprocessingClauses();
+
     // } catch (error) {
     //   this.setState({
     //     error,
@@ -272,7 +274,29 @@ class App extends Component<{}, State> {
     // }
   }
 
+  async selectFinalPreprocessingClauses() {
+    assert(this.state.dags.length === 1);
 
+    // iterate as long as a suitable clause is found and as long as no server error happens
+    let stop = false;
+    while (!stop && !this.state.error) {
+      const dag = this.state.dags[0];
+
+      // find a final preprocessing clause which can be selected
+      stop = true;
+      for (const [nodeId, node] of dag.nodes) {
+        if (node.isFromPreprocessing && node.newTime !== null) {
+          if (node.activeTime === null && node.deletionTime === null) {
+            // select that clause
+            assert(node.position !== null);
+            await this.selectClause(nodeId, node.position as [number, number]);
+            stop = false;
+            break;
+          }
+        }
+      }
+    }
+  }
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
