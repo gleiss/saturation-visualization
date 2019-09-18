@@ -37,7 +37,8 @@ type State = {
   currentTime: number,
   changedNodesEvent?: Set<number>, // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
-};
+  passiveDag: Dag | null
+}
 
 class App extends Component<Props, State> {
 
@@ -47,8 +48,9 @@ class App extends Component<Props, State> {
     nodeSelection: [],
     currentTime: 0,
     changedNodesEvent: undefined,
-    message: ""
-  };
+    message: "",
+    passiveDag: null
+  }
 
   render() {
     const {
@@ -57,7 +59,8 @@ class App extends Component<Props, State> {
       nodeSelection,
       currentTime,
       changedNodesEvent,
-      message
+      message,
+      passiveDag
     } = this.state;
     
     let dag;
@@ -68,6 +71,7 @@ class App extends Component<Props, State> {
       main = (
         <Main
           dag={dag}
+          passiveDag={passiveDag}
           nodeSelection={nodeSelection}
           changedNodesEvent={changedNodesEvent}
           historyLength={dags[0].maximalActiveTime()}
@@ -414,10 +418,13 @@ class App extends Component<Props, State> {
     const {dags} = this.state;
     const currentDag = dags[dags.length - 1];
     
+    // generate passive dag
     const passiveDag = passiveDagForSelection(currentDag, [selectionId], currentTime);
+    
+    // layout node positions of passive dag
     await VizWrapper.layoutDag(passiveDag, false);
 
-    // shift dag so that selected node keeps position
+    // shift dag so that selected node occurs at same screen position as in currentDag
     const [posCurrentX, posCurrentY] = currentDag.get(selectionId).getPosition();
     const [posPassiveX, posPassiveY] = passiveDag.get(selectionId).getPosition();
     const deltaX = posCurrentX-posPassiveX;
@@ -428,22 +435,31 @@ class App extends Component<Props, State> {
       node.position = [position[0] + deltaX, position[1] + deltaY];
     }
 
-    this.pushDag(passiveDag);
+    this.setState({ passiveDag: passiveDag });
   }
 
-  async dismissPassiveDag(selectedId: number) {
-    assert(this.state.dags.length >= 2 && this.state.dags[this.state.dags.length-1].isPassiveDag, "dismissPassiveDag() must only be called while a passive dag is the topmost dag of this.state.dags");
-    const passiveDag = this.state.dags[this.state.dags.length-1];
-    assert(passiveDag.isPassiveDag);
-    const currentDag = this.state.dags[this.state.dags.length-2];
-    
-    const positioningHint = currentDag.get(passiveDag.activeNodeId as number).position;
-    assert(positioningHint !== null);
-  
-    this.popDag();
+  async dismissPassiveDag(selectedId: number | null) {
+    assert(this.state.dags.length >= 1);
+    assert(this.state.passiveDag !== null);
+    assert(this.state.passiveDag!.isPassiveDag);
 
-    // switch to dag resulting from selecting selectedId
-    await this.selectClause(selectedId, positioningHint as [number, number]);
+    if (selectedId !== null) {
+      // compute positioning hint
+      const currentDag = this.state.dags[this.state.dags.length-1];
+      const positioningHint = currentDag.get(this.state.passiveDag!.activeNodeId as number).position;
+      assert(positioningHint !== null);
+    
+      // remove passive dag
+      this.setState({ passiveDag: null});
+
+      // switch from currentDag to dag resulting from selecting selectedId
+      await this.selectClause(selectedId, positioningHint as [number, number]);
+      
+    } else {
+      // remove passive dag
+      this.setState({ passiveDag: null});
+    }
+
   }
 
 
@@ -539,6 +555,8 @@ class App extends Component<Props, State> {
   // push a new dag on the stack of dags
   // Precondition: the layout for newDag has already been computed
   private pushDag(newDag: Dag) {
+    assert(!newDag.isPassiveDag);
+
     const {dags, nodeSelection} = this.state;
     
     // filter out selected nodes which don't occur in new graph

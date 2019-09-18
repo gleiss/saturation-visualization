@@ -16,7 +16,7 @@ type Props = {
   currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
-  onDismissPassiveDag: (selectedId: number) => void,
+  onDismissPassiveDag: (selectedId: number | null) => void,
   onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
 };
 
@@ -176,10 +176,8 @@ export default class Graph extends React.Component<Props, {}> {
       this.networkEdges.clear();
       this.networkEdges.add(visEdges);
 
-      // center the dag for standard dag, keep view position for passive dag
-      if (!this.props.dag.isPassiveDag) {
-        this.network!.fit();
-      }
+      // center the dag
+      this.network!.fit();
     }
   }
 
