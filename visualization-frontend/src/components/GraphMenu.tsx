@@ -10,7 +10,6 @@ type Props = {
   filterUpEnabled: boolean,
   filterDownEnabled: boolean,
   nodeSelection: number[],
-  onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
   onRenderChildrenOnly: () => void
@@ -72,7 +71,7 @@ export default class GraphMenu extends React.Component<Props, {}> {
       const reader = new FileReader();
       reader.onloadend = () => {
         const text = reader.result ? reader.result : '';
-        this.props.onUploadFile(text);
+        // this.props.onUploadFile(text);
       };
       reader.readAsText(file);
     }

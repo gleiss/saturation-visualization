@@ -13,6 +13,11 @@ import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
 
+type Props = {
+  problem: string,
+  mode: "proof" | "saturation" | "manualcs"
+};
+
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
  * "Error":   error holds an error, and there are no guarantees on other fields
@@ -29,7 +34,7 @@ type State = {
   isLoading: boolean
 };
 
-class App extends Component<{}, State> {
+class App extends Component<Props, State> {
 
   state: State = {
     dags: [],
@@ -94,7 +99,6 @@ class App extends Component<{}, State> {
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
-          onUploadFile={this.runVampire.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
@@ -107,6 +111,40 @@ class App extends Component<{}, State> {
       </div>
     );
 
+  }
+
+  async componentDidMount() {
+    this.runVampire(this.props.problem, this.props.mode === "manualcs");
+
+    if (this.props.mode === "proof") {
+      assert(this.state.dags.length > 0);
+      const currentDag = this.state.dags[this.state.dags.length - 1];
+      assert(currentDag.isRefutation);
+
+      // find empty clause
+      for (const node of currentDag.nodes.values()) {
+        if (node.unit.type === "Clause") {
+          const clause = node.unit as Clause;
+          if (clause.premiseLiterals.length === 0 && clause.conclusionLiterals.length === 0) {
+
+            // filter all non-parents of empty clause
+            const relevantIds = new Set<number>();
+            relevantIds.add(node.id);
+            const proofDag = filterNonParents(currentDag, relevantIds);
+
+            // layout new dag
+            await VizWrapper.layoutDag(proofDag, true);
+
+            // set proofDag as new dag
+            this.setState({dags: [proofDag]});
+
+            return;
+          }
+        }
+      }
+    } else if (this.props.mode === "manualcs") {
+      this.selectFinalPreprocessingClauses();
+    }
   }
 
 
@@ -137,14 +175,13 @@ class App extends Component<{}, State> {
     return parsedLines;
   }
 
-  async runVampire(fileContent: string | ArrayBuffer, manualCS=false) {
+  async runVampire(problem: string, manualCS: boolean) {
     this.setState({
       error: false,
       isLoading: true,
       isLoaded: false
     });
 
-    manualCS = true
     const fetchedJSON = await fetch(manualCS ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
       method: 'POST',
       mode: 'cors',
@@ -152,7 +189,7 @@ class App extends Component<{}, State> {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({file: fileContent})
+      body: JSON.stringify({file: problem})
     });
 
     // try {
@@ -172,8 +209,6 @@ class App extends Component<{}, State> {
         isLoaded: true,
         isLoading: false
       });
-
-      this.selectFinalPreprocessingClauses();
 
     // } catch (error) {
     //   this.setState({
@@ -297,6 +332,7 @@ class App extends Component<{}, State> {
       }
     }
   }
+  
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {

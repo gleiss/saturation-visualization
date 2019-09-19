@@ -12,7 +12,6 @@ type Props = {
   nodeSelection: number[],
   multipleVersions: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
-  onUploadFile: (fileContent: string | ArrayBuffer) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
   onRenderChildrenOnly: () => void,
@@ -48,7 +47,6 @@ export default class Aside extends React.Component<Props, {}> {
           filterUpEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
           filterDownEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
           nodeSelection={this.props.nodeSelection}
-          onUploadFile={this.props.onUploadFile}
           onUndo={this.props.onUndo}
           onRenderParentsOnly={this.props.onRenderParentsOnly}
           onRenderChildrenOnly={this.props.onRenderChildrenOnly}
