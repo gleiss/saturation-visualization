@@ -222,6 +222,7 @@ class App extends Component<Props, State> {
         if (this.props.orientClauses) {
           orientClauses(mergedDag);
         }
+        this.setLiteralOptions(mergedDag);
 
         this.setState({
           dags: [mergedDag],
@@ -318,6 +319,7 @@ class App extends Component<Props, State> {
       if (this.props.orientClauses) {
         orientClauses(newDag);
       }
+      this.setLiteralOptions(newDag);
 
       this.setState({
         dags: [newDag],
@@ -527,6 +529,25 @@ class App extends Component<Props, State> {
     this.setState((state, props) => ({
       dags: state.dags.slice(0, state.dags.length-1)
     }));
+  }
+
+  setLiteralOptions(dag: Dag) {
+    const hideBracketsAssoc = this.props.hideBracketsAssoc;
+    const nonStrictForNegatedStrictInequalities = this.props.nonStrictForNegatedStrictInequalities;
+
+    for (const node of dag.nodes.values()) {
+      if (node.unit.type === "Clause") {
+        const clause = node.unit as Clause;
+        for (const literal of clause.premiseLiterals) {
+          literal.hideBracketsAssoc = hideBracketsAssoc;
+          literal.nonStrictForNegatedStrictInequalities = nonStrictForNegatedStrictInequalities;
+        }
+        for (const literal of clause.conclusionLiterals) {
+          literal.hideBracketsAssoc = hideBracketsAssoc;
+          literal.nonStrictForNegatedStrictInequalities = nonStrictForNegatedStrictInequalities;
+        }
+      }
+    }
   }
 }
 

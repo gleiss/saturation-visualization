@@ -6,6 +6,8 @@ export class Literal {
 	readonly negated: boolean;
 	readonly isSelected: boolean;
 	representation: number;
+	hideBracketsAssoc: boolean;
+	nonStrictForNegatedStrictInequalities: boolean;
 
 	constructor(name:string, args: FunctionApplication[], negated: boolean, isSelected: boolean){
 		this.name = name;
@@ -13,6 +15,8 @@ export class Literal {
 		this.negated = negated;
 		this.isSelected = isSelected;
 		this.representation = 0; // 0 represents standard representation. Some literals may define other representations
+		this.hideBracketsAssoc = true;
+		this.nonStrictForNegatedStrictInequalities = true;
 	}
 
 	switchToNextRepresentation() {
@@ -29,18 +33,18 @@ export class Literal {
 		const occursNegated = orientationIsConclusion ? this.negated : !this.negated;
 		if (this.name === "=") {
 			assert(this.args.length === 2, "equalities must have exactly two arguments");
-			return this.args[0].toString() + (occursNegated ? " != " : " = ") + this.args[1].toString();
+			return this.args[0].toString(this.hideBracketsAssoc) + (occursNegated ? " != " : " = ") + this.args[1].toString(this.hideBracketsAssoc);
 		}
 		if (this.name === "$less" || this.name === "Sub") {
 			assert(this.args.length === 2, "inequalities must have exactly two arguments");
 			if(this.representation === 0) {
-				return this.args[0].toString() + (occursNegated ? " !< " : " < ") + this.args[1].toString();
+				return this.args[0].toString(this.hideBracketsAssoc) + (occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " >= " : " !< ") : " < ") + this.args[1].toString(this.hideBracketsAssoc);
 			} else {
-				return this.args[1].toString() + (occursNegated ? " !> " : " > ") + this.args[0].toString();
+				return this.args[1].toString(this.hideBracketsAssoc) + (occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " <= " : " !> ") : " > ") + this.args[0].toString(this.hideBracketsAssoc);
 			}
 		}
 		// could also use logical-not-symbol: "\u00AC"
-		return (occursNegated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString()).join(",") + ")"; 
+		return (occursNegated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString(this.hideBracketsAssoc)).join(",") + ")";
 	}
 }
 
@@ -53,7 +57,7 @@ export class FunctionApplication {
 		this.args = args;
 	}
 
-	toString(): string {
+	toString(hideBracketsAssoc: boolean): string {
 		let name = this.name;
 		if(this.name === "$sum") {
 			name = "+";
@@ -64,13 +68,15 @@ export class FunctionApplication {
 		if(this.args.length === 0){
 			return name;
 		} else {
-			const ignoreAssociativity = true;
-			if(ignoreAssociativity) {
-				if(name === "+"){
-					return this.args.map(arg => arg.toString()).join("+");
+			if (name === "+"){
+				const inner = this.args.map(arg => arg.toString(hideBracketsAssoc)).join("+");
+				if (hideBracketsAssoc) {
+					return inner;
+				} else {
+					return "(" + inner + ")";
 				}
 			}
-			return name + "(" + this.args.map(arg => arg.toString()).join(",") + ")";
+			return name + "(" + this.args.map(arg => arg.toString(hideBracketsAssoc)).join(",") + ")";
 		}
 	}
 }
