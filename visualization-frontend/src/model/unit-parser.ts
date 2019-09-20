@@ -35,22 +35,7 @@ export class UnitParser {
 			literals.push(UnitParser.parseLiteral(literalStrings[i], isSelected));
 		}
 		
-		// simple heuristic for orienting literals: negated literal which are no equalities are premise-literals, all other literals are conclusion-literals
-		const conclusionLiteralRemains = literals.reduce((acc, literal) => acc || (!literal.negated || literal.name === "="),false);
-		if (conclusionLiteralRemains) {
-			const premiseLiterals = new Array<Literal>();
-			const conclusionLiterals = new Array<Literal>();
-			for (const literal of literals) {
-				if (literal.negated && literal.name !== "=") {
-					premiseLiterals.push(literal);
-				} else {
-					conclusionLiterals.push(literal);
-				}
-			}
-			return new Clause(premiseLiterals, conclusionLiterals);
-		} else {
-			return new Clause([], literals);
-		}
+		return new Clause([], literals);
 	}
 
 	static parseLiteral(string: string, isSelected: boolean): Literal {

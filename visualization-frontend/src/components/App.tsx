@@ -12,6 +12,7 @@ import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
+import { orientClauses } from '../model/clause-orientation';
 
 type Props = {
   problem: string,
@@ -218,6 +219,10 @@ class App extends Component<Props, State> {
   
         await VizWrapper.layoutDag(mergedDag, true);
 
+        if (this.props.orientClauses) {
+          orientClauses(mergedDag);
+        }
+
         this.setState({
           dags: [mergedDag],
           nodeSelection: [],
@@ -308,6 +313,10 @@ class App extends Component<Props, State> {
           const position = node.position as [number, number];
           node.position = [position[0] + deltaX, position[1] + deltaY];
         }
+      }
+
+      if (this.props.orientClauses) {
+        orientClauses(newDag);
       }
 
       this.setState({
