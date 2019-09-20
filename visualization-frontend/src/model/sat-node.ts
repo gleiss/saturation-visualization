@@ -61,36 +61,4 @@ export default class SatNode {
   toHTMLString(): string {
     return this.unit.toHTMLString();
   }
-
-  static fromDto(dto: any): SatNode {
-    assert(typeof dto.number === 'number', "dto.number has to be a number");
-
-    assert(dto.new_time !== undefined, "new_time must be a number or null");
-    assert(dto.passive_time !== undefined, "passive_time must be a number or null");
-    assert(dto.active_time !== undefined, "active_time must be a number or null");
-    assert(dto.deletion_time !== undefined, "deletion_time must be a number or null");
-    assert((dto.deletion_time === null && dto.deletion_parents === null) || (dto.deletion_time !== null && dto.deletion_parents !== null), "invariant violated")
-
-    const statistics = new Map<string,number>();
-    for (const key in dto.statistics) {
-      const val = dto.statistics[key];
-      if (typeof val === "number"){
-        statistics.set(key, val);
-      }
-    }
-    const unit = UnitParser.parseUnit(dto.clause, dto.is_from_preprocessing, statistics);
-    return new SatNode(
-      dto.number,
-      unit,
-      dto.inference_rule,
-      dto.parents,
-      statistics,
-      dto.is_from_preprocessing,
-      dto.new_time,
-      dto.passive_time,
-      dto.active_time,
-      dto.deletion_time,
-      dto.deletion_parents
-    );
-  }
 }
