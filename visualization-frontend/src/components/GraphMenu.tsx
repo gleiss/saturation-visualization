@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import './GraphMenu.css';
 
-
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
@@ -14,24 +13,12 @@ type Props = {
   onRenderParentsOnly: () => void,
   onRenderChildrenOnly: () => void
 };
-export default class GraphMenu extends React.Component<Props, {}> {
 
-  private fileUpload = React.createRef<HTMLInputElement>();
+export default class GraphMenu extends React.Component<Props, {}> {
 
   render() {
     return (
       <section className="component-graph-menu">
-        <input
-          ref={this.fileUpload}
-          type="file"
-          onChange={this.updateProofFile.bind(this)}
-        />
-        <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
-          <svg viewBox="0 0 24 24" className="icon big">
-            <use xlinkHref={`${icons}#graph-upload`}/>
-          </svg>
-        </button>
-
         <button title="Undo last graph transformation" disabled={!this.props.undoEnabled} onClick={this.props.onUndo}>
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-undo`}/>
@@ -54,27 +41,4 @@ export default class GraphMenu extends React.Component<Props, {}> {
       </section>
     );
   }
-
-
-  // FILE UPLOAD ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  chooseFile() {
-    if (this.fileUpload.current) {
-      this.fileUpload.current.click();
-    }
-  }
-
-  updateProofFile(event: React.ChangeEvent<HTMLInputElement>) {
-    if (event.target.files !== null && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const text = reader.result ? reader.result : '';
-        // this.props.onUploadFile(text);
-      };
-      reader.readAsText(file);
-    }
-  }
-
 }
