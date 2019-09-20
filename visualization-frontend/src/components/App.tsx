@@ -347,7 +347,7 @@ class App extends Component<Props, State> {
 
     // iterate as long as a suitable clause is found and as long as no server error happens
     let stop = false;
-    while (!stop && this.state.error === null) {
+    while (!stop && this.state.error === null && !this.state.dags[0].isRefutation()) {
       const dag = this.state.dags[0];
 
       // find a final preprocessing clause which can be selected
