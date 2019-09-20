@@ -20,16 +20,16 @@ type Props = {
 
 /* Invariant: the state is always in one of the following phases
  * "Waiting": error, isLoaded and isLoading are all false
- * "Error":   error holds an error, and there are no guarantees on other fields
+ * "Error":   error holds an error-string, and there are no guarantees on other fields
  * "Loading": isLoading is true, and there are no guarantees on other fields
- * "Loaded":  isLoaded is true, error and isLoading are false, and dags, nodeSelection and historyState hold meaningful values.
+ * "Loaded":  isLoaded is true, error is null, isLoading is false, and dags, nodeSelection and historyState hold meaningful values.
  */
 type State = {
   dags: Dag[],
   nodeSelection: number[],
   changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   historyState: number,
-  error: any,
+  error: null | string,
   isLoaded: boolean,
   isLoading: boolean
 };
@@ -58,7 +58,7 @@ class App extends Component<Props, State> {
     } = this.state;
     
     let main;
-    if (!error && isLoaded) {
+    if (error === null && isLoaded) {
       const dag = dags[dags.length-1];
       main = (
         <Main
@@ -75,7 +75,7 @@ class App extends Component<Props, State> {
         />
       );
     } else if (isLoading || error) {
-      const message = error ? `Error: ${error!['message']}` : 'Loading...';
+      const message = error ? `Error: ${error}` : 'Loading...';
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
@@ -114,36 +114,43 @@ class App extends Component<Props, State> {
   }
 
   async componentDidMount() {
-    this.runVampire(this.props.problem, this.props.mode === "manualcs");
 
-    if (this.props.mode === "proof") {
-      assert(this.state.dags.length > 0);
-      const currentDag = this.state.dags[this.state.dags.length - 1];
-      assert(currentDag.isRefutation);
+    // call Vampire on given input problem
+    await this.runVampire(this.props.problem, this.props.mode === "manualcs");
 
-      // find empty clause
-      for (const node of currentDag.nodes.values()) {
-        if (node.unit.type === "Clause") {
-          const clause = node.unit as Clause;
-          if (clause.premiseLiterals.length === 0 && clause.conclusionLiterals.length === 0) {
+    // if call to Vampire succeeded
+    if (this.state.error === null) {
 
-            // filter all non-parents of empty clause
-            const relevantIds = new Set<number>();
-            relevantIds.add(node.id);
-            const proofDag = filterNonParents(currentDag, relevantIds);
+      // if mode is "proof", prune non-proof nodes
+      if (this.props.mode === "proof") {
+        assert(this.state.dags.length > 0);
+        const currentDag = this.state.dags[this.state.dags.length - 1];
+        assert(currentDag.isRefutation);
 
-            // layout new dag
-            await VizWrapper.layoutDag(proofDag, true);
+        // find empty clause
+        for (const node of currentDag.nodes.values()) {
+          if (node.unit.type === "Clause") {
+            const clause = node.unit as Clause;
+            if (clause.premiseLiterals.length === 0 && clause.conclusionLiterals.length === 0) {
 
-            // set proofDag as new dag
-            this.setState({dags: [proofDag]});
+              // filter all non-parents of empty clause
+              const relevantIds = new Set<number>();
+              relevantIds.add(node.id);
+              const proofDag = filterNonParents(currentDag, relevantIds);
 
-            return;
+              // layout new dag
+              await VizWrapper.layoutDag(proofDag, true);
+
+              // set proofDag as new dag
+              this.setState({dags: [proofDag]});
+
+              return;
+            }
           }
         }
+      } else if (this.props.mode === "manualcs") {
+        this.selectFinalPreprocessingClauses();
       }
-    } else if (this.props.mode === "manualcs") {
-      this.selectFinalPreprocessingClauses();
     }
   }
 
@@ -177,7 +184,7 @@ class App extends Component<Props, State> {
 
   async runVampire(problem: string, manualCS: boolean) {
     this.setState({
-      error: false,
+      error: null,
       isLoading: true,
       isLoaded: false
     });
@@ -192,31 +199,39 @@ class App extends Component<Props, State> {
       body: JSON.stringify({file: problem})
     });
 
-    // try {
+    try {
       const json = await fetchedJSON.json();
-      const parsedLines = this.jsonToParsedLines(json);
+      if (json.vampireState === "error") {
+        this.setState({
+          error: "user error",
+          isLoaded: true,
+          isLoading: false
+        });
+      } else {
+        const parsedLines = this.jsonToParsedLines(json);
 
-      const dag = Dag.fromParsedLines(parsedLines, null);
-      const mergedDag = mergePreprocessing(dag);
+        const dag = Dag.fromParsedLines(parsedLines, null);
+        const mergedDag = mergePreprocessing(dag);
+  
+        await VizWrapper.layoutDag(mergedDag, true);
 
-      await VizWrapper.layoutDag(mergedDag, true);
+        this.setState({
+          dags: [mergedDag],
+          nodeSelection: [],
+          historyState: mergedDag.numberOfHistorySteps(),
+          error: null,
+          isLoaded: true,
+          isLoading: false
+        });
+      }
 
+    } catch (error) {
       this.setState({
-        dags: [mergedDag],
-        nodeSelection: [],
-        historyState: mergedDag.numberOfHistorySteps(),
-        error: false,
+        error: error["message"],
         isLoaded: true,
         isLoading: false
       });
-
-    // } catch (error) {
-    //   this.setState({
-    //     error,
-    //     isLoaded: true,
-    //     isLoading: false
-    //   });
-    // }
+    }
   }
 
   // select the clause with id 'selectedId', then compute incremental layout for resulting dag
@@ -240,7 +255,7 @@ class App extends Component<Props, State> {
       body: JSON.stringify({id: selectedId})
     });
 
-    // try {
+    try {
       const json = await fetchedJSON.json();
       const parsedLines = this.jsonToParsedLines(json);
 
@@ -296,17 +311,17 @@ class App extends Component<Props, State> {
         dags: [newDag],
         nodeSelection: [],
         historyState: newDag.numberOfHistorySteps(),
-        error: false,
+        error: null,
         isLoaded: true,
         isLoading: false
       });
-    // } catch (error) {
-    //   this.setState({
-    //     error,
-    //     isLoaded: true,
-    //     isLoading: false
-    //   });
-    // }
+    } catch (error) {
+      this.setState({
+        error: error["message"],
+        isLoaded: true,
+        isLoading: false
+      });
+    }
   }
 
   async selectFinalPreprocessingClauses() {
@@ -314,7 +329,7 @@ class App extends Component<Props, State> {
 
     // iterate as long as a suitable clause is found and as long as no server error happens
     let stop = false;
-    while (!stop && !this.state.error) {
+    while (!stop && this.state.error === null) {
       const dag = this.state.dags[0];
 
       // find a final preprocessing clause which can be selected
@@ -332,7 +347,7 @@ class App extends Component<Props, State> {
       }
     }
   }
-  
+
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
