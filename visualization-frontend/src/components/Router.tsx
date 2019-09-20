@@ -5,6 +5,7 @@ import { Menu } from './Menu'
 
 type State = {
 	problem: string,
+	problemName: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
 	inputSyntax: "smtlib" | "tptp",
@@ -15,6 +16,7 @@ export class AppRouter extends React.Component<{}, State> {
 
 	state: State = {
 		problem: "",
+		problemName: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
 		inputSyntax: "smtlib",
@@ -27,11 +29,13 @@ export class AppRouter extends React.Component<{}, State> {
 				<Route path="/" exact render={() => 
 					<Menu 
 						problem={this.state.problem}
+						problemName={this.state.problemName}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						inputSyntax={this.state.inputSyntax}
 						orientClauses={this.state.orientClauses}
-						onSetProblem={this.setProblem.bind(this)}
+						onChangeProblem={this.changeProblem.bind(this)}
+						onChangeProblemName={this.changeProblemName.bind(this)}
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
 						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
@@ -72,8 +76,11 @@ export class AppRouter extends React.Component<{}, State> {
 		);
 	}
 
-	setProblem(problem: string) {
+	changeProblem(problem: string) {
 		this.setState({problem: problem});
+	}
+	changeProblemName(problemName: string) {
+		this.setState({problemName: problemName});
 	}
 	changeHideBracketsAssoc(newValue: boolean) {
 		this.setState({hideBracketsAssoc: newValue});

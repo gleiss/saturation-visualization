@@ -4,11 +4,13 @@ import './Menu.css';
 
 type Props = {
 	problem: string,
+	problemName: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean
 	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean,
-	onSetProblem: (problem: string) => void,
+	onChangeProblem: (problem: string) => void,
+	onChangeProblemName: (problemName: string) => void,
 	onChangeHideBracketsAssoc: (newValue: boolean) => void,
 	onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
 	onChangeInputSyntax: (syntax: "smtlib" | "tptp") => void
@@ -25,14 +27,17 @@ export class Menu extends React.Component<Props, {}> {
 				<h1>Vampire Saturation Visualization</h1>
 				
 				<h3>Input:</h3>
-				<input
-					ref={this.fileUpload}
-					type="file"
-					onChange={this.uploadEncoding.bind(this)}
-				/>
-				<button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
-					Upload
-				</button>
+				<div>
+					<input
+						ref={this.fileUpload}
+						type="file"
+						onChange={this.uploadEncoding.bind(this)}
+					/>
+					<button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
+						Upload
+					</button>
+					<label>{this.props.problemName}</label>
+				</div>
 				<textarea value={this.props.problem} onChange={this.changeTextArea.bind(this)}></textarea>
 
 				<h3>Options:</h3>
@@ -107,7 +112,8 @@ export class Menu extends React.Component<Props, {}> {
 			// callback which will be executed when readAsText is called
 			reader.onloadend = () => {
 				const text = (reader.result ? reader.result : "") as string;
-				this.props.onSetProblem(text);
+				this.props.onChangeProblem(text);
+				this.props.onChangeProblemName(file.name);
 			};	
 			reader.readAsText(file);
 		}
@@ -115,7 +121,7 @@ export class Menu extends React.Component<Props, {}> {
 
 	changeTextArea(event: React.ChangeEvent<HTMLTextAreaElement>) {
 		const newValue = event.target.value;
-		this.props.onSetProblem(newValue);
+		this.props.onChangeProblem(newValue);
 	}
 
 	changeHideBracketsAssoc(event: React.ChangeEvent<HTMLInputElement>) {
