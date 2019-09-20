@@ -1,0 +1,9 @@
+.component-menu input[type=file] {
+	display: none !important;
+  }
+
+.component-menu textarea {
+	width: 500px;
+	height: 600px;
+	resize: none;
+}
