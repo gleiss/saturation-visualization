@@ -3,24 +3,28 @@ import { Link } from "react-router-dom";
 import './Menu.css';
 
 type Props = {
-	onSetProblem: (problem: string) => void
+	problem: string,
+	hideBracketsAssoc: boolean,
+	nonStrictForNegatedStrictInequalities: boolean
+	inputSyntaxSmtlib: boolean,
+	orientClauses: boolean,
+	onSetProblem: (problem: string) => void,
+	onChangeHideBracketsAssoc: (newValue: boolean) => void,
+	onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
+	onChangeInputSyntaxSmtlib: (newValue: boolean) => void
+	onChangeOrientClauses: (newValue: boolean) => void
 }
-type State = {
-	problem: string
-};
 
-export class Menu extends React.Component<Props, State> {
+export class Menu extends React.Component<Props, {}> {
 
 	private fileUpload = React.createRef<HTMLInputElement>();
-
-	state: State = {
-		problem: ""
-	  };
 
 	render() {
 		return (
 			<section className="component-menu">
 				<h1>Vampire Saturation Visualization</h1>
+				
+				<h3>Input:</h3>
 				<input
 					ref={this.fileUpload}
 					type="file"
@@ -29,8 +33,53 @@ export class Menu extends React.Component<Props, State> {
 				<button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
 					Upload
 				</button>
-				<textarea value={this.state.problem} onChange={this.handleTextAreaChange.bind(this)}></textarea>
+				<textarea value={this.props.problem} onChange={this.changeTextArea.bind(this)}></textarea>
+
 				<h3>Options:</h3>
+				<p>Vampire:</p>
+				<ul>
+					<li>
+						<label>
+						<input
+							type="checkbox"
+							checked={this.props.inputSyntaxSmtlib}
+							onChange={this.changeInputSyntaxSmtlib.bind(this)} />
+							Use SMTLIB as input language
+						</label>
+					</li>
+				</ul>
+				<p>Visualization:</p>
+				<ul>
+					<li>
+						<label>
+						<input
+							type="checkbox"
+							checked={this.props.hideBracketsAssoc}
+							onChange={this.changeHideBracketsAssoc.bind(this)} />
+							Hide brackets for associative operators
+						</label>
+					</li>
+					<li>
+						<label>
+						<input
+							type="checkbox"
+							checked={this.props.nonStrictForNegatedStrictInequalities}
+							onChange={this.changeNonStrictForNegatedStrictInequalities.bind(this)} />
+							Show negated strict inequalities as (positive) nonstrict inequalities
+						</label>
+					</li>
+					<li>
+						<label>
+						<input
+							type="checkbox"
+							checked={this.props.orientClauses}
+							onChange={this.changeOrientClauses.bind(this)} />
+							Heuristically orient clauses
+						</label>
+					</li>
+				</ul>
+
+				<h3>Run:</h3>
 				<button>
 					<Link to="/proof/">Find proof</Link>
 				</button>
@@ -58,16 +107,34 @@ export class Menu extends React.Component<Props, State> {
 			// callback which will be executed when readAsText is called
 			reader.onloadend = () => {
 				const text = (reader.result ? reader.result : "") as string;
-				this.setState({problem: text});
 				this.props.onSetProblem(text);
 			};	
 			reader.readAsText(file);
 		}
 	}
 
-	handleTextAreaChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+	changeTextArea(event: React.ChangeEvent<HTMLTextAreaElement>) {
 		const newValue = event.target.value;
-		this.setState({problem: newValue});
 		this.props.onSetProblem(newValue);
+	}
+
+	changeHideBracketsAssoc(event: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = event.target.checked;
+		this.props.onChangeHideBracketsAssoc(newValue);
+	}
+
+	changeNonStrictForNegatedStrictInequalities(event: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = event.target.checked;
+		this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
+	}
+
+	changeInputSyntaxSmtlib(event: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = event.target.checked;
+		this.props.onChangeInputSyntaxSmtlib(newValue);
+	}
+
+	changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = event.target.checked;
+		this.props.onChangeOrientClauses(newValue);
 	}
 }
