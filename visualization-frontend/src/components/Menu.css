@@ -7,3 +7,11 @@
 	height: 400px;
 	resize: none;
 }
+
+.monaco {
+	height: 400px;
+	width: 600px;
+	border-width:1px;
+	border-style:solid;
+	border-color:black;
+}

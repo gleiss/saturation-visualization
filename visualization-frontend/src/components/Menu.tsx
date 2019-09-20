@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link } from "react-router-dom";
 import './Menu.css';
+import * as Monaco from 'monaco-editor'
 
 type Props = {
 	problem: string,
@@ -20,6 +21,39 @@ type Props = {
 export class Menu extends React.Component<Props, {}> {
 
 	private fileUpload = React.createRef<HTMLInputElement>();
+	monacoDiv = React.createRef<HTMLDivElement>();
+	monaco: Monaco.editor.IStandaloneCodeEditor | null = null
+
+	componentDidMount(){
+		// generate instance of Monaco Editor
+		this.monaco = Monaco.editor.create(this.monacoDiv.current!, {
+			lineNumbers: "off",
+			roundedSelection: false,
+			scrollBeyondLastLine: false,
+			scrollBeyondLastColumn: 0,
+			minimap: {
+				enabled: false
+			},
+			renderLineHighlight: "none",
+			hideCursorInOverviewRuler: true,
+			links: false,
+			overviewRulerBorder: false,
+			lineDecorationsWidth: 0,
+			lineNumbersMinChars: 0,
+			wordWrap: "wordWrapColumn"
+			// fontFamily: "Monaco" TODO: decide which font to use. By default, multiple fonts are loaded, which is quite slow
+		});
+		this.monaco.setValue(this.props.problem);
+		this.monaco.getModel()!.onDidChangeContent(() => {
+			this.props.onChangeProblem(this.monaco!.getModel()!.getValue());
+		});
+	}
+
+	componentDidUpdate(prevProps: Props){
+		if (this.props.problem !== prevProps.problem) {
+			this.monaco!.setValue(this.props.problem);
+		}
+	}
 
 	render() {
 		return (
@@ -38,7 +72,7 @@ export class Menu extends React.Component<Props, {}> {
 					</button>
 					<label>{this.props.problemName}</label>
 				</div>
-				<textarea value={this.props.problem} onChange={this.changeTextArea.bind(this)}></textarea>
+				<div ref={this.monacoDiv} className="monaco"></div>
 
 				<h3>Options:</h3>
 				<p>Vampire:</p>
