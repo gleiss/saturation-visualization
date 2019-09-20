@@ -19,7 +19,8 @@ type Props = {
   mode: "proof" | "saturation" | "manualcs"
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
-  orientClauses: boolean
+  orientClauses: boolean,
+  inputSyntax: "smtlib" | "tptp";
 };
 
 /* Invariant: the state is always in one of the following phases
@@ -200,7 +201,10 @@ class App extends Component<Props, State> {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({file: problem})
+      body: JSON.stringify({
+        file: problem, 
+        inputSyntax: this.props.inputSyntax
+      })
     });
 
     try {

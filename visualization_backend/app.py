@@ -32,11 +32,12 @@ def handle_startVampire():
     # TODO: proper exception handling for all POST requests  
     request_params = request.get_json()
     fileContent = request_params.get('file', '')
+    inputSyntax = request_params.get('inputSyntax', '')
     
     temporaryFile = tempfile.NamedTemporaryFile()
     temporaryFile.write(str.encode(fileContent))
     temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
-    output = vampireWrapper.start(temporaryFile.name)
+    output = vampireWrapper.start(temporaryFile.name, inputSyntax)
     lines = parse(output)
     temporaryFile.close()
 
@@ -46,11 +47,12 @@ def handle_startVampire():
 def handle_startVampireManualCS():
     request_params = request.get_json()
     fileContent = request_params.get('file', '')
-    
+    inputSyntax = request_params.get('inputSyntax', '')
+
     temporaryFile = tempfile.NamedTemporaryFile()
     temporaryFile.write(str.encode(fileContent))
     temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
-    output = vampireWrapper.startManualCS(temporaryFile.name)
+    output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax)
     lines = parse(output)
     temporaryFile.close()
 

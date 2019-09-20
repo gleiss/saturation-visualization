@@ -7,7 +7,7 @@ type State = {
 	problem: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
-	inputSyntaxSmtlib: boolean,
+	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean
 }
 
@@ -17,7 +17,7 @@ export class AppRouter extends React.Component<{}, State> {
 		problem: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
-		inputSyntaxSmtlib: true,
+		inputSyntax: "smtlib",
 		orientClauses: true
 	}
 
@@ -29,12 +29,12 @@ export class AppRouter extends React.Component<{}, State> {
 						problem={this.state.problem}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
-						inputSyntaxSmtlib={this.state.inputSyntaxSmtlib}
+						inputSyntax={this.state.inputSyntax}
 						orientClauses={this.state.orientClauses}
 						onSetProblem={this.setProblem.bind(this)}
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
-						onChangeInputSyntaxSmtlib={this.changeInputSyntaxSmtlib.bind(this)}
+						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
 						onChangeOrientClauses={this.changeOrientClauses.bind(this)}
 					/>
 				}/>
@@ -45,6 +45,7 @@ export class AppRouter extends React.Component<{}, State> {
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
+						inputSyntax={this.state.inputSyntax}
 					/>
 				}/>
 				<Route path="/saturation/" render={() => 
@@ -54,6 +55,7 @@ export class AppRouter extends React.Component<{}, State> {
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
+						inputSyntax={this.state.inputSyntax}
 					/>
 				}/>
 				<Route path="/manualcs/" render={() => 
@@ -63,6 +65,7 @@ export class AppRouter extends React.Component<{}, State> {
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
+						inputSyntax={this.state.inputSyntax}
 					/>
 				}/>
 			</Router>
@@ -78,8 +81,8 @@ export class AppRouter extends React.Component<{}, State> {
 	changeNonStrictForNegatedStrictInequalities(newValue: boolean) {
 		this.setState({nonStrictForNegatedStrictInequalities: newValue});
 	}
-	changeInputSyntaxSmtlib(newValue: boolean) {
-		this.setState({inputSyntaxSmtlib: newValue});
+	changeInputSyntax(inputSyntax: "smtlib" | "tptp") {
+		this.setState({inputSyntax: inputSyntax});
 	}
 	changeOrientClauses(newValue: boolean) {
 		this.setState({orientClauses: newValue});

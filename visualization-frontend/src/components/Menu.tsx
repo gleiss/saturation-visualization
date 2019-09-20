@@ -6,12 +6,12 @@ type Props = {
 	problem: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean
-	inputSyntaxSmtlib: boolean,
+	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean,
 	onSetProblem: (problem: string) => void,
 	onChangeHideBracketsAssoc: (newValue: boolean) => void,
 	onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
-	onChangeInputSyntaxSmtlib: (newValue: boolean) => void
+	onChangeInputSyntax: (syntax: "smtlib" | "tptp") => void
 	onChangeOrientClauses: (newValue: boolean) => void
 }
 
@@ -42,8 +42,8 @@ export class Menu extends React.Component<Props, {}> {
 						<label>
 						<input
 							type="checkbox"
-							checked={this.props.inputSyntaxSmtlib}
-							onChange={this.changeInputSyntaxSmtlib.bind(this)} />
+							checked={this.props.inputSyntax === "smtlib"}
+							onChange={this.changeInputSyntax.bind(this)} />
 							Use SMTLIB as input language
 						</label>
 					</li>
@@ -128,9 +128,9 @@ export class Menu extends React.Component<Props, {}> {
 		this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
 	}
 
-	changeInputSyntaxSmtlib(event: React.ChangeEvent<HTMLInputElement>) {
+	changeInputSyntax(event: React.ChangeEvent<HTMLInputElement>) {
 		const newValue = event.target.checked;
-		this.props.onChangeInputSyntaxSmtlib(newValue);
+		this.props.onChangeInputSyntax(newValue ? "smtlib" : "tptp");
 	}
 
 	changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {
