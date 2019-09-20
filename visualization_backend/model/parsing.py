@@ -49,10 +49,11 @@ def parse(lines):
 
 def parse_line(line):
     # first try to parse line as standard output line from saturation, i.e. line has form
-    # '[SA] new: Clause', '[SA] passive: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
+    # '[SA] new: Clause', '[SA] active: Clause', '[SA] forward reduce: Clause', or '[SA] backward reduce: Clause'
     try:
         line_type, unit_id, unit_string, inference_rule, parents, statisticsString = re.match(OUTPUT_PATTERN_SATURATION, line).groups()
-
+        if line_type == "passive":
+            return
     except AttributeError:
         # next try to parse line as output from preprocessing
         try:

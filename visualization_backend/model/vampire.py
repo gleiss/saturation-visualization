@@ -10,7 +10,7 @@ class VampireWrapper:
 		if self.vampireProcess != None:
 			self.vampireProcess.kill()
 
-		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", inputSyntax, "-av", "off", inputFile,  "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full"], stdout=PIPE, stderr=STDOUT, text=True).stdout
+		output = run(["/Users/bernhard/repos/vampire-release/vampire_rel_manualcl_4057", "--input_syntax", inputSyntax, "-av", "off", inputFile,  "--show_preprocessing", "on", "--show_new", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full"], stdout=PIPE, stderr=STDOUT, text=True).stdout
 		lines = output.replace('\r\n', '\n').replace('\r', '\n').split('\n')
 		state = "none"
 		for line in lines:
@@ -35,7 +35,7 @@ class VampireWrapper:
 		if self.vampireProcess != None:
 			self.vampireProcess.kill()
 
-		self.vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manual_cs_fsd_4143", "--input_syntax", inputSyntax, "-av", "off", inputFile, "--show_preprocessing", "on", "--show_new", "on", "--show_passive", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full", "--manual_cs", "on", "--time_limit", "0"], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+		self.vampireProcess = Popen(["/Users/bernhard/repos/vampire-release/vampire_rel_manual_cs_fsd_4143", "--input_syntax", inputSyntax, "-av", "off", inputFile, "--show_preprocessing", "on", "--show_new", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full", "--manual_cs", "on", "--time_limit", "0"], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
 		
 		newLines = self.collectOutput()
 		return newLines

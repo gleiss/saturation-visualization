@@ -5,14 +5,14 @@ import { ReversePostOrderTraversal } from "./traversal";
 import { Clause } from './unit';
 
 export class ParsedLine {
-  readonly type: "preprocessing" | "new" | "passive" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using";
+  readonly type: "preprocessing" | "new" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using";
   readonly id: number;
   readonly unitString: string;
   readonly inferenceRule: string;
   parents: Array<number>;
   readonly statistics: Map<any, any>; 
 
-  constructor(type: "preprocessing" | "new" | "passive" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using", id: number, unitString: string, inferenceRule: string, parents: Array<number>, statistics: Map<any, any>) {
+  constructor(type: "preprocessing" | "new" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using", id: number, unitString: string, inferenceRule: string, parents: Array<number>, statistics: Map<any, any>) {
     this.type = type;
     this.id = id;
     this.unitString = unitString;
@@ -207,7 +207,7 @@ export class Dag {
           line.parents = [];
         }
 
-        currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, true, null, null, null, null, []);
+        currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, true, null, null, null, []);
         nodes.set(currentNode.id, currentNode);
       }
       else if (line.type === "new") {
@@ -216,7 +216,7 @@ export class Dag {
           
           // create new node
           const unit = UnitParser.parseUnit(line.unitString, false, line.statistics);
-          currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, null, []);
+          currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, []);
           nodes.set(currentNode.id, currentNode);
 
           if(line.unitString === "$false") {
@@ -231,23 +231,9 @@ export class Dag {
           currentNode.newTime = currentTime;
         }
       }
-      else if (line.type === "passive") {
-        // line represents the insertion of an already generated clause into the set of passive clauses
-        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was added to passive, but wasn't added as new before. Maybe you forgot to output the new clauses?`);
-        currentNode = nodes.get(line.id) as SatNode;
-        assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
-        assert(line.parents.length === currentNode.parents.length, "number of parents differs between line and existing node");
-        for (let i = 0; i < line.parents.length; i++) {
-          assert(line.parents[i] === currentNode.parents[i], `line and node differ on parent ${i}, which is ${line.parents[i]} resp. ${currentNode.parents[i]}.`);
-        }
-        assert(currentNode.newTime !== null, "for each event [SA] passive ... there has to be an earlier event of the form [SA] new ... with the same clause!")
-        assert((currentNode.newTime as number) <= currentTime, "invar");
-        assert(currentNode.passiveTime === null, "there must only be 1 event of the form [SA] passive ... for each clause");
-        currentNode.passiveTime = currentTime;
-      }
       else if (line.type === "active") {
-        // line represents the removal of an already generated clause from passive and the addition of that clause to active
-        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was added to active, but wasn't added to passive before. Maybe you forgot to output the passive clauses?`);
+        // line represents the addition of that clause to active
+        assert(nodes.has(line.id), `Found clause with id ${line.id}, which was added to active, but wasn't added to new before. Maybe you forgot to output the new clauses?`);
         currentNode = nodes.get(line.id) as SatNode;
         assert(line.id === currentNode.id, "id differs between line and existing node");
         assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
@@ -256,8 +242,6 @@ export class Dag {
           assert(line.parents[i] === currentNode.parents[i], `line and node differ on parent ${i}, which is ${line.parents[i]} resp. ${currentNode.parents[i]}.`);
         }
         assert(currentNode.newTime !== null, "for each event [SA] active ... there has to be an earlier event of the form [SA] new ... with the same clause!")
-        assert(currentNode.passiveTime !== null, "for each event [SA] active ... there has to be an earlier event of the form [SA] passive ... with the same clause!")
-        assert((currentNode.passiveTime as number) <= currentTime, "invar");
         assert(currentNode.activeTime === null, "there must only be 1 event of the form [SA] active ... for each clause");
 
         currentNode.statistics = line.statistics
@@ -285,7 +269,6 @@ export class Dag {
     // hack: pretend that empty clause was added to passive and then activated
     // note that this can only be done after all lines are parsed, since a new-event with the empty clause often triggers a deletion-event
     if (emptyClauseNode !== null) {
-      emptyClauseNode.passiveTime = currentTime;
       currentTime = currentTime + 1;
       emptyClauseNode.activeTime = currentTime;
       nodes.set(emptyClauseNode.id, emptyClauseNode);

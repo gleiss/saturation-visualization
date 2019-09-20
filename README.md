@@ -28,7 +28,6 @@ Call Vampire with the following options:
 ```
 --show_preprocessing on
 --show_new on
---show_passive on
 --show_active on
 --avatar off
 ```

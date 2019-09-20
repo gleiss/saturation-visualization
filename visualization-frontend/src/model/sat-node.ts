@@ -11,7 +11,6 @@ export default class SatNode {
   statistics: Map<string,number>;
   readonly isFromPreprocessing: boolean;
   newTime: number | null;
-  passiveTime: number | null;
   activeTime: number | null;
   deletionTime: number | null;
   deletionParents: number[];
@@ -25,7 +24,6 @@ export default class SatNode {
     statistics: Map<string,number>,
     isFromPreprocessing: boolean,
     newTime: number | null,
-    passiveTime: number | null,
     activeTime: number | null,
     deletionTime: number | null,
     deletionParents: number[]
@@ -37,7 +35,6 @@ export default class SatNode {
     this.statistics = statistics;
     this.isFromPreprocessing = isFromPreprocessing;
     this.newTime = newTime;
-    this.passiveTime = passiveTime;
     this.activeTime = activeTime;
     this.deletionTime = deletionTime;
     this.deletionParents = deletionParents;
@@ -46,7 +43,7 @@ export default class SatNode {
 
   // return a copy of this node, where the position is null
   copy(): SatNode {
-    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.passiveTime, this.activeTime, this.deletionTime, this.deletionParents);
+    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.activeTime, this.deletionTime, this.deletionParents);
   }
 
   getPosition(): [number,number] {

@@ -102,7 +102,7 @@ export function filterNonConsequences(dag: Dag, relevantIds: Set<number>) {
 
 // create a boundary node, which has the same id as the Node node, but as inference "Boundary" and no parents
 function createBoundaryNode(dag: Dag, node: SatNode): SatNode {
-	return new SatNode(node.id, node.unit, "Boundary", [], node.statistics, node.isFromPreprocessing, node.newTime, node.passiveTime, node.activeTime, node.deletionTime, node.deletionParents);
+	return new SatNode(node.id, node.unit, "Boundary", [], node.statistics, node.isFromPreprocessing, node.newTime, node.activeTime, node.deletionTime, node.deletionParents);
 }
 
 // vampire performs preprocessing in multiple steps
@@ -148,7 +148,7 @@ export function mergePreprocessing(dag: Dag): Dag {
 					mergeMap.set(parentId, parentNode.parents);
 				}
 			}
-			const updatedNode = new SatNode(currentNode.id, currentNode.unit, currentNode.inferenceRule, updatedParents, currentNode.statistics, currentNode.isFromPreprocessing, currentNode.newTime, currentNode.passiveTime, currentNode.activeTime, currentNode.deletionTime, currentNode.deletionParents);
+			const updatedNode = new SatNode(currentNode.id, currentNode.unit, currentNode.inferenceRule, updatedParents, currentNode.statistics, currentNode.isFromPreprocessing, currentNode.newTime, currentNode.activeTime, currentNode.deletionTime, currentNode.deletionParents);
 			nodes.set(currentNodeId, updatedNode);
 		}
 	}
