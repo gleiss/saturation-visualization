@@ -39,14 +39,32 @@ export class AppRouter extends React.Component<{}, State> {
 					/>
 				}/>
 				<Route path="/proof/" render={() => 
-					<App mode="proof" problem={this.state.problem!}/>
+					<App 
+						mode="proof" 
+						problem={this.state.problem!}
+						hideBracketsAssoc={this.state.hideBracketsAssoc}
+						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
+						orientClauses={this.state.orientClauses}
+					/>
 				}/>
 				<Route path="/saturation/" render={() => 
-					<App mode="saturation" problem={this.state.problem!}/>
+					<App 
+						mode="saturation" 
+						problem={this.state.problem!}
+						hideBracketsAssoc={this.state.hideBracketsAssoc}
+						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
+						orientClauses={this.state.orientClauses}
+					/>
 				}/>
 				<Route path="/manualcs/" render={() => 
-					<App mode="manualcs" problem={this.state.problem!}/>
-				}/>                
+					<App 
+						mode="manualcs" 
+						problem={this.state.problem!}
+						hideBracketsAssoc={this.state.hideBracketsAssoc}
+						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
+						orientClauses={this.state.orientClauses}
+					/>
+				}/>
 			</Router>
 		);
 	}

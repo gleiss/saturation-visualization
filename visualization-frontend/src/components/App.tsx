@@ -16,6 +16,9 @@ import { Literal } from '../model/literal';
 type Props = {
   problem: string,
   mode: "proof" | "saturation" | "manualcs"
+  hideBracketsAssoc: boolean,
+  nonStrictForNegatedStrictInequalities: boolean, 
+  orientClauses: boolean
 };
 
 /* Invariant: the state is always in one of the following phases
