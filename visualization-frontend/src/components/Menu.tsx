@@ -45,11 +45,11 @@ export class Menu extends React.Component<Props, {}> {
 				<ul>
 					<li>
 						<label>
-						<input
-							type="checkbox"
-							checked={this.props.inputSyntax === "smtlib"}
-							onChange={this.changeInputSyntax.bind(this)} />
-							Use SMTLIB as input language
+							<select onChange={this.changeInputSyntax.bind(this)} value={this.props.inputSyntax}>
+								<option value="smtlib">SMTLIB</option>
+								<option value="tptp">TPTP</option>
+							</select>
+							Input language
 						</label>
 					</li>
 				</ul>
@@ -134,9 +134,9 @@ export class Menu extends React.Component<Props, {}> {
 		this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
 	}
 
-	changeInputSyntax(event: React.ChangeEvent<HTMLInputElement>) {
-		const newValue = event.target.checked;
-		this.props.onChangeInputSyntax(newValue ? "smtlib" : "tptp");
+	changeInputSyntax(event: React.ChangeEvent<HTMLSelectElement>) {
+		const newValue = event.target.value as "smtlib" | "tptp";
+		this.props.onChangeInputSyntax(newValue);
 	}
 
 	changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {
