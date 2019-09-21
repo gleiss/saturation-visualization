@@ -121,41 +121,11 @@ class App extends Component<Props, State> {
   async componentDidMount() {
 
     // call Vampire on given input problem
-    await this.runVampire(this.props.problem, this.props.mode === "manualcs");
+    await this.runVampire(this.props.problem, this.props.mode);
 
-    // if call to Vampire succeeded
-    if (this.state.error === null) {
-
-      // if mode is "proof", prune non-proof nodes
-      if (this.props.mode === "proof") {
-        assert(this.state.dags.length > 0);
-        const currentDag = this.state.dags[this.state.dags.length - 1];
-        assert(currentDag.isRefutation);
-
-        // find empty clause
-        for (const node of currentDag.nodes.values()) {
-          if (node.unit.type === "Clause") {
-            const clause = node.unit as Clause;
-            if (clause.premiseLiterals.length === 0 && clause.conclusionLiterals.length === 0) {
-
-              // filter all non-parents of empty clause
-              const relevantIds = new Set<number>();
-              relevantIds.add(node.id);
-              const proofDag = filterNonParents(currentDag, relevantIds);
-
-              // layout new dag
-              await VizWrapper.layoutDag(proofDag, true);
-
-              // set proofDag as new dag
-              this.setState({dags: [proofDag]});
-
-              return;
-            }
-          }
-        }
-      } else if (this.props.mode === "manualcs") {
-        this.selectFinalPreprocessingClauses();
-      }
+    const vampireCallSucceeded = (this.state.error === null);
+    if (vampireCallSucceeded && this.props.mode === "manualcs") {
+      this.selectFinalPreprocessingClauses();
     }
   }
 
@@ -187,14 +157,14 @@ class App extends Component<Props, State> {
     return parsedLines;
   }
 
-  async runVampire(problem: string, manualCS: boolean) {
+  async runVampire(problem: string, mode: "proof" | "saturation" | "manualcs") {
     this.setState({
       error: null,
       isLoading: true,
       isLoaded: false
     });
 
-    const fetchedJSON = await fetch(manualCS ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
+    const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -214,18 +184,36 @@ class App extends Component<Props, State> {
         assert(json.status === "success");
         const parsedLines = this.jsonToParsedLines(json);
 
-        const dag = Dag.fromParsedLines(parsedLines, null);
-        const mergedDag = mergePreprocessing(dag);
+        let dag = Dag.fromParsedLines(parsedLines, null);
+        dag = mergePreprocessing(dag);
+
+        if (mode === "proof") {
+          assert(dag.isRefutation);
+          // find empty clause
+          for (const node of dag.nodes.values()) {
+            if (node.unit.type === "Clause") {
+              const clause = node.unit as Clause;
+              if (clause.premiseLiterals.length === 0 && clause.conclusionLiterals.length === 0) {
+
+                // filter all non-parents of empty clause
+                const relevantIds = new Set<number>();
+                relevantIds.add(node.id);
+                dag = filterNonParents(dag, relevantIds);
+                break;
+              }
+            }
+          }
+        }
   
-        await VizWrapper.layoutDag(mergedDag, true);
+        await VizWrapper.layoutDag(dag, true);
 
         if (this.props.orientClauses) {
-          orientClauses(mergedDag);
+          orientClauses(dag);
         }
-        this.setLiteralOptions(mergedDag);
+        this.setLiteralOptions(dag);
 
         this.setState({
-          dags: [mergedDag],
+          dags: [dag],
           nodeSelection: [],
           historyState: dag.maximalActiveTime(),
           error: null,
