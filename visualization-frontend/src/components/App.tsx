@@ -80,7 +80,7 @@ class App extends Component<Props, State> {
         />
       );
     } else if (isLoading || error) {
-      const message = error ? `Error: ${error}` : 'Loading...';
+      const message = error ? `${error}` : 'Waiting for Vampire...';
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
@@ -209,13 +209,9 @@ class App extends Component<Props, State> {
 
     try {
       const json = await fetchedJSON.json();
-      if (json.vampireState === "error") {
-        this.setState({
-          error: "user error",
-          isLoaded: true,
-          isLoading: false
-        });
-      } else {
+
+      if (json.status === "success") {
+        assert(json.status === "success");
         const parsedLines = this.jsonToParsedLines(json);
 
         const dag = Dag.fromParsedLines(parsedLines, null);
@@ -236,11 +232,19 @@ class App extends Component<Props, State> {
           isLoaded: true,
           isLoading: false
         });
+      } else {
+        assert(json.status === "user error");
+        const errorMessage = json.message;
+        assert(errorMessage !== undefined && errorMessage !== null);
+        this.setState({
+          error: `User error: ${errorMessage}`,
+          isLoaded: true,
+          isLoading: false
+        });
       }
-
     } catch (error) {
       this.setState({
-        error: error["message"],
+        error: `Error: ${error["message"]}`,
         isLoaded: true,
         isLoading: false
       });
@@ -270,72 +274,83 @@ class App extends Component<Props, State> {
 
     try {
       const json = await fetchedJSON.json();
-      const parsedLines = this.jsonToParsedLines(json);
+      if (json.status === "success") {
+        const parsedLines = this.jsonToParsedLines(json);
 
-      // extend existing dag with new saturation events from server
-      const newDag = Dag.fromParsedLines(parsedLines, currentDag);
+        // extend existing dag with new saturation events from server
+        const newDag = Dag.fromParsedLines(parsedLines, currentDag);
 
-      // compute which nodes have been newly generated
-      const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
-      const newNodes = new Map<number, SatNode>();
-      for (const [nodeId, node] of newDag.nodes) {
-        if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
-          newNodes.set(nodeId, node);
+        // compute which nodes have been newly generated
+        const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
+        const newNodes = new Map<number, SatNode>();
+        for (const [nodeId, node] of newDag.nodes) {
+          if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
+            newNodes.set(nodeId, node);
+          }
         }
-      }
 
-      if (newNodes.size > 0) {
-        // compute incremental layout for newly generated nodes using the following heuristic:
-        // 1) layout new nodes while ignoring existing nodes
-        await VizWrapper.layoutNodes(newNodes);
-
-        // 2) find a source node of the dag of newly generated nodes
-        let sourceNode: SatNode | null = null;
-        for (const node of newNodes.values()) {
-          let isSourceNode = true;
-          for (const parentId of node.parents) {
-            if (newNodes.has(parentId)) {
-              isSourceNode = false;
+        if (newNodes.size > 0) {
+          // compute incremental layout for newly generated nodes using the following heuristic:
+          // 1) layout new nodes while ignoring existing nodes
+          await VizWrapper.layoutNodes(newNodes);
+  
+          // 2) find a source node of the dag of newly generated nodes
+          let sourceNode: SatNode | null = null;
+          for (const node of newNodes.values()) {
+            let isSourceNode = true;
+            for (const parentId of node.parents) {
+              if (newNodes.has(parentId)) {
+                isSourceNode = false;
+                break;
+              }
+            }
+            if (isSourceNode) {
+              sourceNode = node;
               break;
             }
           }
-          if (isSourceNode) {
-            sourceNode = node;
-            break;
+          assert(sourceNode !== null);
+          assert((sourceNode as SatNode).position !== null);
+  
+          // 3) shift subgraph of newly generated nodes, so that the source node of the subgraph
+          //    is shifted to a position closely under the position indicated by the positioning hint.
+          const [posSelectedX, posSelectedY] = positioningHint;
+          const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
+          const deltaX = posSelectedX-posSourceX;
+          const deltaY = (posSelectedY - posSourceY) - 1;
+          for (const node of newNodes.values()) {
+            assert(node.position != null);
+            const position = node.position as [number, number];
+            node.position = [position[0] + deltaX, position[1] + deltaY];
           }
         }
-        assert(sourceNode !== null);
-        assert((sourceNode as SatNode).position !== null);
 
-        // 3) shift subgraph of newly generated nodes, so that the source node of the subgraph
-        //    is shifted to a position closely under the position indicated by the positioning hint.
-        const [posSelectedX, posSelectedY] = positioningHint;
-        const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
-        const deltaX = posSelectedX-posSourceX;
-        const deltaY = (posSelectedY - posSourceY) - 1;
-        for (const node of newNodes.values()) {
-          assert(node.position != null);
-          const position = node.position as [number, number];
-          node.position = [position[0] + deltaX, position[1] + deltaY];
+        if (this.props.orientClauses) {
+          orientClauses(newDag);
         }
+        this.setLiteralOptions(newDag);
+  
+        this.setState({
+          dags: [newDag],
+          nodeSelection: [],
+          historyState: newDag.numberOfHistorySteps(),
+          error: null,
+          isLoaded: true,
+          isLoading: false
+        });
+      } else {
+        assert(json.status === "user error");
+        const errorMessage = json.message;
+        assert(errorMessage !== undefined && errorMessage !== null);
+        this.setState({
+          error: `User error: ${errorMessage}`,
+          isLoaded: true,
+          isLoading: false
+        });
       }
-
-      if (this.props.orientClauses) {
-        orientClauses(newDag);
-      }
-      this.setLiteralOptions(newDag);
-
-      this.setState({
-        dags: [newDag],
-        nodeSelection: [],
-        historyState: newDag.numberOfHistorySteps(),
-        error: null,
-        isLoaded: true,
-        isLoading: false
-      });
     } catch (error) {
       this.setState({
-        error: error["message"],
+        error: `Error: ${error["message"]}`,
         isLoaded: true,
         isLoading: false
       });

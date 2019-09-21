@@ -20,37 +20,66 @@ CORS(app)
 
 vampireWrapper = VampireWrapper()
 
-@app.route('/vampire/start', methods=['POST'])
-def handle_startVampire():  
-    # TODO: proper exception handling for all POST requests  
+def startVampire(manualCS):
     request_params = request.get_json()
     fileContent = request_params.get('file', '')
+    if fileContent == "":
+        message = "Input encoding must not be empty!"
+        print("User error: " + message)
+        return json.dumps({
+            "status" : "user error",
+            "message" : message
+        })
     inputSyntax = request_params.get('inputSyntax', '')
-    
+    if inputSyntax != "smtlib" and inputSyntax != "tptp":
+        message = "Wrong input syntax, must be either smtlib or tptp!"
+        print("User error: " + message)
+        return json.dumps({
+            "status" : "user error",
+            "message" : message
+        })
+
     temporaryFile = tempfile.NamedTemporaryFile()
     temporaryFile.write(str.encode(fileContent))
     temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
-    output = vampireWrapper.start(temporaryFile.name, inputSyntax)
+
+    if manualCS:
+        output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax)
+    else:
+        output = vampireWrapper.start(temporaryFile.name, inputSyntax)
+
+    if vampireWrapper.vampireState == "error":
+        message = "Wrong options for Vampire or mistake in encoding"
+        print("User error: " + message)
+        return json.dumps({
+            "status" : "user error",
+            "message" : message
+        })
+
     lines = parse(output)
     temporaryFile.close()
 
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines]})
+    if manualCS:
+        return json.dumps({
+            'status' : "success",
+            'vampireState' : vampireWrapper.vampireState, 
+            'lines' : [line.to_json() for line in lines], 
+            'remainingChoices' : vampireWrapper.remainingChoices
+        })
+    else:
+        return json.dumps({
+            'status' : "success",
+            'vampireState' : vampireWrapper.vampireState, 
+            'lines' : [line.to_json() for line in lines]
+        })
+
+@app.route('/vampire/start', methods=['POST'])
+def handle_startVampire():  
+    return startVampire(False)
 
 @app.route('/vampire/startmanualcs', methods=['POST'])
 def handle_startVampireManualCS():
-    request_params = request.get_json()
-    fileContent = request_params.get('file', '')
-    inputSyntax = request_params.get('inputSyntax', '')
-
-    temporaryFile = tempfile.NamedTemporaryFile()
-    temporaryFile.write(str.encode(fileContent))
-    temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
-    output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax)
-    lines = parse(output)
-    temporaryFile.close()
-
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})
-
+    return startVampire(True)
 
 @app.route('/vampire/select', methods=['POST'])
 def handle_selection():    
@@ -58,17 +87,31 @@ def handle_selection():
     selectedId = int(request_params.get('id', ''))
 
     if(vampireWrapper.vampireState != "running"):
-        print("Vampire is not running, so it makes no sense to perform selection!")
-        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : None, 'remainingChoices' : None})
+        message = "Vampire is not running, so it makes no sense to perform selection!"
+        print("User error " + message)
+        return json.dumps({
+            'status' : "user error",
+            "message" : message,
+            'vampireState' : vampireWrapper.vampireState
+        })
     if(not selectedId in vampireWrapper.remainingChoices):
-        print("The remaining choices are: " + str(vampireWrapper.remainingChoices))
-        print("Selected id " + str(selectedId) + " is not a valid choice and will be ignored!")
-        return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : None, 'remainingChoices' : vampireWrapper.remainingChoices})
+        message = "Selected id " + str(selectedId) + " is not a valid choice and will be ignored."
+        print("User error " + message)
+        return json.dumps({
+            'status' : "user error",
+            "message" : message,
+            'remainingChoices' : vampireWrapper.remainingChoices
+        })
 
     output = vampireWrapper.select(selectedId)
     lines = parse(output)
 
-    return json.dumps({'vampireState' : vampireWrapper.vampireState, 'lines' : [line.to_json() for line in lines], 'remainingChoices' : vampireWrapper.remainingChoices})  
+    return json.dumps({
+        "status" : "success",
+        'vampireState' : vampireWrapper.vampireState, 
+        'lines' : [line.to_json() for line in lines], 
+        'remainingChoices' : vampireWrapper.remainingChoices
+    })  
 
 if __name__ == '__main__':
     app.run()
