@@ -221,11 +221,11 @@ class App extends Component<Props, State> {
           isLoading: false
         });
       } else {
-        assert(json.status === "user error");
+        assert(json.status === "error");
         const errorMessage = json.message;
         assert(errorMessage !== undefined && errorMessage !== null);
         this.setState({
-          error: `User error: ${errorMessage}`,
+          error: errorMessage,
           isLoaded: true,
           isLoading: false
         });
@@ -292,11 +292,11 @@ class App extends Component<Props, State> {
           isLoading: false
         });
       } else {
-        assert(json.status === "user error");
+        assert(json.status === "error");
         const errorMessage = json.message;
         assert(errorMessage !== undefined && errorMessage !== null);
         this.setState({
-          error: `User error: ${errorMessage}`,
+          error: errorMessage,
           isLoaded: true,
           isLoading: false
         });

@@ -24,18 +24,18 @@ def startVampire(manualCS):
     request_params = request.get_json()
     fileContent = request_params.get('file', '')
     if fileContent == "":
-        message = "Input encoding must not be empty!"
-        print("User error: " + message)
+        message = "User error: Input encoding must not be empty!"
+        print(message)
         return json.dumps({
-            "status" : "user error",
+            "status" : "error",
             "message" : message
         })
     inputSyntax = request_params.get('inputSyntax', '')
     if inputSyntax != "smtlib" and inputSyntax != "tptp":
-        message = "Wrong input syntax, must be either smtlib or tptp!"
-        print("User error: " + message)
+        message = "User error: Wrong input syntax, must be either smtlib or tptp!"
+        print(message)
         return json.dumps({
-            "status" : "user error",
+            "status" : "error",
             "message" : message
         })
 
@@ -49,10 +49,10 @@ def startVampire(manualCS):
         output = vampireWrapper.start(temporaryFile.name, inputSyntax)
 
     if vampireWrapper.vampireState == "error":
-        message = "Wrong options for Vampire or mistake in encoding"
-        print("User error: " + message)
+        message = "User error: Wrong options for Vampire or mistake in encoding"
+        print(message)
         return json.dumps({
-            "status" : "user error",
+            "status" : "error",
             "message" : message
         })
 
@@ -87,18 +87,18 @@ def handle_selection():
     selectedId = int(request_params.get('id', ''))
 
     if(vampireWrapper.vampireState != "running"):
-        message = "Vampire is not running, so it makes no sense to perform selection!"
-        print("User error " + message)
+        message = "User error: Vampire is not running, so it makes no sense to perform selection!"
+        print(message)
         return json.dumps({
-            'status' : "user error",
+            'status' : "error",
             "message" : message,
             'vampireState' : vampireWrapper.vampireState
         })
     if(not selectedId in vampireWrapper.remainingChoices):
-        message = "Selected id " + str(selectedId) + " is not a valid choice and will be ignored."
-        print("User error " + message)
+        message = "User error: Selected id " + str(selectedId) + " is not a valid choice and will be ignored."
+        print(message)
         return json.dumps({
-            'status' : "user error",
+            'status' : "error",
             "message" : message,
             'remainingChoices' : vampireWrapper.remainingChoices
         })
