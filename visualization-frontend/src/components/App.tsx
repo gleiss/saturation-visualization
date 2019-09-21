@@ -252,9 +252,6 @@ class App extends Component<Props, State> {
   }
 
   // select the clause with id 'selectedId', then compute incremental layout for resulting dag
-  // the incremental layout first computes the positions for the newly generated nodes while ignoring the existing ones.
-  // then, all newly generated nodes are shifted by the same amount so that one of the source nodes of the graph of newly 
-  // generated nodes occurs closely under the position indicated by the positioning hint.
   async selectClause(selectedId: number, positioningHint: [number, number]) {
     assert(this.state.dags.length >= 1);
     const currentDag = this.state.dags[this.state.dags.length-1];
@@ -290,39 +287,7 @@ class App extends Component<Props, State> {
         }
 
         if (newNodes.size > 0) {
-          // compute incremental layout for newly generated nodes using the following heuristic:
-          // 1) layout new nodes while ignoring existing nodes
-          await VizWrapper.layoutNodes(newNodes);
-  
-          // 2) find a source node of the dag of newly generated nodes
-          let sourceNode: SatNode | null = null;
-          for (const node of newNodes.values()) {
-            let isSourceNode = true;
-            for (const parentId of node.parents) {
-              if (newNodes.has(parentId)) {
-                isSourceNode = false;
-                break;
-              }
-            }
-            if (isSourceNode) {
-              sourceNode = node;
-              break;
-            }
-          }
-          assert(sourceNode !== null);
-          assert((sourceNode as SatNode).position !== null);
-  
-          // 3) shift subgraph of newly generated nodes, so that the source node of the subgraph
-          //    is shifted to a position closely under the position indicated by the positioning hint.
-          const [posSelectedX, posSelectedY] = positioningHint;
-          const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
-          const deltaX = posSelectedX-posSourceX;
-          const deltaY = (posSelectedY - posSourceY) - 1;
-          for (const node of newNodes.values()) {
-            assert(node.position != null);
-            const position = node.position as [number, number];
-            node.position = [position[0] + deltaX, position[1] + deltaY];
-          }
+          await VizWrapper.layoutNodesAtPosition(newNodes, positioningHint);
         }
 
         if (this.props.orientClauses) {

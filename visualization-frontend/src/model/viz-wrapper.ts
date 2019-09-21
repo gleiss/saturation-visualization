@@ -7,6 +7,44 @@ const PLAIN_PATTERN = /^(\d+) ([0-9.]+) ([0-9.]+).*$/g;
 
 export class VizWrapper {
 
+  // first computes the positions for the nodes while ignoring the position given as parameter.
+  // then, all node positions are shifted by the same amount so that one of the nodes 
+  // occurs closely under the position given as parameter
+  static async layoutNodesAtPosition(nodes: Map<number, SatNode>, position: [number, number]) {
+    // 1) layout new nodes while ignoring existing nodes
+    await VizWrapper.layoutNodes(nodes);
+
+    // 2) find a source node of the dag of newly generated nodes
+    let sourceNode: SatNode | null = null;
+    for (const node of nodes.values()) {
+      let isSourceNode = true;
+      for (const parentId of node.parents) {
+        if (nodes.has(parentId)) {
+          isSourceNode = false;
+          break;
+        }
+      }
+      if (isSourceNode) {
+        sourceNode = node;
+        break;
+      }
+    }
+    assert(sourceNode !== null);
+    assert((sourceNode as SatNode).position !== null);
+
+    // 3) shift subgraph of newly generated nodes, so that the source node of the subgraph
+    //    is shifted to a position closely under the position indicated by the positioning hint.
+    const [posSelectedX, posSelectedY] = position;
+    const [posSourceX, posSourceY] = (sourceNode as SatNode).position as [number, number];
+    const deltaX = posSelectedX-posSourceX;
+    const deltaY = (posSelectedY - posSourceY) - 1;
+    for (const node of nodes.values()) {
+      assert(node.position != null);
+      const position = node.position as [number, number];
+      node.position = [position[0] + deltaX, position[1] + deltaY];
+    }
+  }
+
   static async layoutDag(dag: Dag, onlyActiveDag: boolean) {
     // generate dot string
     const dotString = VizWrapper.dagToDotString(dag, onlyActiveDag);
