@@ -20,13 +20,6 @@ CORS(app)
 
 vampireWrapper = VampireWrapper()
 
-@app.route('/', methods=['POST'])
-def handle_file_upload():
-    request_params = request.get_json()
-    text = request_params.get('file', '')
-    lines = parse(text)
-    return json.dumps({'lines': [line.to_json() for line in lines]})
-
 @app.route('/vampire/start', methods=['POST'])
 def handle_startVampire():  
     # TODO: proper exception handling for all POST requests  
