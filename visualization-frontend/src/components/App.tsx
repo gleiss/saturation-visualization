@@ -70,7 +70,7 @@ class App extends Component<Props, State> {
           dag={dag}
           nodeSelection={nodeSelection}
           changedNodeEvent={changedNodeEvent}
-          historyLength={dags[0].numberOfHistorySteps()}
+          historyLength={dags[0].maximalActiveTime()}
           historyState={historyState}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onHistoryStateChange={this.updateHistoryState.bind(this)}
@@ -227,7 +227,7 @@ class App extends Component<Props, State> {
         this.setState({
           dags: [mergedDag],
           nodeSelection: [],
-          historyState: mergedDag.numberOfHistorySteps(),
+          historyState: dag.maximalActiveTime(),
           error: null,
           isLoaded: true,
           isLoading: false
@@ -255,7 +255,7 @@ class App extends Component<Props, State> {
   async selectClause(selectedId: number, positioningHint: [number, number]) {
     assert(this.state.dags.length >= 1);
     const currentDag = this.state.dags[this.state.dags.length-1];
-    const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.numberOfHistorySteps()); // needs to be computed before dag is extended, since nodes are shared
+    const currentDagActiveNodes = currentDag.computeNodesInActiveDag(currentDag.maximalActiveTime()); // needs to be computed before dag is extended, since nodes are shared
     assert(currentDag.mergeMap !== null);
 
     // ask server to select clause and await resulting saturation events
@@ -278,7 +278,7 @@ class App extends Component<Props, State> {
         const newDag = Dag.fromParsedLines(parsedLines, currentDag);
 
         // compute which nodes have been newly generated
-        const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.numberOfHistorySteps());
+        const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.maximalActiveTime());
         const newNodes = new Map<number, SatNode>();
         for (const [nodeId, node] of newDag.nodes) {
           if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
@@ -298,7 +298,7 @@ class App extends Component<Props, State> {
         this.setState({
           dags: [newDag],
           nodeSelection: [],
-          historyState: newDag.numberOfHistorySteps(),
+          historyState: newDag.maximalActiveTime(),
           error: null,
           isLoaded: true,
           isLoading: false

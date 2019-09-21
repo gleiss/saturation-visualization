@@ -84,14 +84,14 @@ export class Dag {
     return node as SatNode;
   }
 
-  numberOfHistorySteps(): number {
-    let counter = 0;
+  maximalActiveTime(): number {
+    let max = 0;
     for (const node of this.nodes.values()) {
-      if (node.activeTime !== null) {
-        counter += 1;
+      if (node.activeTime !== null && node.activeTime > max) {
+        max = node.activeTime;
       }
     }
-    return counter;
+    return max;
   }
 
   isEmpty(): boolean {
@@ -165,7 +165,7 @@ export class Dag {
     const nodes = (existingDag === null) ? new Map<number, SatNode>() : new Map<number, SatNode>(existingDag.nodes);
 
     let currentNode: SatNode | null = null;
-    let currentTime = (existingDag === null) ? 0 : existingDag.numberOfHistorySteps();
+    let currentTime = (existingDag === null) ? 0 : existingDag.maximalActiveTime();
 
     let emptyClauseNode: SatNode | null = null;
 
