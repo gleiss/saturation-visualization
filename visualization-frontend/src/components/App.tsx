@@ -181,7 +181,26 @@ class App extends Component<Props, State> {
       const json = await fetchedJSON.json();
 
       if (json.status === "success") {
-        assert(json.status === "success");
+        console.log(`vampireState: ${json.vampireState}`);
+        assert(json.vampireState === "refutation" || json.vampireState === "saturation" || json.vampireState === "timeout");
+        if (mode === "proof") {
+          if (json.vampireState === "saturation") {
+            this.setState({
+              error: "Saturation: Vampire saturated, so there exists no proof!",
+              isLoaded: true,
+              isLoading: false
+            });
+            return;
+          }
+          if (json.vampireState === "timeout") {
+            this.setState({
+              error: "Timeout: Vampire could not find a proof in the given time!",
+              isLoaded: true,
+              isLoading: false
+            });
+            return;
+          }
+        }
         const parsedLines = this.jsonToParsedLines(json);
 
         let dag = Dag.fromParsedLines(parsedLines, null);
