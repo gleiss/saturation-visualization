@@ -7,8 +7,8 @@ const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
   historyLength: number,
-  historyState: number,
-  onHistoryStateChange: (newState: number) => void,
+  currentTime: number,
+  onCurrentTimeChange: (newState: number) => void,
   enabled: boolean
 };
 export default class Slider extends React.Component<Props, {}> {
@@ -16,12 +16,12 @@ export default class Slider extends React.Component<Props, {}> {
   private slider = React.createRef<HTMLInputElement>();
 
   render() {
-    const {historyLength, historyState, onHistoryStateChange} = this.props;
+    const {historyLength, currentTime, onCurrentTimeChange} = this.props;
 
     return (
       <section className="component-slider">
 
-        <button disabled={!this.props.enabled || historyState <= 0} onClick={() => onHistoryStateChange(historyState - 1)}>
+        <button disabled={!this.props.enabled || currentTime <= 0} onClick={() => onCurrentTimeChange(currentTime - 1)}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#history-back`}/>
           </svg>
@@ -33,13 +33,13 @@ export default class Slider extends React.Component<Props, {}> {
             type="range"
             min={0}
             max={historyLength}
-            value={historyState}
+            value={currentTime}
             disabled={!this.props.enabled}
-            onChange={() => onHistoryStateChange(this.getSliderValue())}
+            onChange={() => onCurrentTimeChange(this.getSliderValue())}
           />
         </section>
 
-        <button disabled={!this.props.enabled || historyState >= historyLength} onClick={() => onHistoryStateChange(historyState + 1)}>
+        <button disabled={!this.props.enabled || currentTime >= historyLength} onClick={() => onCurrentTimeChange(currentTime + 1)}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#history-forward`}/>
           </svg>

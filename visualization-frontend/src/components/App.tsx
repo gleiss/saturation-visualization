@@ -24,7 +24,7 @@ type Props = {
 };
 
 /* Invariant: the state is always in one of the following phases
- *    "loaded": A dag is loaded. Clause selection is not possible. dags, nodeSelection and historyState hold meaningful values.
+ *    "loaded": A dag is loaded. Clause selection is not possible. dags, nodeSelection and currentTime hold meaningful values.
  *    "loaded selected": Same as "loaded", but clause selection is possible.
  *    "waiting": Waiting for answer from Vampire server. message holds a meaningful value.
  *    "layouting": Layouting a dag. message holds a meaningful value.
@@ -34,7 +34,7 @@ type State = {
   state: "loaded" | "loaded select" | "waiting" | "layouting" | "error",
   dags: Dag[],
   nodeSelection: number[],
-  historyState: number,
+  currentTime: number,
   changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
 };
@@ -45,7 +45,7 @@ class App extends Component<Props, State> {
     state: "waiting",
     dags: [],
     nodeSelection: [],
-    historyState: 0,
+    currentTime: 0,
     changedNodeEvent: undefined,
     message: ""
   };
@@ -55,7 +55,7 @@ class App extends Component<Props, State> {
       state,
       dags,
       nodeSelection,
-      historyState,
+      currentTime,
       changedNodeEvent,
       message
     } = this.state;
@@ -71,9 +71,9 @@ class App extends Component<Props, State> {
           nodeSelection={nodeSelection}
           changedNodeEvent={changedNodeEvent}
           historyLength={dags[0].maximalActiveTime()}
-          historyState={historyState}
+          currentTime={currentTime}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
-          onHistoryStateChange={this.updateHistoryState.bind(this)}
+          onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onShowPassiveDag={this.showPassiveDag.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
           onUpdateNodePosition={this.updateNodePosition.bind(this)}
@@ -94,7 +94,7 @@ class App extends Component<Props, State> {
         {main}
         <Aside
           dag={dag}
-          historyState={historyState}
+          currentTime={currentTime}
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
@@ -129,12 +129,12 @@ class App extends Component<Props, State> {
     this.setState({nodeSelection: nodeSelection});
   }
 
-  updateHistoryState(historyState: number) {
+  updateCurrentTime(currentTime: number) {
     const dags = this.state.dags
     assert(dags.length > 0);
     const dag = dags[dags.length - 1];
 
-    const nodesInActiveDag = dag.computeNodesInActiveDag(historyState);
+    const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
     const nodeSelection = new Array<number>();
     for (const nodeId of this.state.nodeSelection) {
       if (nodesInActiveDag.has(nodeId)) {
@@ -143,7 +143,7 @@ class App extends Component<Props, State> {
     }
     this.setState({
       nodeSelection: nodeSelection,
-      historyState: historyState
+      currentTime: currentTime
     });
   }
 
@@ -170,7 +170,7 @@ class App extends Component<Props, State> {
       message: "Waiting for Vampire...",
       dags: [],
       nodeSelection: [],
-      historyState: 0
+      currentTime: 0
     });
 
     const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
@@ -203,7 +203,7 @@ class App extends Component<Props, State> {
               message: "Saturation: Vampire saturated, so there exists no proof!",
               dags: [],
               nodeSelection: [],
-              historyState: 0
+              currentTime: 0
             });
             return;
           }
@@ -213,7 +213,7 @@ class App extends Component<Props, State> {
               message: "Timeout: Vampire could not find a proof in the given time!",
               dags: [],
               nodeSelection: [],
-              historyState: 0
+              currentTime: 0
             });
             return;
           }
@@ -253,7 +253,7 @@ class App extends Component<Props, State> {
           state: state,
           dags: [dag],
           nodeSelection: [],
-          historyState: dag.maximalActiveTime()
+          currentTime: dag.maximalActiveTime()
         });
       } else {
         assert(json.status === "error");
@@ -264,7 +264,7 @@ class App extends Component<Props, State> {
           message: errorMessage,
           dags: [],
           nodeSelection: [],
-          historyState: 0
+          currentTime: 0
         });
       }
     } catch (error) {
@@ -273,7 +273,7 @@ class App extends Component<Props, State> {
         message: `Error: ${error["message"]}`,
         dags: [],
         nodeSelection: [],
-        historyState: 0
+        currentTime: 0
       });
     }
   }
@@ -327,7 +327,7 @@ class App extends Component<Props, State> {
           state: state,
           dags: [newDag],
           nodeSelection: [],
-          historyState: newDag.maximalActiveTime(),
+          currentTime: newDag.maximalActiveTime(),
         });
       } else {
         assert(json.status === "error");
@@ -338,7 +338,7 @@ class App extends Component<Props, State> {
           message: errorMessage,
           dags: [],
           nodeSelection: [],
-          historyState: 0
+          currentTime: 0
         });
       }
     } catch (error) {
@@ -347,7 +347,7 @@ class App extends Component<Props, State> {
         message: `Error: ${error["message"]}`,
         dags: [],
         nodeSelection: [],
-        historyState: 0
+        currentTime: 0
       });
     }
   }

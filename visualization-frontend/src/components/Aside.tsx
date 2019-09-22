@@ -10,7 +10,7 @@ import { assert } from '../model/util';
 
 type Props = {
   dag: Dag | null,
-  historyState: number,
+  currentTime: number,
   nodeSelection: number[],
   multipleVersions: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
@@ -60,7 +60,7 @@ export default class Aside extends React.Component<Props, {}> {
         />
         <NodeCard
           dag={this.props.dag}
-          historyState={this.props.historyState}
+          currentTime={this.props.currentTime}
           nodeSelection={this.props.nodeSelection}
           onUpdateNodeSelection={this.props.onUpdateNodeSelection}
           onSelectParents={this.props.onSelectParents}

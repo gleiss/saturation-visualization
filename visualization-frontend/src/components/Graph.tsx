@@ -13,7 +13,7 @@ type Props = {
   dag: Dag,
   nodeSelection: number[],
   changedNodeEvent?: [number, number],
-  historyState: number,
+  currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
   onDismissPassiveDag: (selectedId: number) => void,
@@ -44,7 +44,7 @@ export default class Graph extends React.Component<Props, {}> {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
         this.network!.selectNodes(this.props.nodeSelection);
       }
-      if (this.props.historyState !== prevProps.historyState) {
+      if (this.props.currentTime !== prevProps.currentTime) {
         this.updateNetwork(true);
       }
       if (this.props.changedNodeEvent !== prevProps.changedNodeEvent) {
@@ -55,7 +55,7 @@ export default class Graph extends React.Component<Props, {}> {
 
           const updatedNetworkNode = {
             id : incomingEvent![1],
-            label : this.props.dag.get(incomingEvent![1]).toHTMLString(this.props.historyState)
+            label : this.props.dag.get(incomingEvent![1]).toHTMLString(this.props.currentTime)
           };
           this.networkNodes.update(updatedNetworkNode);
         }
@@ -100,7 +100,7 @@ export default class Graph extends React.Component<Props, {}> {
             await this.props.onDismissPassiveDag(nodeId);
           }
         } else {
-          await this.props.onShowPassiveDag(nodeId, this.props.historyState);
+          await this.props.onShowPassiveDag(nodeId, this.props.currentTime);
         }
       }
     });
@@ -130,7 +130,7 @@ export default class Graph extends React.Component<Props, {}> {
   // if onlyUpdateStyles is false, all nodes and edges are newly generated.
   // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
   updateNetwork(onlyUpdateStyles: boolean) {
-    const {dag, historyState} = this.props;
+    const {dag, currentTime} = this.props;
 
     const visNodes = new Array<Node>();
     const visEdges = new Array<Edge>();
@@ -139,7 +139,7 @@ export default class Graph extends React.Component<Props, {}> {
     // partition nodes:
     // for standard dags, compute node partition
     // for passive dags use style map cached in dag
-    const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, historyState);
+    const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, currentTime);
 
     // update network nodes
     for (const [satNodeId, satNode] of dag.nodes) {
@@ -222,7 +222,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     return {
       id : node.id,
-      label : node.toHTMLString(this.props.historyState),
+      label : node.toHTMLString(this.props.currentTime),
       labelHighlightBold : false,
       shape : "box",
       color : {

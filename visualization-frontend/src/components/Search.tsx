@@ -9,7 +9,7 @@ import { Clause } from '../model/unit';
 
 type Props = {
   dag: Dag | null,
-  historyState: number,
+  currentTime: number,
   onUpdateNodeSelection: (selection: number[]) => void
 };
 type State = {
@@ -26,7 +26,7 @@ export default class Search extends React.Component<Props, State> {
   private searchField3 = React.createRef<HTMLInputElement>();
 
   componentDidUpdate(prevProps) {
-    if (this.props.dag !== prevProps.dag || this.props.historyState !== prevProps.historyState) {
+    if (this.props.dag !== prevProps.dag || this.props.currentTime !== prevProps.currentTime) {
       this.searchField1.current!.value = "";
       this.searchField2.current!.value = "";
       this.searchField3.current!.value = "";
@@ -172,7 +172,7 @@ export default class Search extends React.Component<Props, State> {
       candidates = foundNodes;
     }
 
-    const nodesInActiveDag = this.props.dag!.computeNodesInActiveDag(this.props.historyState);
+    const nodesInActiveDag = this.props.dag!.computeNodesInActiveDag(this.props.currentTime);
     const foundNodes = new Array<SatNode>();
     for (const node of candidates) {
       if (nodesInActiveDag.has(node.id)) {

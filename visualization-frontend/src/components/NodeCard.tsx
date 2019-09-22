@@ -7,7 +7,7 @@ import './NodeCard.css';
 
 type Props = {
   dag: Dag | null,
-  historyState: number,
+  currentTime: number,
   nodeSelection: number[],
   onUpdateNodeSelection: (selection: number[]) => void,
   onSelectParents: () => void,
@@ -29,7 +29,7 @@ export default class NodeCard extends React.Component<Props, {}> {
           />
           <Search
             dag={this.props.dag}
-            historyState={this.props.historyState}
+            currentTime={this.props.currentTime}
             onUpdateNodeSelection={this.props.onUpdateNodeSelection}
           />
         </article>

@@ -10,9 +10,9 @@ type Props = {
   nodeSelection: number[],
   changedNodeEvent?: [number, number],
   historyLength: number,
-  historyState: number,
+  currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
-  onHistoryStateChange: (newState: number) => void,
+  onCurrentTimeChange: (newState: number) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
   onDismissPassiveDag: (selectedId: number) => void,
   onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
@@ -26,7 +26,7 @@ export default class Main extends React.Component<Props, {}> {
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
           changedNodeEvent={this.props.changedNodeEvent}
-          historyState={this.props.historyState}
+          currentTime={this.props.currentTime}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
           onShowPassiveDag={this.props.onShowPassiveDag}
           onDismissPassiveDag={this.props.onDismissPassiveDag}
@@ -34,8 +34,8 @@ export default class Main extends React.Component<Props, {}> {
         />
         <Slider
           historyLength={this.props.historyLength}
-          historyState={this.props.historyState}
-          onHistoryStateChange={this.props.onHistoryStateChange}
+          currentTime={this.props.currentTime}
+          onCurrentTimeChange={this.props.onCurrentTimeChange}
           enabled={!this.props.dag.isPassiveDag}
         />
       </main>
