@@ -6,10 +6,10 @@ import { Menu } from './Menu'
 type State = {
 	problem: string,
 	problemName: string,
+	inputSyntax: "smtlib" | "tptp",
 	vampireUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
-	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean
 }
 
@@ -18,10 +18,10 @@ export class AppRouter extends React.Component<{}, State> {
 	state: State = {
 		problem: "",
 		problemName: "",
+		inputSyntax: "smtlib",
 		vampireUserOptions: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
-		inputSyntax: "smtlib",
 		orientClauses: true
 	}
 
@@ -32,55 +32,45 @@ export class AppRouter extends React.Component<{}, State> {
 					<Menu 
 						problem={this.state.problem}
 						problemName={this.state.problemName}
+						inputSyntax={this.state.inputSyntax}
 						vampireUserOptions={this.state.vampireUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
-						inputSyntax={this.state.inputSyntax}
 						orientClauses={this.state.orientClauses}
 						onChangeProblem={this.changeProblem.bind(this)}
 						onChangeProblemName={this.changeProblemName.bind(this)}
+						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
 						onChangeVampireUserOptions={this.changeVampireUserOptions.bind(this)}
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
-						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
 						onChangeOrientClauses={this.changeOrientClauses.bind(this)}
 					/>
 				}/>
 				<Route path="/proof/" render={() => 
-					<App 
-						mode="proof" 
-						problem={this.state.problem!}
-						vampireUserOptions={this.state.vampireUserOptions}
-						hideBracketsAssoc={this.state.hideBracketsAssoc}
-						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
-						orientClauses={this.state.orientClauses}
-						inputSyntax={this.state.inputSyntax}
-					/>
+					this.appComponent("proof")
 				}/>
 				<Route path="/saturation/" render={() => 
-					<App 
-						mode="saturation" 
-						problem={this.state.problem!}
-						vampireUserOptions={this.state.vampireUserOptions}
-						hideBracketsAssoc={this.state.hideBracketsAssoc}
-						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
-						orientClauses={this.state.orientClauses}
-						inputSyntax={this.state.inputSyntax}
-					/>
+					this.appComponent("saturation")
 				}/>
 				<Route path="/manualcs/" render={() => 
-					<App 
-						mode="manualcs" 
-						problem={this.state.problem!}
-						vampireUserOptions={this.state.vampireUserOptions}
-						hideBracketsAssoc={this.state.hideBracketsAssoc}
-						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
-						orientClauses={this.state.orientClauses}
-						inputSyntax={this.state.inputSyntax}
-					/>
+					this.appComponent("manualcs")
 				}/>
 			</Router>
 		);
+	}
+
+	appComponent(mode: "proof" | "saturation" | "manualcs") {
+		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
+		const vampireUserOptions = `${this.state.vampireUserOptions} --input_syntax ${inputSyntax}`;
+
+		return <App
+			mode={mode}
+			problem={this.state.problem!}
+			vampireUserOptions={vampireUserOptions}
+			hideBracketsAssoc={this.state.hideBracketsAssoc}
+			nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
+			orientClauses={this.state.orientClauses}
+		/>
 	}
 
 	changeProblem(problem: string) {

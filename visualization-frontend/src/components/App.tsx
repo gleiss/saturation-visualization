@@ -21,7 +21,6 @@ type Props = {
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
   orientClauses: boolean,
-  inputSyntax: "smtlib" | "tptp";
 };
 
 /* Invariant: the state is always in one of the following phases
@@ -174,7 +173,6 @@ class App extends Component<Props, State> {
       },
       body: JSON.stringify({
         file: problem, 
-        inputSyntax: this.props.inputSyntax,
         vampireUserOptions: vampireUserOptions
       })
     });

@@ -6,17 +6,17 @@ import * as Monaco from 'monaco-editor'
 type Props = {
 	problem: string,
 	problemName: string,
+	inputSyntax: "smtlib" | "tptp",
 	vampireUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean
-	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean,
 	onChangeProblem: (problem: string) => void,
 	onChangeProblemName: (problemName: string) => void,
+	onChangeInputSyntax: (syntax: "smtlib" | "tptp") => void
 	onChangeVampireUserOptions: (vampireUserOptions: string) => void,
 	onChangeHideBracketsAssoc: (newValue: boolean) => void,
 	onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
-	onChangeInputSyntax: (syntax: "smtlib" | "tptp") => void
 	onChangeOrientClauses: (newValue: boolean) => void
 }
 

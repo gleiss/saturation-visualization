@@ -30,17 +30,6 @@ def startVampire(manualCS):
             "status" : "error",
             "message" : message
         })
-    inputSyntax = request_params.get('inputSyntax', '')
-    if inputSyntax != "smtlib" and inputSyntax != "tptp":
-        message = "User error: Wrong input syntax, must be either smtlib or tptp!"
-        print(message)
-        return json.dumps({
-            "status" : "error",
-            "message" : message
-        })
-    if inputSyntax == "smtlib":
-        inputSyntax = "smtlib2"
-
     vampireUserOptions = request_params.get("vampireUserOptions", "")
 
     temporaryFile = tempfile.NamedTemporaryFile()
@@ -48,9 +37,9 @@ def startVampire(manualCS):
     temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
 
     if manualCS:
-        output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax, vampireUserOptions)
+        output = vampireWrapper.startManualCS(temporaryFile.name, vampireUserOptions)
     else:
-        output = vampireWrapper.start(temporaryFile.name, inputSyntax, vampireUserOptions)
+        output = vampireWrapper.start(temporaryFile.name, vampireUserOptions)
 
     if vampireWrapper.vampireState == "error":
         message = "User error: Wrong options for Vampire or mistake in encoding"
