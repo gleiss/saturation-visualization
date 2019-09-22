@@ -24,46 +24,44 @@ type Props = {
 };
 
 /* Invariant: the state is always in one of the following phases
- * "Waiting": error, isLoaded and isLoading are all false
- * "Error":   error holds an error-string, and there are no guarantees on other fields
- * "Loading": isLoading is true, and there are no guarantees on other fields
- * "Loaded":  isLoaded is true, error is null, isLoading is false, and dags, nodeSelection and historyState hold meaningful values.
+ *    "loaded": A dag is loaded. Clause selection is not possible. dags, nodeSelection and historyState hold meaningful values.
+ *    "loaded selected": Same as "loaded", but clause selection is possible.
+ *    "waiting": Waiting for answer from Vampire server. message holds a meaningful value.
+ *    "layouting": Layouting a dag. message holds a meaningful value.
+ *    "error": Some error occured. message holds a meaningful value.
  */
 type State = {
+  state: "loaded" | "loaded select" | "waiting" | "layouting" | "error",
   dags: Dag[],
   nodeSelection: number[],
-  changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   historyState: number,
-  error: null | string,
-  isLoaded: boolean,
-  isLoading: boolean
+  changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
+  message: string,
 };
 
 class App extends Component<Props, State> {
 
   state: State = {
+    state: "waiting",
     dags: [],
     nodeSelection: [],
-    changedNodeEvent: undefined,
     historyState: 0,
-    error: null,
-    isLoaded: false,
-    isLoading: false
+    changedNodeEvent: undefined,
+    message: ""
   };
 
   render() {
     const {
+      state,
       dags,
       nodeSelection,
-      changedNodeEvent,
       historyState,
-      error,
-      isLoaded,
-      isLoading
+      changedNodeEvent,
+      message
     } = this.state;
     
     let main;
-    if (error === null && isLoaded) {
+    if (state === "loaded" || state === "loaded select") {
       const dag = dags[dags.length-1];
       main = (
         <Main
@@ -79,18 +77,10 @@ class App extends Component<Props, State> {
           onUpdateNodePosition={this.updateNodePosition.bind(this)}
         />
       );
-    } else if (isLoading || error) {
-      const message = error ? `${error}` : 'Waiting for Vampire...';
-      main = (
-        <main>
-          <section className="graph-placeholder">{message}</section>
-          <section className="slider-placeholder"/>
-        </main>
-      );
     } else {
       main = (
         <main>
-          <section className="graph-placeholder upload-info"><span>Upload file →</span></section>
+          <section className="graph-placeholder">{message}</section>
           <section className="slider-placeholder"/>
         </main>
       );
@@ -123,8 +113,7 @@ class App extends Component<Props, State> {
     // call Vampire on given input problem
     await this.runVampire(this.props.problem, this.props.vampireUserOptions, this.props.mode);
 
-    const vampireCallSucceeded = (this.state.error === null);
-    if (vampireCallSucceeded && this.props.mode === "manualcs") {
+    if (this.state.state === "loaded select" && this.props.mode === "manualcs") {
       this.selectFinalPreprocessingClauses();
     }
   }
@@ -159,9 +148,8 @@ class App extends Component<Props, State> {
 
   async runVampire(problem: string, vampireUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
     this.setState({
-      error: null,
-      isLoading: true,
-      isLoaded: false
+      state: "waiting",
+      message: "Waiting for Vampire..."
     });
 
     const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
@@ -190,17 +178,15 @@ class App extends Component<Props, State> {
           assert(json.vampireState !== "running")
           if (json.vampireState === "saturation") {
             this.setState({
-              error: "Saturation: Vampire saturated, so there exists no proof!",
-              isLoaded: true,
-              isLoading: false
+              state: "error",
+              message: "Saturation: Vampire saturated, so there exists no proof!"
             });
             return;
           }
           if (json.vampireState === "timeout") {
             this.setState({
-              error: "Timeout: Vampire could not find a proof in the given time!",
-              isLoaded: true,
-              isLoading: false
+              state: "error",
+              message: "Timeout: Vampire could not find a proof in the given time!"
             });
             return;
           }
@@ -235,29 +221,26 @@ class App extends Component<Props, State> {
         }
         this.setLiteralOptions(dag);
 
+        const state = (mode == "manualcs" && json.vampireState === "running") ? "loaded select" : "loaded";
         this.setState({
+          state: state,
           dags: [dag],
           nodeSelection: [],
-          historyState: dag.maximalActiveTime(),
-          error: null,
-          isLoaded: true,
-          isLoading: false
+          historyState: dag.maximalActiveTime()
         });
       } else {
         assert(json.status === "error");
         const errorMessage = json.message;
         assert(errorMessage !== undefined && errorMessage !== null);
         this.setState({
-          error: errorMessage,
-          isLoaded: true,
-          isLoading: false
+          state: "error",
+          message: errorMessage
         });
       }
     } catch (error) {
       this.setState({
-        error: `Error: ${error["message"]}`,
-        isLoaded: true,
-        isLoading: false
+        state: "error",
+        message: `Error: ${error["message"]}`
       });
     }
   }
@@ -306,39 +289,34 @@ class App extends Component<Props, State> {
         }
         this.setLiteralOptions(newDag);
   
+        const state = json.vampireState === "running" ? "loaded select" : "loaded";
         this.setState({
+          state: state,
           dags: [newDag],
           nodeSelection: [],
           historyState: newDag.maximalActiveTime(),
-          error: null,
-          isLoaded: true,
-          isLoading: false
         });
       } else {
         assert(json.status === "error");
         const errorMessage = json.message;
         assert(errorMessage !== undefined && errorMessage !== null);
         this.setState({
-          error: errorMessage,
-          isLoaded: true,
-          isLoading: false
+          state: "error",
+          message: errorMessage,
         });
       }
     } catch (error) {
       this.setState({
-        error: `Error: ${error["message"]}`,
-        isLoaded: true,
-        isLoading: false
+        state: "error",
+        message: `Error: ${error["message"]}`
       });
     }
   }
 
   async selectFinalPreprocessingClauses() {
-    assert(this.state.dags.length === 1);
-
-    // iterate as long as a suitable clause is found and as long as no server error happens
+    // iterate as long as the server waits for clause selections and as long as a suitable clause is found
     let stop = false;
-    while (!stop && this.state.error === null && !this.state.dags[0].isRefutation()) {
+    while (this.state.state === "loaded select" && !stop) {
       const dag = this.state.dags[0];
 
       // find a final preprocessing clause which can be selected
