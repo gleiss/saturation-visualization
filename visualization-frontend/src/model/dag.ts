@@ -292,7 +292,7 @@ export class Dag {
     return activeNodeIds;
   }
 
-  // Definition: the active dag contains all nodes which occur in the derivation of a currently active node
+  // Definition: the active dag contains all nodes which occur in the derivation of a currently active node, and all preprocessing nodes
   computeNodesInActiveDag(currentTime: number) : Set<number> {
     const nodeIds = this.computeActiveNodes(currentTime);
 
@@ -309,6 +309,13 @@ export class Dag {
       }    
     }
 
+    // add all preprocessing nodes
+    for (const node of this.nodes.values()) {
+      if (node.isFromPreprocessing) {
+        nodeIds.add(node.id);
+      }
+    }
+    
     return nodeIds;
   }
 

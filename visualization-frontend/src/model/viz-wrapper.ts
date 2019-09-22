@@ -96,7 +96,7 @@ export class VizWrapper {
 
     const edgeStrings = new Array<string>();
     for (const node of dag.nodes.values()) {
-      if (node.isFromPreprocessing || !onlyActiveDag || (nodesInActiveDag as Set<number>).has(node.id)) {
+      if (!onlyActiveDag || (nodesInActiveDag as Set<number>).has(node.id)) {
         for (const parentId of node.parents) {
           edgeStrings.push(`${parentId} -> ${node.id}`)
         }

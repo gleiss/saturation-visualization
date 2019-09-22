@@ -175,7 +175,7 @@ export default class Search extends React.Component<Props, State> {
     const nodesInActiveDag = this.props.dag!.computeNodesInActiveDag(this.props.historyState);
     const foundNodes = new Array<SatNode>();
     for (const node of candidates) {
-      if (node.isFromPreprocessing || nodesInActiveDag.has(node.id)) {
+      if (nodesInActiveDag.has(node.id)) {
         foundNodes.push(node);
       }
     }

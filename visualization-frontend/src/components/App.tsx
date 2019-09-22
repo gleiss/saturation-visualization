@@ -134,8 +134,6 @@ class App extends Component<Props, State> {
     assert(dags.length > 0);
     const dag = dags[dags.length - 1];
 
-    // BUG: potentially deselects a preprocessing node even if it is currently displayed
-    // fix by rewriting computeNodesInActiveDag to include preprocessing nodes
     const nodesInActiveDag = dag.computeNodesInActiveDag(historyState);
     const nodeSelection = new Array<number>();
     for (const nodeId of this.state.nodeSelection) {
@@ -310,7 +308,7 @@ class App extends Component<Props, State> {
         const newDagActiveNodes = newDag.computeNodesInActiveDag(newDag.maximalActiveTime());
         const newNodes = new Map<number, SatNode>();
         for (const [nodeId, node] of newDag.nodes) {
-          if(!node.isFromPreprocessing && newDagActiveNodes.has(nodeId) && !currentDagActiveNodes.has(nodeId)) {
+          if(!currentDagActiveNodes.has(nodeId) && newDagActiveNodes.has(nodeId)) {
             newNodes.set(nodeId, node);
           }
         }
