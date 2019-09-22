@@ -38,15 +38,19 @@ def startVampire(manualCS):
             "status" : "error",
             "message" : message
         })
+    if inputSyntax == "smtlib":
+        inputSyntax = "smtlib2"
+
+    vampireUserOptions = request_params.get("vampireUserOptions", "")
 
     temporaryFile = tempfile.NamedTemporaryFile()
     temporaryFile.write(str.encode(fileContent))
     temporaryFile.flush() # commit file buffer to disk so that Vampire can access it
 
     if manualCS:
-        output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax)
+        output = vampireWrapper.startManualCS(temporaryFile.name, inputSyntax, vampireUserOptions)
     else:
-        output = vampireWrapper.start(temporaryFile.name, inputSyntax)
+        output = vampireWrapper.start(temporaryFile.name, inputSyntax, vampireUserOptions)
 
     if vampireWrapper.vampireState == "error":
         message = "User error: Wrong options for Vampire or mistake in encoding"

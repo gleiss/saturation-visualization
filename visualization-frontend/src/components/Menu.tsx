@@ -6,12 +6,14 @@ import * as Monaco from 'monaco-editor'
 type Props = {
 	problem: string,
 	problemName: string,
+	vampireUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean
 	inputSyntax: "smtlib" | "tptp",
 	orientClauses: boolean,
 	onChangeProblem: (problem: string) => void,
 	onChangeProblemName: (problemName: string) => void,
+	onChangeVampireUserOptions: (vampireUserOptions: string) => void,
 	onChangeHideBracketsAssoc: (newValue: boolean) => void,
 	onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
 	onChangeInputSyntax: (syntax: "smtlib" | "tptp") => void
@@ -86,6 +88,13 @@ export class Menu extends React.Component<Props, {}> {
 							Input language
 						</label>
 					</li>
+					<li>
+						<label>
+						<input type="text" onChange={this.changeVampireUserOptions.bind(this)} value={this.props.vampireUserOptions}>
+						</input>
+						Additional Vampire options
+						</label>
+					</li>
 				</ul>
 				<p>Visualization:</p>
 				<ul>
@@ -151,6 +160,11 @@ export class Menu extends React.Component<Props, {}> {
 			};	
 			reader.readAsText(file);
 		}
+	}
+
+	changeVampireUserOptions(event: React.ChangeEvent<HTMLInputElement>) {
+		const newValue = event.target.value;
+		this.props.onChangeVampireUserOptions(newValue);
 	}
 
 	changeTextArea(event: React.ChangeEvent<HTMLTextAreaElement>) {

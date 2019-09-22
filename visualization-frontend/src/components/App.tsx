@@ -16,6 +16,7 @@ import { orientClauses } from '../model/clause-orientation';
 
 type Props = {
   problem: string,
+  vampireUserOptions: string,
   mode: "proof" | "saturation" | "manualcs"
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
@@ -121,7 +122,7 @@ class App extends Component<Props, State> {
   async componentDidMount() {
 
     // call Vampire on given input problem
-    await this.runVampire(this.props.problem, this.props.mode);
+    await this.runVampire(this.props.problem, this.props.vampireUserOptions, this.props.mode);
 
     const vampireCallSucceeded = (this.state.error === null);
     if (vampireCallSucceeded && this.props.mode === "manualcs") {
@@ -157,7 +158,7 @@ class App extends Component<Props, State> {
     return parsedLines;
   }
 
-  async runVampire(problem: string, mode: "proof" | "saturation" | "manualcs") {
+  async runVampire(problem: string, vampireUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
     this.setState({
       error: null,
       isLoading: true,
@@ -173,7 +174,8 @@ class App extends Component<Props, State> {
       },
       body: JSON.stringify({
         file: problem, 
-        inputSyntax: this.props.inputSyntax
+        inputSyntax: this.props.inputSyntax,
+        vampireUserOptions: vampireUserOptions
       })
     });
 
@@ -181,9 +183,13 @@ class App extends Component<Props, State> {
       const json = await fetchedJSON.json();
 
       if (json.status === "success") {
-        console.log(`vampireState: ${json.vampireState}`);
-        assert(json.vampireState === "refutation" || json.vampireState === "saturation" || json.vampireState === "timeout");
+        assert(json.vampireState === "running" ||
+          json.vampireState === "refutation" ||
+          json.vampireState === "saturation" ||
+          json.vampireState === "timeout");
+
         if (mode === "proof") {
+          assert(json.vampireState !== "running")
           if (json.vampireState === "saturation") {
             this.setState({
               error: "Saturation: Vampire saturated, so there exists no proof!",

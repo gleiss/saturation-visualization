@@ -6,6 +6,7 @@ import { Menu } from './Menu'
 type State = {
 	problem: string,
 	problemName: string,
+	vampireUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
 	inputSyntax: "smtlib" | "tptp",
@@ -17,6 +18,7 @@ export class AppRouter extends React.Component<{}, State> {
 	state: State = {
 		problem: "",
 		problemName: "",
+		vampireUserOptions: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
 		inputSyntax: "smtlib",
@@ -30,12 +32,14 @@ export class AppRouter extends React.Component<{}, State> {
 					<Menu 
 						problem={this.state.problem}
 						problemName={this.state.problemName}
+						vampireUserOptions={this.state.vampireUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						inputSyntax={this.state.inputSyntax}
 						orientClauses={this.state.orientClauses}
 						onChangeProblem={this.changeProblem.bind(this)}
 						onChangeProblemName={this.changeProblemName.bind(this)}
+						onChangeVampireUserOptions={this.changeVampireUserOptions.bind(this)}
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
 						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
@@ -46,6 +50,7 @@ export class AppRouter extends React.Component<{}, State> {
 					<App 
 						mode="proof" 
 						problem={this.state.problem!}
+						vampireUserOptions={this.state.vampireUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
@@ -56,6 +61,7 @@ export class AppRouter extends React.Component<{}, State> {
 					<App 
 						mode="saturation" 
 						problem={this.state.problem!}
+						vampireUserOptions={this.state.vampireUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
@@ -66,6 +72,7 @@ export class AppRouter extends React.Component<{}, State> {
 					<App 
 						mode="manualcs" 
 						problem={this.state.problem!}
+						vampireUserOptions={this.state.vampireUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
@@ -81,6 +88,9 @@ export class AppRouter extends React.Component<{}, State> {
 	}
 	changeProblemName(problemName: string) {
 		this.setState({problemName: problemName});
+	}
+	changeVampireUserOptions(vampireUserOptions: string) {
+		this.setState({vampireUserOptions: vampireUserOptions});
 	}
 	changeHideBracketsAssoc(newValue: boolean) {
 		this.setState({hideBracketsAssoc: newValue});
