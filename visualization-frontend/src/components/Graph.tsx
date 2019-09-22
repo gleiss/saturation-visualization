@@ -55,7 +55,7 @@ export default class Graph extends React.Component<Props, {}> {
 
           const updatedNetworkNode = {
             id : incomingEvent![1],
-            label : this.props.dag.get(incomingEvent![1]).toHTMLString()
+            label : this.props.dag.get(incomingEvent![1]).toHTMLString(this.props.historyState)
           };
           this.networkNodes.update(updatedNetworkNode);
         }
@@ -222,7 +222,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     return {
       id : node.id,
-      label : node.toHTMLString(),
+      label : node.toHTMLString(this.props.historyState),
       labelHighlightBold : false,
       shape : "box",
       color : {

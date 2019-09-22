@@ -20,7 +20,7 @@ export class Formula {
     return this.formula;
   }
 
-  toHTMLString(): string {
+  toHTMLString(isActive: boolean): string {
     return this.formula;
   }
 }
@@ -71,7 +71,7 @@ export class Clause {
     return literals.map(literal => literal.toString(true)).join(" | ");
   }
 
-  toHTMLString(): string {
+  toHTMLString(isActive: boolean): string {
     const premiseString = this.premiseLiterals
       .map(literal => literal.isSelected ? ("<b>" + literal.toString(false) + "</b>") : literal.toString(false))
       .join(" & ");
@@ -79,23 +79,32 @@ export class Clause {
     let conclusionString = this.conclusionLiterals
       .map(literal => literal.isSelected ? ("<b>" + literal.toString(true) + "</b>") : literal.toString(true))
       .join(" | ");
-
+    const premiseStringWithoutBoldness = this.premiseLiterals
+      .map(literal => literal.toString(false))
+      .join(" & ");
+    let conclusionStringWithoutBoldness = this.conclusionLiterals
+      .map(literal => literal.toString(true))
+      .join(" | ");
     if(this.conclusionLiterals.length === 0) {
       conclusionString = "$false";
+      conclusionStringWithoutBoldness = "$false";
     }
+
     if (this.premiseLiterals.length === 0) {
-      return conclusionString;
+      if (isActive) {
+        return conclusionString;
+      } else {
+        return conclusionStringWithoutBoldness;
+      }
     } else {
       // simple heuristic to estimate the length of the separating line between premise and conclusion.
-      const premiseStringWithoutBoldness = this.premiseLiterals
-        .map(literal => literal.toString(false))
-        .join(" & ");
-      const conclusionStringWithoutBoldness = this.conclusionLiterals
-        .map(literal => literal.toString(true))
-        .join(" | ");
       const estimatedLengthOfLine = Math.ceil(Math.max(premiseStringWithoutBoldness.length, conclusionStringWithoutBoldness.length) * 0.8);
-      const string = premiseString + "\n" + "\u2013".repeat(estimatedLengthOfLine) + "\n" + conclusionString;
-      return string;
+
+      if (isActive) {
+        return premiseString + "\n" + "\u2013".repeat(estimatedLengthOfLine) + "\n" + conclusionString;
+      } else {
+        return premiseStringWithoutBoldness + "\n" + "\u2013".repeat(estimatedLengthOfLine) + "\n" + conclusionStringWithoutBoldness;
+      }
     }
   }
 }

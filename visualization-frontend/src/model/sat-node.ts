@@ -55,7 +55,8 @@ export default class SatNode {
     return this.unit.toString();
   }
 
-  toHTMLString(): string {
-    return this.unit.toHTMLString();
+  toHTMLString(currentTime: number): string {
+    const isActive = this.activeTime !== null && this.activeTime <= currentTime;
+    return this.unit.toHTMLString(isActive);
   }
 }
