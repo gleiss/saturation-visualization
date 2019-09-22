@@ -37,6 +37,7 @@ export default class Aside extends React.Component<Props, {}> {
       nodeDetails = 
       <NodeDetails
         node={node}
+        numberOfTransitiveActivatedChildren={this.props.dag!.numberOfTransitiveActivatedChildren(node.id, this.props.currentTime)}
         onLiteralOrientationChange={this.props.onLiteralOrientationChange}
         onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
       />;

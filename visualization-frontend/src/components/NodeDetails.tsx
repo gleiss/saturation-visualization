@@ -8,6 +8,7 @@ import SatNode from '../model/sat-node';
 
 type Props = {
   node: SatNode,
+  numberOfTransitiveActivatedChildren: number,
   onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void,
   onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 };
@@ -19,7 +20,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
     return (
       <section className={'component-node-details details'}>
         <article>
-          <h2>Node <strong>{this.props.node.id}</strong></h2>
+          <h2>Node <strong>{this.props.node.id}, {this.props.numberOfTransitiveActivatedChildren} children</strong></h2>
           <h3>{this.props.node.inferenceRule}</h3>
           {
             this.props.node.unit.type === "Formula" ? (

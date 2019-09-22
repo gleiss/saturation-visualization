@@ -1,7 +1,7 @@
 import SatNode from './sat-node';
 import { assert } from './util';
 import { UnitParser } from './unit-parser';
-import { ReversePostOrderTraversal } from "./traversal";
+import { ReversePostOrderTraversal, DFPostOrderTraversal } from "./traversal";
 import { Clause } from './unit';
 
 export class ParsedLine {
@@ -112,6 +112,42 @@ export class Dag {
       }
     }
     return children;
+  }
+
+  numberOfTransitiveActivatedChildren(nodeId: number, currentTime: number) {
+    let counter = 0;
+
+        // use new set to avoid mutating relevantIds
+    const transitiveChildrenIds = new Set<number>([nodeId]);
+
+    // add all transitive children of ids in transitiveChildren to transitiveChildren
+    const iterator = new DFPostOrderTraversal(this);
+    while (iterator.hasNext()) {
+      let currentNode = iterator.getNext();
+
+      // check if currentNode occurs in transitiveChildren or
+      // has a parent which occurs in transitiveChildren
+      let existsRelevantParent = false;
+      for (const parentId of currentNode.parents) {
+        if (transitiveChildrenIds.has(parentId)) {
+          existsRelevantParent = true;
+          break;
+        }
+      }
+      const isRelevant = existsRelevantParent || transitiveChildrenIds.has(currentNode.id);
+      const alreadyGenerated = currentNode.isFromPreprocessing || (currentNode.newTime !== null && currentNode.newTime <= currentTime);
+      if (isRelevant && alreadyGenerated) {
+        // add its id to the set of relevant ids
+        transitiveChildrenIds.add(currentNode.id);
+
+        const alreadyActivated = currentNode.activeTime !== null && currentNode.activeTime <= currentTime;
+        if (currentNode.id !== nodeId && alreadyActivated) {
+          counter = counter + 1;
+        }
+      }
+    }
+
+    return counter;
   }
 
   /* we can partition all nodes of the derivation into three sets
