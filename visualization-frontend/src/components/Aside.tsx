@@ -5,10 +5,12 @@ import NodeCard from './NodeCard';
 import NodeDetails from './NodeDetails';
 import { Dag } from '../model/dag';
 import { Literal } from '../model/literal';
+import { assert } from '../model/util';
 
 
 type Props = {
-  dag: Dag,
+  dag: Dag | null,
+  historyState: number,
   nodeSelection: number[],
   multipleVersions: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
@@ -24,9 +26,14 @@ type Props = {
 export default class Aside extends React.Component<Props, {}> {
 
   render() {
+    if (this.props.dag === null) {
+      assert(this.props.nodeSelection.length === 0);
+      assert(!this.props.multipleVersions);
+    }
+
     let nodeDetails;
     if (this.props.nodeSelection.length === 1) {
-      const node = this.props.dag.get(this.props.nodeSelection[0]);
+      const node = this.props.dag!.get(this.props.nodeSelection[0]);
       nodeDetails = 
       <NodeDetails
         node={node}
@@ -43,9 +50,9 @@ export default class Aside extends React.Component<Props, {}> {
     return (
       <aside>
         <GraphMenu
-          undoEnabled={this.props.multipleVersions}
-          filterUpEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
-          filterDownEnabled={this.props.nodeSelection.length > 0 && !this.props.dag.isPassiveDag}
+          undoEnabled={this.props.dag !== null && this.props.multipleVersions}
+          filterUpEnabled={this.props.dag !== null && this.props.nodeSelection.length > 0 && !this.props.dag!.isPassiveDag}
+          filterDownEnabled={this.props.dag !== null && this.props.nodeSelection.length > 0 && !this.props.dag!.isPassiveDag}
           nodeSelection={this.props.nodeSelection}
           onUndo={this.props.onUndo}
           onRenderParentsOnly={this.props.onRenderParentsOnly}
@@ -53,6 +60,7 @@ export default class Aside extends React.Component<Props, {}> {
         />
         <NodeCard
           dag={this.props.dag}
+          historyState={this.props.historyState}
           nodeSelection={this.props.nodeSelection}
           onUpdateNodeSelection={this.props.onUpdateNodeSelection}
           onSelectParents={this.props.onSelectParents}

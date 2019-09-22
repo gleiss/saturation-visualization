@@ -9,6 +9,7 @@ import { Clause } from '../model/unit';
 
 type Props = {
   dag: Dag | null,
+  historyState: number,
   onUpdateNodeSelection: (selection: number[]) => void
 };
 type State = {
@@ -23,6 +24,16 @@ export default class Search extends React.Component<Props, State> {
   private searchField1 = React.createRef<HTMLInputElement>();
   private searchField2 = React.createRef<HTMLInputElement>();
   private searchField3 = React.createRef<HTMLInputElement>();
+
+  componentDidUpdate(prevProps) {
+    if (this.props.dag !== prevProps.dag || this.props.historyState !== prevProps.historyState) {
+      this.searchField1.current!.value = "";
+      this.searchField2.current!.value = "";
+      this.searchField3.current!.value = "";
+
+      this.setState({foundNodes: []});
+    }
+  }
 
   render() {
     const {foundNodes} = this.state;
@@ -66,7 +77,6 @@ export default class Search extends React.Component<Props, State> {
   // SEARCH ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   search() {
-
     assert(this.props.dag !== null);
 
     assert(this.searchField1.current!);
@@ -162,7 +172,7 @@ export default class Search extends React.Component<Props, State> {
       candidates = foundNodes;
     }
 
-    const nodesInActiveDag = this.props.dag!.computeNodesInActiveDag(Number.MAX_SAFE_INTEGER);
+    const nodesInActiveDag = this.props.dag!.computeNodesInActiveDag(this.props.historyState);
     const foundNodes = new Array<SatNode>();
     for (const node of candidates) {
       if (node.isFromPreprocessing || nodesInActiveDag.has(node.id)) {

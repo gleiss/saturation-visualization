@@ -60,9 +60,11 @@ class App extends Component<Props, State> {
       message
     } = this.state;
     
+    let dag;
     let main;
     if (state === "loaded" || state === "loaded select") {
-      const dag = dags[dags.length-1];
+      assert(dags.length > 0);
+      dag = dags[dags.length-1];
       main = (
         <Main
           dag={dag}
@@ -78,6 +80,7 @@ class App extends Component<Props, State> {
         />
       );
     } else {
+      dag = null;
       main = (
         <main>
           <section className="graph-placeholder">{message}</section>
@@ -90,7 +93,8 @@ class App extends Component<Props, State> {
       <div className="app">
         {main}
         <Aside
-          dag={dags[dags.length-1]}
+          dag={dag}
+          historyState={historyState}
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
@@ -149,7 +153,10 @@ class App extends Component<Props, State> {
   async runVampire(problem: string, vampireUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
     this.setState({
       state: "waiting",
-      message: "Waiting for Vampire..."
+      message: "Waiting for Vampire...",
+      dags: [],
+      nodeSelection: [],
+      historyState: 0
     });
 
     const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
@@ -179,14 +186,20 @@ class App extends Component<Props, State> {
           if (json.vampireState === "saturation") {
             this.setState({
               state: "error",
-              message: "Saturation: Vampire saturated, so there exists no proof!"
+              message: "Saturation: Vampire saturated, so there exists no proof!",
+              dags: [],
+              nodeSelection: [],
+              historyState: 0
             });
             return;
           }
           if (json.vampireState === "timeout") {
             this.setState({
               state: "error",
-              message: "Timeout: Vampire could not find a proof in the given time!"
+              message: "Timeout: Vampire could not find a proof in the given time!",
+              dags: [],
+              nodeSelection: [],
+              historyState: 0
             });
             return;
           }
@@ -234,13 +247,19 @@ class App extends Component<Props, State> {
         assert(errorMessage !== undefined && errorMessage !== null);
         this.setState({
           state: "error",
-          message: errorMessage
+          message: errorMessage,
+          dags: [],
+          nodeSelection: [],
+          historyState: 0
         });
       }
     } catch (error) {
       this.setState({
         state: "error",
-        message: `Error: ${error["message"]}`
+        message: `Error: ${error["message"]}`,
+        dags: [],
+        nodeSelection: [],
+        historyState: 0
       });
     }
   }
@@ -303,12 +322,18 @@ class App extends Component<Props, State> {
         this.setState({
           state: "error",
           message: errorMessage,
+          dags: [],
+          nodeSelection: [],
+          historyState: 0
         });
       }
     } catch (error) {
       this.setState({
         state: "error",
-        message: `Error: ${error["message"]}`
+        message: `Error: ${error["message"]}`,
+        dags: [],
+        nodeSelection: [],
+        historyState: 0
       });
     }
   }
