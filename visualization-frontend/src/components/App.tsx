@@ -126,11 +126,27 @@ class App extends Component<Props, State> {
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   updateNodeSelection(nodeSelection: number[]) {
-    this.setState({nodeSelection});
+    this.setState({nodeSelection: nodeSelection});
   }
 
   updateHistoryState(historyState: number) {
-    this.setState({historyState});
+    const dags = this.state.dags
+    assert(dags.length > 0);
+    const dag = dags[dags.length - 1];
+
+    // BUG: potentially deselects a preprocessing node even if it is currently displayed
+    // fix by rewriting computeNodesInActiveDag to include preprocessing nodes
+    const nodesInActiveDag = dag.computeNodesInActiveDag(historyState);
+    const nodeSelection = new Array<number>();
+    for (const nodeId of this.state.nodeSelection) {
+      if (nodesInActiveDag.has(nodeId)) {
+        nodeSelection.push(nodeId);
+      }
+    }
+    this.setState({
+      nodeSelection: nodeSelection,
+      historyState: historyState
+    });
   }
 
 
