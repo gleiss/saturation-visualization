@@ -14,11 +14,17 @@ from model.vampire import VampireWrapper
 
 import tempfile
 
+import argparse
+
 app = Flask(__name__)
 app.config.from_object(__name__)
 CORS(app)
 
-vampireWrapper = VampireWrapper()
+parser = argparse.ArgumentParser(description='Run Vampire Server')
+parser.add_argument("-vampire", "--vampire", required=True, action="store", dest="vampirePath", help="path to vampire-executable")
+args = parser.parse_args()
+
+vampireWrapper = VampireWrapper(args.vampirePath)
 
 def startVampire(manualCS):
     request_params = request.get_json()
