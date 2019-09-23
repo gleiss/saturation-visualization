@@ -4,16 +4,16 @@ export class Literal {
 	readonly name: string;
 	readonly args: FunctionApplication[];
 	readonly negated: boolean;
-	readonly isSelected: boolean;
+	isSelected: boolean;
 	representation: number;
 	hideBracketsAssoc: boolean;
 	nonStrictForNegatedStrictInequalities: boolean;
 
-	constructor(name:string, args: FunctionApplication[], negated: boolean, isSelected: boolean){
+	constructor(name:string, args: FunctionApplication[], negated: boolean){
 		this.name = name;
 		this.args = args;
 		this.negated = negated;
-		this.isSelected = isSelected;
+		this.isSelected = false;
 		this.representation = 0; // 0 represents standard representation. Some literals may define other representations
 		this.hideBracketsAssoc = true;
 		this.nonStrictForNegatedStrictInequalities = true;

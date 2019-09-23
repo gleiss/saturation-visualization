@@ -5,40 +5,35 @@ import {Literal, FunctionApplication} from './literal'
 // class for parsing Units, Formulas, Clauses, Literals and FunctionApplications
 export class UnitParser {
 
-	static parseUnit(string: string, isFromPreprocessing: boolean, statistics: Map<string,number>): Unit {
+	static parsePreprocessingUnit(string: string): Unit {
 		// heuristic to determine whether unit is a clause:
-		// if unit is not from preprocessing, it has to be a clause
 		// if unit only contains certain symbols, it has to be a clause
 		// otherwise, treat it as a formula.
 		const symbolsAllowedInClauses = /^[a-zA-Z0-9()=,~!$ |']+$/;
-		let isClause = (!isFromPreprocessing) || string.match(symbolsAllowedInClauses);
+		let isClause = string.match(symbolsAllowedInClauses);
 	
 		if(isClause) {
-		  const nSel = statistics.get("nSel");
-		  return UnitParser.parseClause(string, (nSel !== undefined ? nSel : null));
-		}
-		else {
+		  return UnitParser.parseClause(string);
+		} else {
 		  return new Formula(string);
 		}
 	}
 
-	static parseClause(string: string, numberOfSelectedLiterals: number | null): Clause {
+	static parseClause(string: string): Clause {
 		if(string === "$false") {
-			assert(numberOfSelectedLiterals === null);
 			return new Clause([], []); // empty clause
 		}
 		const literalStrings = string.split(" | ")
 
 		const literals = new Array<Literal>();
 		for (let i = 0; i < literalStrings.length; i++) {
-			const isSelected = (numberOfSelectedLiterals !== null) && i < numberOfSelectedLiterals;
-			literals.push(UnitParser.parseLiteral(literalStrings[i], isSelected));
+			literals.push(UnitParser.parseLiteral(literalStrings[i]));
 		}
 		
 		return new Clause([], literals);
 	}
 
-	static parseLiteral(string: string, isSelected: boolean): Literal {
+	static parseLiteral(string: string): Literal {
 		// need to handle equality separately, since it is written in infix-notation
 		// all other predicates are written in prefix-notation
 		const equalityPosition = string.search("=");
@@ -51,7 +46,7 @@ export class UnitParser {
 				const rhsString = string.substring(equalityPosition + 2, string.length);
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
 				const rhs = UnitParser.parseFunctionApplication(rhsString);
-				return new Literal("=", [lhs, rhs], true, isSelected);
+				return new Literal("=", [lhs, rhs], true);
 			}
 			else
 			{
@@ -62,7 +57,7 @@ export class UnitParser {
 				const lhs = UnitParser.parseFunctionApplication(lhsString);
 				const rhs = UnitParser.parseFunctionApplication(rhsString);
 				
-				return new Literal("=", [lhs, rhs], false, isSelected);
+				return new Literal("=", [lhs, rhs], false);
 			}
 		}
 		else
@@ -72,7 +67,7 @@ export class UnitParser {
 
 			// parse atom as term first and then convert it to literal
 			const literalTerm = UnitParser.parseFunctionApplication(atomString);
-			return new Literal(literalTerm.name, literalTerm.args, negated, isSelected);
+			return new Literal(literalTerm.name, literalTerm.args, negated);
 		}
 	}
 
