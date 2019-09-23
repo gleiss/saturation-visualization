@@ -157,6 +157,13 @@ export class Menu extends React.Component<Props, {}> {
 				const text = (reader.result ? reader.result : "") as string;
 				this.props.onChangeProblem(text);
 				this.props.onChangeProblemName(file.name);
+
+				// guess inputSyntax from file extension:
+				if(file.name.endsWith(".smt") || file.name.endsWith(".smtlib") || file.name.endsWith(".smt2") || file.name.endsWith(".smtlib2")) {
+					this.props.onChangeInputSyntax("smtlib");
+				} else if (file.name.endsWith(".tptp")) {
+					this.props.onChangeInputSyntax("tptp");
+				}
 			};	
 			reader.readAsText(file);
 		}
