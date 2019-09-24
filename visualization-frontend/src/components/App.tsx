@@ -268,6 +268,9 @@ class App extends Component<Props, State> {
         });
       }
     } catch (error) {
+      if (error.name === "SatVisAssertionError") {
+        throw error;
+      }
       this.setState({
         state: "error",
         message: `Error: ${error["message"]}`,
@@ -342,6 +345,9 @@ class App extends Component<Props, State> {
         });
       }
     } catch (error) {
+      if (error.name === "SatVisAssertionError") {
+        throw error;
+      }
       this.setState({
         state: "error",
         message: `Error: ${error["message"]}`,
