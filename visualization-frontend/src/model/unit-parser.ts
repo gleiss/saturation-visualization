@@ -21,7 +21,7 @@ export class UnitParser {
 
 	static parseClause(string: string): Clause {
 		if(string === "$false") {
-			return new Clause([], []); // empty clause
+			return new Clause([]); // empty clause
 		}
 		const literalStrings = string.split(" | ")
 
@@ -30,7 +30,7 @@ export class UnitParser {
 			literals.push(UnitParser.parseLiteral(literalStrings[i]));
 		}
 		
-		return new Clause([], literals);
+		return new Clause(literals);
 	}
 
 	static parseLiteral(string: string): Literal {

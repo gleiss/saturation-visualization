@@ -30,9 +30,9 @@ export class Clause {
   premiseLiterals: Literal[];
   conclusionLiterals: Literal[];
 
-  constructor(premiseLiterals: Array<Literal>, conclusionLiterals: Array<Literal>){
+  constructor(conclusionLiterals: Array<Literal>){
     this.type = "Clause";
-    this.premiseLiterals = premiseLiterals;
+    this.premiseLiterals = [];
     this.conclusionLiterals = conclusionLiterals;
   }
 
