@@ -252,6 +252,7 @@ export class Dag {
           
           // create new node
           const unit = UnitParser.parseClause(line.unitString);
+          unit.literalsNewEvent = unit.conclusionLiterals;
           currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, []);
           nodes.set(currentNode.id, currentNode);
 
@@ -264,7 +265,9 @@ export class Dag {
           currentNode = nodes.get(line.id) as SatNode;
           assert(currentNode.isFromPreprocessing, "a newly added clause can only already exist if it was generated during preprocessing");
           assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
-          currentNode.unit = UnitParser.parseClause(line.unitString);
+          const unit = UnitParser.parseClause(line.unitString);
+          unit.literalsNewEvent = unit.conclusionLiterals;
+          currentNode.unit = unit;
           currentNode.newTime = currentTime;
         }
       }
@@ -293,10 +296,12 @@ export class Dag {
         const clauseAfterActivation = UnitParser.parseClause(line.unitString);
         assert(clauseAfterActivation.premiseLiterals.length === 0);
 
+        clause.literalsActiveEvent = clauseAfterActivation.conclusionLiterals;
+
+        // match each selected literal with a literal in the existing clause and mark that literal as selected.
         const nSel = line.statistics.get("nSel");
         assert(nSel !== undefined && nSel !== null);
 
-        // match each selected literal with a literal in the existing clause and mark that literal as selected.
         for (let i = 0; i < nSel && i < clauseAfterActivation.conclusionLiterals.length; i++) {
           const selectedLiteralString = clauseAfterActivation.conclusionLiterals[i].toString(true);
           let foundMatch = false;

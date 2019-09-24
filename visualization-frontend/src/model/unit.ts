@@ -29,11 +29,16 @@ export class Clause {
   readonly type: "Formula" | "Clause";
   premiseLiterals: Literal[];
   conclusionLiterals: Literal[];
+  
+  literalsNewEvent: Literal[] | null;
+  literalsActiveEvent: Literal[] | null;
 
   constructor(conclusionLiterals: Array<Literal>){
     this.type = "Clause";
     this.premiseLiterals = [];
     this.conclusionLiterals = conclusionLiterals;
+    this.literalsNewEvent = null;
+    this.literalsActiveEvent = null;
   }
 
   changeLiteralOrientation(oldPosition: [boolean, number], newPosition: [boolean, number]) {
