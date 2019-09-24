@@ -2,15 +2,7 @@ import { Dag } from "./dag";
 import { Clause } from "./unit";
 import { Literal } from "./literal";
 import { assert } from "./util";
-import { isSubstitution, isEqual } from "./substitution";
-
-function literalsMatch(literal1: Literal, literal2: Literal, allowSubstitutions: boolean) {
-	if (allowSubstitutions) {
-		return isSubstitution(literal1, literal2);
-	} else {
-		return isEqual(literal1, literal2);
-	}
-}
+import { literalsMatch } from "./substitution";
 
 export function computeParentLiterals(dag: Dag) {
 	for (const node of dag.nodes.values()) {
@@ -255,7 +247,9 @@ export function computeParentLiterals(dag: Dag) {
 						while (i < literals.length && j < rightLiterals.length) {
 							const literal = literals[i];
 							const parentLiteral = rightLiterals[j];
-							if (isSubstitution(literal, parentLiteral)) {
+
+							const matched = literalsMatch(literal, parentLiteral, true)
+							if (matched) {
 								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;

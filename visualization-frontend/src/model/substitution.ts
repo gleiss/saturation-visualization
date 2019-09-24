@@ -3,6 +3,14 @@ import { assert } from "./util";
 
 export type Substitution = Map<string, Term>;
 
+export function literalsMatch(literal1: Literal, literal2: Literal, allowSubstitutions: boolean) {
+	if (allowSubstitutions) {
+		return isSubstitution(literal1, literal2);
+	} else {
+		return isEqual(literal1, literal2);
+	}
+}
+
 export function isEqual(literal1: Literal, literal2: Literal): boolean {
 	if (literal1.name !== literal2.name || literal1.negated !== literal2.negated || literal1.args.length !== literal2.args.length) {
 		return false;
