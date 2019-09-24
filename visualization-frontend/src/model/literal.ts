@@ -8,6 +8,7 @@ export class Literal {
 	representation: number;
 	hideBracketsAssoc: boolean;
 	nonStrictForNegatedStrictInequalities: boolean;
+	literalInParent: Literal | null;
 
 	constructor(name:string, args: Term[], negated: boolean){
 		this.name = name;
@@ -17,6 +18,7 @@ export class Literal {
 		this.representation = 0; // 0 represents standard representation. Some literals may define other representations
 		this.hideBracketsAssoc = true;
 		this.nonStrictForNegatedStrictInequalities = true;
+		this.literalInParent = null;
 	}
 
 	switchToNextRepresentation() {
