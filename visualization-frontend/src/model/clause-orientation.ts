@@ -2,13 +2,13 @@ import { Dag } from "./dag";
 import { Clause } from "./unit";
 import { Literal } from "./literal";
 import { assert } from "./util";
-import { isSubstitution } from "./substitution";
+import { isSubstitution, isEqual } from "./substitution";
 
 function literalsMatch(literal1: Literal, literal2: Literal, allowSubstitutions: boolean) {
 	if (allowSubstitutions) {
 		return isSubstitution(literal1, literal2);
 	} else {
-		return literal1.toString(true) === literal2.toString(true);
+		return isEqual(literal1, literal2);
 	}
 }
 
@@ -51,13 +51,12 @@ export function computeParentLiterals(dag: Dag) {
 						// 1) clause and parent clause have same number of literals
 						// 2) rewritten literals occur in the same position as the corresponding literal in the parent clause
 						assert(literals.length === parentLiterals.length);
-						let success = true;
 						for (let i = 0; i < literals.length; i++) {
 							const literal = literals[i];
 							const parentLiteral = parentLiterals[i];
-							// literals[i] is matched with parentLiterals[i]
+							
+							literal.setLiteralInParent(parentLiteral);
 						}
-						// console.log("case 1 worked!");
 					} else if (node.inferenceRule === "subsumption resolution" || 
 						node.inferenceRule === "equality resolution" || 
 						node.inferenceRule === "trivial inequality removal" ||
@@ -77,6 +76,7 @@ export function computeParentLiterals(dag: Dag) {
 							success = literalsMatch(literal, parentLiteral, allowSubstitutions);
 
 							if (success) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;
 							} else {
@@ -91,75 +91,50 @@ export function computeParentLiterals(dag: Dag) {
 								}
 							}
 						}
-						if (success) {
-							// console.log("case 2 worked!");
-						} else {
-							console.log(`case 2 error for id ${node.id}:\n${literals.toString()}\n${parentLiterals.toString()}`);
-						}
+						assert(success, `case 2 error for id ${node.id}:\n${literals.toString()}\n${parentLiterals.toString()}`);
 					} else if (node.inferenceRule === "forward demodulation" ||
 						node.inferenceRule === "backward demodulation" ||
 						node.inferenceRule === "equality factoring") {
 						// inferences, which rewrite exactly one literal
 						// need to find the position where the literal was rewritten
-						let success = true;
+						const allowSubstitutions = node.inferenceRule === "equality factoring";
+
 						assert(literals.length === parentLiterals.length);
 
-						let i = 0;
-						let j = 0;
+						for (const literal of clause.literalsNewEvent!) {
+							assert(literal.literalInParent === null);
+						}
 						let foundRewrittenLiteral = false;
-						let foundParentLiteral = false;
-						while (i < literals.length) {
+						
+						assert(!literalsMatch(literals[0], parentLiterals[0], allowSubstitutions));
+						let i = 1;
+						// first shifted matchings can occur
+						while(i < literals.length) {
 							const literal = literals[i];
-							const parentLiteral = parentLiterals[j];
+							const parentLiteral = parentLiterals[i - 1];
 
-							const allowSubstitutions = node.inferenceRule === "equality factoring";
-							const matched = literalsMatch(literal, parentLiteral, allowSubstitutions);
-							if (matched) {
+							if (literalsMatch(literal, parentLiteral, allowSubstitutions)) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
-								j = j + 1;
 							} else {
-								// if we already found the rewritten literal
-								if (foundRewrittenLiteral) {
-									if (foundParentLiteral) {
-										// found unexpected literal
-										success = false;
-										break;
-									} else {
-										// rewrittenLiteral must be the result of rewriting parentLiterals[j]
-										foundParentLiteral = true;
-										j = j + 1;
-									}
-								} else if (i + 1 === literals.length && j + 1 === parentLiterals.length) {
-									// all literals were matched except the last ones, so the only literal
-									// we can match with literals[i] is parentLiterals[j]
-									foundRewrittenLiteral = true;
-									foundParentLiteral = true;
-									i = i + 1;
-									j = j + 1;
-								} else {
-									// check whether next pair matches
-									const successNext = literalsMatch(literals[i+1], parentLiterals[j+1], allowSubstitutions);
-									if (successNext) {
-										// literal[i] must be the result of rewriting parentLiterals[j]
-										foundRewrittenLiteral = true;
-										foundParentLiteral = true;
-										i = i + 1;
-										j = j + 1;
-									} else {
-										foundRewrittenLiteral = true;
-										i = i + 1;
-									}
-								}
+								// shifted matching failed, so parentLiterals[i - 1] must be rewrittenLiteral
+								literals[0].setLiteralInParent(parentLiterals[i - 1]);
+								foundRewrittenLiteral = true;
+								break;
 							}
 						}
-						if (foundRewrittenLiteral && !foundParentLiteral) {
-							assert(j + 1 === parentLiterals.length);
-							// rewrittenLiteral must be the result of rewriting last literal of parentLiterals
+						// corner case where rewritten literal is last element of parent clause and therefore has no failing shifted matching
+						if (!foundRewrittenLiteral) {
+							assert(i === literals.length);
+							literals[0].setLiteralInParent(parentLiterals[parentLiterals.length - 1]);
 						}
-						if (success) {
-							// console.log("case 3 worked!");
-						} else {
-							console.log(`case 3 error for id ${node.id}:\n${literals.toString()}\n${parentLiterals.toString()}`);
+						// now nonshifted matchings can occur
+						while(i < literals.length) {
+							const literal = literals[i];
+							const parentLiteral = parentLiterals[i];
+							assert(literalsMatch(literal, parentLiteral, allowSubstitutions));
+							literal.setLiteralInParent(parentLiteral);
+							i = i + 1;
 						}
 					} else if (node.inferenceRule === "factoring" ||
 						node.inferenceRule === "duplicate literal removal") {
@@ -174,13 +149,13 @@ export function computeParentLiterals(dag: Dag) {
 							const allowSubstitutions = node.inferenceRule === "factoring";
 							const matched = literalsMatch(literal, parentLiteral, allowSubstitutions);
 							if (matched) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;
 							} else {
 								j = j + 1;
 							}
 						}
-						// console.log("factoring worked!");
 					}
 				}
 			} else if (node.inferenceRule === "resolution" ||
@@ -218,7 +193,9 @@ export function computeParentLiterals(dag: Dag) {
 							const literal = literals[i];
 							const parentLiteral = j < leftLiterals.length ? leftLiterals[j] : rightLiterals[j-leftLiterals.length];
 			
-							if (isSubstitution(literal, parentLiteral)) {
+							const matched = literalsMatch(literal, parentLiteral, true)
+							if (matched) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;
 							} else {
@@ -235,14 +212,10 @@ export function computeParentLiterals(dag: Dag) {
 								}
 							}
 						}
-						if (success) {
-							// console.log("resolution worked!")
-						} else {
-							console.log(`resolution error for id ${node.id}:\n${literals.toString()}\n${leftLiterals.toString()}\n${rightLiterals.toString()}`);
-						}
+						assert(success, `resolution error for id ${node.id}:\n${literals.toString()}\n${leftLiterals.toString()}\n${rightLiterals.toString()}`);
 					} else if (node.inferenceRule === "superposition") {
 						let success = true;
-						let foundRewrittenLiteral = false;
+						let rewrittenLiteral = false;
 						let foundParentLiteral = false;
 						assert(literals.length + 1 == leftLiterals.length + rightLiterals.length);
 						assert(rightLiterals.length >= 1);
@@ -252,18 +225,18 @@ export function computeParentLiterals(dag: Dag) {
 
 						while (i < literals.length && j < leftLiterals.length) {
 							const literal = literals[i];
-							if (literal === undefined) {
-								console.log(literals);
-								console.log(leftLiterals);
-							}
 							const parentLiteral = leftLiterals[j];
-							if (isSubstitution(literal, parentLiteral)) {
+
+							const matched = literalsMatch(literal, parentLiteral, true)
+							if (matched) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;
 							} else {
-								if (!foundRewrittenLiteral) {
+								if (!rewrittenLiteral) {
 									// literals[0] must be the result of rewriting leftLiterals[j]
-									foundRewrittenLiteral = true;
+									literals[0].setLiteralInParent(parentLiteral);
+									rewrittenLiteral = true;
 									j = j + 1;
 								} else {
 									// found unexpected literal
@@ -272,9 +245,10 @@ export function computeParentLiterals(dag: Dag) {
 								}
 							}
 						}
-						if (!foundRewrittenLiteral) {
+						if (!rewrittenLiteral) {
 							assert(j + 1 === leftLiterals.length);
 							// literals[0] must be the result of rewriting leftLiterals[j]
+							literals[0].setLiteralInParent(leftLiterals[j]);
 						}
 						assert(i === leftLiterals.length);
 						j = 0;
@@ -282,6 +256,7 @@ export function computeParentLiterals(dag: Dag) {
 							const literal = literals[i];
 							const parentLiteral = rightLiterals[j];
 							if (isSubstitution(literal, parentLiteral)) {
+								literal.setLiteralInParent(parentLiteral);
 								i = i + 1;
 								j = j + 1;
 							} else {
@@ -300,11 +275,7 @@ export function computeParentLiterals(dag: Dag) {
 							assert(j + 1 === rightLiterals.length);
 							// leftLiterals[j] must be the equality used for superposition
 						}
-						if (success) {
-							// console.log("superposition worked!");
-						} else {
-							console.log(`superposition error for id ${node.id}:\n${literals.toString()}\n${leftLiterals.toString()}\n${rightLiterals.toString()}`);
-						}
+						assert(success, `superposition error for id ${node.id}:\n${literals.toString()}\n${leftLiterals.toString()}\n${rightLiterals.toString()}`);
 					}
 				}
 			}

@@ -21,6 +21,11 @@ export class Literal {
 		this.literalInParent = null;
 	}
 
+	setLiteralInParent(literalInParent: Literal) {
+		assert(this.literalInParent === null);
+		this.literalInParent = literalInParent;
+	}
+
 	switchToNextRepresentation() {
 		if (this.name === "$less" || this.name === "Sub") {
 			if (this.representation === 0) {
