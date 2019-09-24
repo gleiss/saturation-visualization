@@ -165,7 +165,9 @@ export default class Search extends React.Component<Props, State> {
       const foundNodes = new Array<SatNode>();
   
       for (const node of candidates) {
-        if (node.inferenceRule.includes(searchString3)) {
+        // note: using an exact check here instead of includes check
+        // e.g. so that "resolution" does not match "subsumption resolution"
+        if (node.inferenceRule === searchString3) {
           foundNodes.push(node);
         }
       }
