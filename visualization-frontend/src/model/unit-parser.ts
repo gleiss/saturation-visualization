@@ -1,8 +1,8 @@
 import {assert} from './util'
 import {Unit, Formula, Clause} from './unit'
-import {Literal, FunctionApplication} from './literal'
+import {Literal, Term} from './literal'
 
-// class for parsing Units, Formulas, Clauses, Literals and FunctionApplications
+// class for parsing Units, Formulas, Clauses, Literals and Terms
 export class UnitParser {
 
 	static parsePreprocessingUnit(string: string): Unit {
@@ -44,8 +44,8 @@ export class UnitParser {
 				assert(string[equalityPosition + 1] === " ", `negated equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 2);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
-				const lhs = UnitParser.parseFunctionApplication(lhsString);
-				const rhs = UnitParser.parseFunctionApplication(rhsString);
+				const lhs = UnitParser.parseTerm(lhsString);
+				const rhs = UnitParser.parseTerm(rhsString);
 				return new Literal("=", [lhs, rhs], true);
 			}
 			else
@@ -54,8 +54,8 @@ export class UnitParser {
 				assert(string[equalityPosition + 1] === " ", `equality not surrounded by spaces in string ${string}`);
 				const lhsString = string.substring(0, equalityPosition - 1);
 				const rhsString = string.substring(equalityPosition + 2, string.length);
-				const lhs = UnitParser.parseFunctionApplication(lhsString);
-				const rhs = UnitParser.parseFunctionApplication(rhsString);
+				const lhs = UnitParser.parseTerm(lhsString);
+				const rhs = UnitParser.parseTerm(rhsString);
 				
 				return new Literal("=", [lhs, rhs], false);
 			}
@@ -66,12 +66,12 @@ export class UnitParser {
 			const atomString = negated ? string.substring(1) : string;
 
 			// parse atom as term first and then convert it to literal
-			const literalTerm = UnitParser.parseFunctionApplication(atomString);
+			const literalTerm = UnitParser.parseTerm(atomString);
 			return new Literal(literalTerm.name, literalTerm.args, negated);
 		}
 	}
 
-	static parseFunctionApplication(string:string): FunctionApplication {
+	static parseTerm(string:string): Term {
 		// Part 1: lex tokens
 		let tokens: string[] = [];
 		let stringPos = 0;
@@ -106,7 +106,7 @@ export class UnitParser {
 		}
 
 		// Part 3: parse token array
-		let stack: Array<Array<string|FunctionApplication>> = [[]];
+		let stack: Array<Array<string|Term>> = [[]];
 
 		for (let pos = 0; pos < tokens.length; pos++) {
 			const token = tokens[pos];
@@ -121,15 +121,15 @@ export class UnitParser {
 			}
 			else if (token === ")") 
 			{
-				const args = stack.pop() as Array<string | FunctionApplication>;
+				const args = stack.pop() as Array<string | Term>;
 				const name = stack[stack.length - 1].pop();
-				const f = new FunctionApplication(name as string, args as Array<FunctionApplication>);
+				const f = new Term(name as string, args as Array<Term>);
 				stack[stack.length - 1].push(f);
 			}
 		}
 
 		assert(stack.length === 1, "invar violated for string: " + string);
 		// assert(stack[0].length === 1, "invar violated for string:" + string + ":");
-		return stack[0][0] as FunctionApplication;
+		return stack[0][0] as Term;
 	}
 }

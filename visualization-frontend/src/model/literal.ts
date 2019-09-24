@@ -2,14 +2,14 @@ import { assert } from "./util";
 
 export class Literal {
 	readonly name: string;
-	readonly args: FunctionApplication[];
+	readonly args: Term[];
 	readonly negated: boolean;
 	isSelected: boolean;
 	representation: number;
 	hideBracketsAssoc: boolean;
 	nonStrictForNegatedStrictInequalities: boolean;
 
-	constructor(name:string, args: FunctionApplication[], negated: boolean){
+	constructor(name:string, args: Term[], negated: boolean){
 		this.name = name;
 		this.args = args;
 		this.negated = negated;
@@ -48,13 +48,19 @@ export class Literal {
 	}
 }
 
-export class FunctionApplication {
+export class Term {
 	readonly name: string;
-	readonly args: FunctionApplication[];
-
-	constructor(name: string, args: FunctionApplication[]) {
+	readonly args: Term[];
+	readonly isVariable: boolean;
+	
+	constructor(name: string, args: Term[]) {
 		this.name = name;
 		this.args = args;
+		const isVariable = name.startsWith("X")
+		this.isVariable = isVariable;
+		if(isVariable) {
+			assert(this.args.length === 0);
+		}
 	}
 
 	toString(hideBracketsAssoc: boolean): string {
