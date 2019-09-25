@@ -3,6 +3,7 @@ import { Clause } from "./unit";
 import { Literal } from "./literal";
 import { assert } from "./util";
 import { literalsMatch } from "./substitution";
+import { DFPostOrderTraversal } from "./traversal";
 
 export function computeParentLiterals(dag: Dag) {
 	for (const node of dag.nodes.values()) {
@@ -93,9 +94,6 @@ export function computeParentLiterals(dag: Dag) {
 
 						assert(literals.length === parentLiterals.length);
 
-						for (const literal of clause.literalsNewEvent!) {
-							assert(literal.literalInParent === null);
-						}
 						let foundRewrittenLiteral = false;
 						
 						assert(!literalsMatch(literals[0], parentLiterals[0], allowSubstitutions));
@@ -277,33 +275,140 @@ export function computeParentLiterals(dag: Dag) {
 	}
 }
 
-export function orientClauses(dag: Dag) {
-	for (const node of dag.nodes.values()) {
+// update literal orientations in the given dag
+// if changedClauseId is null, update all nodes in the dag
+// if changedClauseId is the id of a clause, update the node and all children of the node
+export function orientClauses(dag: Dag, changedClauseId: number | null): Set<number> {
+	assert(changedClauseId === null || dag.nodes.has(changedClauseId));
+
+	const changedClauses = new Set<number>();
+	if (changedClauseId !== null) {
+		changedClauses.add(changedClauseId);
+	}
+
+	const iterator = new DFPostOrderTraversal(dag);
+	while (iterator.hasNext()) {
+		let node = iterator.getNext();
+
 		if (node.unit.type === "Clause") {
 			const clause = node.unit as Clause;
 
-			const literals = clause.premiseLiterals.concat(clause.conclusionLiterals);
-
-			// simple heuristic for orienting literals: negated literal which are no equalities are premise-literals, all other literals are conclusion-literals
-			const conclusionLiteralRemains = literals.reduce((acc, literal) => acc || (!literal.negated || literal.name === "="),false);
-			if (conclusionLiteralRemains) {
-				const premiseLiterals = new Array<Literal>();
-				const conclusionLiterals = new Array<Literal>();
-				for (const literal of literals) {
-					if (literal.negated && literal.name !== "=") {
-						premiseLiterals.push(literal);
-					} else {
-						conclusionLiterals.push(literal);
+			// compute whether clause should be updated. This is the case if
+			// 1) all nodes should be updated (since changedClauseId === null)
+			// 2) the node is changedClauseId
+			// 3) a parent of node was changed
+			let update = changedClauseId === null || node.id === changedClauseId;
+			if (!update) {
+				for (const parentId of node.parents) {
+					if (changedClauses.has(parentId)) {
+						update = true;
+						break;
 					}
 				}
-				clause.premiseLiterals = premiseLiterals;
-				clause.conclusionLiterals = conclusionLiterals;
-			} else {
-				clause.premiseLiterals = [];
-				clause.conclusionLiterals = literals;
 			}
+			if (!update) {
+				continue;
+			}
+
+			// TODO: sanity check that all literals were set in the cases we support: suitable inference + parents are clauses
+
+			// Part 1: partition literals into premise and conclusion
+			const propagateSingleParent = node.inferenceRule === "subsumption resolution" ||
+				node.inferenceRule === "equality resolution" ||
+				node.inferenceRule === "equality factoring" ||
+				node.inferenceRule === "forward demodulation" ||
+				node.inferenceRule === "backward demodulation" ||
+				node.inferenceRule === "forward subsumption demodulation" ||
+				node.inferenceRule === "factoring" ||
+				node.inferenceRule === "duplicate literal removal" ||
+				node.inferenceRule === "evaluation" ||
+				node.inferenceRule === "trivial inequality removal";
+			const propagateTwoParents = node.inferenceRule === "resolution" ||
+				node.inferenceRule === "superposition";
+
+			const premiseLiterals = new Array<Literal>();
+			const conclusionLiterals = new Array<Literal>();
+			for (const literal of clause.premiseLiterals.concat(clause.conclusionLiterals)) {
+
+				let orientation: "premise" | "conclusion" | null = null;
+				const parentLiteral = literal.literalInParent;
+				if (parentLiteral !== null && literal.orientationReason !== "user" && (propagateSingleParent || propagateTwoParents)) {
+					// Case 2: propagate orientation from parent literal
+					if (propagateSingleParent) {
+						assert(node.parents.length > 0);
+						const hasSwitchedParents = node.inferenceRule === "backward demodulation"
+						const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
+						
+						if (parent.unit.type === "Clause") {
+							const parentClause = parent.unit as Clause;
+							// figure out whether parentLiteral occurs in premise or conclusion and set orientation accordingly
+							if (parentClause.premiseLiterals.find(l => l === parentLiteral)) {
+								orientation = "premise";
+							} else {
+								assert(parentClause.conclusionLiterals.find(l => l === parentLiteral));
+								orientation = "conclusion";
+							}
+						}
+					} else if (propagateTwoParents) {
+						assert(node.parents.length == 2);
+						const leftNode = dag.get(node.parents[0]);
+						const rightNode = dag.get(node.parents[1]);
+						if (leftNode.unit.type === "Clause" && rightNode.unit.type === "Clause") {
+							const leftClause = leftNode.unit as Clause;
+							const rightClause = rightNode.unit as Clause;
+							// figure out whether parentLiteral occurs in premise or conclusion of left or right premise and set orientation accordingly
+							if (leftClause.premiseLiterals.find(l => l === parentLiteral)) {
+								orientation = "premise";
+							} else if (leftClause.conclusionLiterals.find(l => l === parentLiteral)) {
+								orientation = "conclusion";
+							} else if (rightClause.premiseLiterals.find(l => l === parentLiteral)) {
+								orientation = "premise";
+							} else {
+								assert(rightClause.conclusionLiterals.find(l => l === parentLiteral));
+								orientation = "conclusion";
+							}
+						}
+					}
+					literal.orientationReason = "inherited"
+				}
+
+				// otherwise decide whether current orientation should be kept or whether it should be computed using a heuristic
+				else if (literal.orientationReason !== "none" ) {
+					if (clause.premiseLiterals.find(l => l === literal)) {
+						orientation = "premise";
+					} else {
+						assert(clause.conclusionLiterals.find(l => l === literal))
+						orientation = "conclusion";
+					}
+				}
+				else {
+					// use heuristic to compute orientation
+					if (literal.negated && literal.name !== "=") {
+						orientation = "premise";
+					} else {
+						orientation = "conclusion";
+					}
+					literal.orientationReason = "heuristic";
+				}
+
+				if (orientation === "premise") {
+					premiseLiterals.push(literal);
+				} else {
+					assert(orientation === "conclusion");
+					conclusionLiterals.push(literal);
+				}
+			}
+
+			// Part 2: update literals
+			clause.premiseLiterals = premiseLiterals;
+			clause.conclusionLiterals = conclusionLiterals;
+
+			// Part 3: mark clause to be changed
+			changedClauses.add(node.id);
 		}
 	}
+
+	return changedClauses;
 }
 
 

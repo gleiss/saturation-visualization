@@ -9,6 +9,7 @@ export class Literal {
 	hideBracketsAssoc: boolean;
 	nonStrictForNegatedStrictInequalities: boolean;
 	literalInParent: Literal | null;
+	orientationReason: "user" | "inherited" | "heuristic" | "none";
 
 	constructor(name:string, args: Term[], negated: boolean){
 		this.name = name;
@@ -19,10 +20,10 @@ export class Literal {
 		this.hideBracketsAssoc = true;
 		this.nonStrictForNegatedStrictInequalities = true;
 		this.literalInParent = null;
+		this.orientationReason = "none";
 	}
 
 	setLiteralInParent(literalInParent: Literal) {
-		assert(this.literalInParent === null);
 		this.literalInParent = literalInParent;
 	}
 
