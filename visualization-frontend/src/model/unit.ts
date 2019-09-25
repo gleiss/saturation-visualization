@@ -30,6 +30,9 @@ export class Clause {
   premiseLiterals: Literal[];
   conclusionLiterals: Literal[];
   
+  // in order to compute literal flows we need to save the order in which literals occured in the clause
+  // at the timepoints of the new-event and the active-event
+  // the referenced literals are not only equal, but the same as the literals in premiseLiterals and conclusionLiterals
   literalsNewEvent: Literal[] | null;
   literalsActiveEvent: Literal[] | null;
 
@@ -49,23 +52,25 @@ export class Clause {
       assert(0 <= oldPosition[1]);
       assert(oldPosition[1] < this.conclusionLiterals.length);
       removedLiterals = this.conclusionLiterals.splice(oldPosition[1], 1);
-      assert(removedLiterals.length === 1);
     } else {
       assert(0 <= oldPosition[1]);
       assert(oldPosition[1] < this.premiseLiterals.length);
       removedLiterals = this.premiseLiterals.splice(oldPosition[1], 1);
-      assert(removedLiterals.length === 1);
     }
+    assert(removedLiterals.length === 1);
+    const removedLiteral = removedLiterals[0];
+
     // add literal to new position
     if (newPosition[0]) {
       assert(0 <= newPosition[1]);
       assert(newPosition[1] <= this.conclusionLiterals.length);
-      this.conclusionLiterals.splice(newPosition[1], 0, removedLiterals[0]);
+      this.conclusionLiterals.splice(newPosition[1], 0, removedLiteral);
     } else {
       assert(0 <= newPosition[1]);
       assert(newPosition[1] <= this.premiseLiterals.length);
-      this.premiseLiterals.splice(newPosition[1], 0, removedLiterals[0]);
+      this.premiseLiterals.splice(newPosition[1], 0, removedLiteral);
     }
+    removedLiteral.orientationReason = "user";
   }
 
   toString(): string {
