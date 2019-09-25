@@ -3,6 +3,8 @@ import { assert } from './util';
 import { UnitParser } from './unit-parser';
 import { ReversePostOrderTraversal, DFPostOrderTraversal } from "./traversal";
 import { Clause } from './unit';
+import { literalsMatch } from './substitution';
+import { Literal } from './literal';
 
 export class ParsedLine {
   readonly type: "preprocessing" | "new" | "active" | "forward reduce" | "backward reduce" | "replaced by" | "using";
@@ -290,40 +292,35 @@ export class Dag {
         assert(currentNode.activeTime === null, "there must only be 1 event of the form [SA] active ... for each clause");
         assert(currentNode.unit.type === "Clause");
         const clause = currentNode.unit as Clause;
+        assert(clause.literalsNewEvent !== null);
 
         // note that the literals in clauseAfterActivation potentially occur in a different order than in clause,
         // since clauseAfterActivation satisfies the invariant that the selected literals occur first.
         const clauseAfterActivation = UnitParser.parseClause(line.unitString);
         assert(clauseAfterActivation.premiseLiterals.length === 0);
 
-        clause.literalsActiveEvent = clauseAfterActivation.conclusionLiterals;
-
-        // match each selected literal with a literal in the existing clause and mark that literal as selected.
+        // mpa each literal to a literal in the existing clause
+        // for each selected literal also mark the literal in the existing clause as selected.
         const nSel = line.statistics.get("nSel");
         assert(nSel !== undefined && nSel !== null);
 
-        for (let i = 0; i < nSel && i < clauseAfterActivation.conclusionLiterals.length; i++) {
-          const selectedLiteralString = clauseAfterActivation.conclusionLiterals[i].toString(true);
+        const existingLiteralsActiveOrder = new Array<Literal>();
+        for (let i = 0; i < clauseAfterActivation.conclusionLiterals.length; i++) {
+          const literal = clauseAfterActivation.conclusionLiterals[i];
           let foundMatch = false;
-          for (const existingLiteral of clause.premiseLiterals) {
-            if (existingLiteral.toString(true) === selectedLiteralString) {
-              existingLiteral.isSelected = true;
+          for (const existingLiteral of clause.literalsNewEvent!) {
+            if (literalsMatch(literal, existingLiteral, false)) {
+              existingLiteralsActiveOrder.push(existingLiteral);
               foundMatch = true;
-              break;
-            }
-          }
-          if (foundMatch) {
-            continue;
-          }
-          for (const existingLiteral of clause.conclusionLiterals) {
-            if (existingLiteral.toString(true) === selectedLiteralString) {
-              existingLiteral.isSelected = true;
-              foundMatch = true;
+              if (i < nSel) {
+                existingLiteral.isSelected = true;
+              }
               break;
             }
           }
           assert(foundMatch);
         }
+        clause.literalsActiveEvent = existingLiteralsActiveOrder;
 
         currentTime = currentTime + 1;
         currentNode.activeTime = currentTime;
