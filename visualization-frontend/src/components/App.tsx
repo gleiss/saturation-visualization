@@ -12,7 +12,7 @@ import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
-import { orientClauses, computeParentLiterals } from '../model/clause-orientation';
+import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
 
 type Props = {
   problem: string,
@@ -245,7 +245,7 @@ class App extends Component<Props, State> {
 
         if (this.props.orientClauses) {
           computeParentLiterals(dag);
-          orientClauses(dag, null);
+          computeClauseRepresentation(dag, null);
         }
         this.setLiteralOptions(dag);
 
@@ -323,7 +323,7 @@ class App extends Component<Props, State> {
 
         if (this.props.orientClauses) {
           computeParentLiterals(newDag);
-          orientClauses(newDag, null);
+          computeClauseRepresentation(newDag, null);
         }
         this.setLiteralOptions(newDag);
   
@@ -500,7 +500,7 @@ class App extends Component<Props, State> {
 
     clause.changeLiteralOrientation(oldPosition, newPosition);
 
-    const changedNodes = orientClauses(dag, nodeId);
+    const changedNodes = computeClauseRepresentation(dag, nodeId);
     const changedNodesInCurrentDag = new Set<number>();
     for (const changedNodeId of changedNodes) {
       if (currentDag.nodes.has(changedNodeId)) {
@@ -519,7 +519,7 @@ class App extends Component<Props, State> {
 
     literal.switchToNextRepresentation();
     
-    const changedNodes = orientClauses(dag, nodeId);
+    const changedNodes = computeClauseRepresentation(dag, nodeId);
 
     this.setState({changedNodesEvent: changedNodes});
   }

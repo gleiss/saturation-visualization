@@ -275,10 +275,13 @@ export function computeParentLiterals(dag: Dag) {
 	}
 }
 
-// update literal orientations in the given dag
+// update in the given dag:
+// - literal orientations
+// - ordering of literals in premises and conclusions
 // if changedClauseId is null, update all nodes in the dag
 // if changedClauseId is the id of a clause, update the node and all children of the node
-export function orientClauses(dag: Dag, changedClauseId: number | null): Set<number> {
+// Precondition: computeParentLiterals was already called on the current dag
+export function computeClauseRepresentation(dag: Dag, changedClauseId: number | null): Set<number> {
 	assert(changedClauseId === null || dag.nodes.has(changedClauseId));
 
 	const changedClauses = new Set<number>();
@@ -310,8 +313,6 @@ export function orientClauses(dag: Dag, changedClauseId: number | null): Set<num
 				continue;
 			}
 
-			// TODO: sanity check that all literals were set in the cases we support: suitable inference + parents are clauses
-
 			// Part 1: partition literals into premise and conclusion
 			const propagateSingleParent = node.inferenceRule === "subsumption resolution" ||
 				node.inferenceRule === "equality resolution" ||
@@ -332,13 +333,14 @@ export function orientClauses(dag: Dag, changedClauseId: number | null): Set<num
 
 				let orientation: "premise" | "conclusion" | null = null;
 				const parentLiteral = literal.literalInParent;
-				if (parentLiteral !== null && literal.orientationReason !== "user" && (propagateSingleParent || propagateTwoParents)) {
+				if (literal.orientationReason !== "user" && (propagateSingleParent || propagateTwoParents)) {
+					assert(parentLiteral !== null);
 					// Case 2: propagate orientation from parent literal
 					if (propagateSingleParent) {
 						assert(node.parents.length > 0);
 						const hasSwitchedParents = node.inferenceRule === "backward demodulation"
 						const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
-						
+
 						if (parent.unit.type === "Clause") {
 							const parentClause = parent.unit as Clause;
 							// figure out whether parentLiteral occurs in premise or conclusion and set orientation accordingly
@@ -399,11 +401,103 @@ export function orientClauses(dag: Dag, changedClauseId: number | null): Set<num
 				}
 			}
 
-			// Part 2: update literals
+			// Part 2: order literals according to the order of literals in the parents
+			if (propagateSingleParent) {
+				const hasSwitchedParents = node.inferenceRule === "backward demodulation"
+				const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
+				
+				if (parent.unit.type === "Clause") {
+					const parentClause = parent.unit as Clause;
+
+					// generate map parentLiteral -> indexInPremise
+					const premiseIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < parentClause.premiseLiterals.length; i++) {
+						const parentLiteral = parentClause.premiseLiterals[i];
+						premiseIndexMap.set(parentLiteral, i);
+					}
+					// generate map parentLiteral -> indexInConclusion
+					const conclusionIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < parentClause.conclusionLiterals.length; i++) {
+						const parentLiteral = parentClause.conclusionLiterals[i];
+						conclusionIndexMap.set(parentLiteral, i);
+					}
+					// sort premise and conclusion
+					premiseLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = premiseIndexMap.get(lit1.literalInParent!);
+						const index2 = premiseIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
+					conclusionLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = conclusionIndexMap.get(lit1.literalInParent!);
+						const index2 = conclusionIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
+				}
+			} else if (propagateTwoParents) {
+				assert(node.parents.length == 2);
+				const leftNode = dag.get(node.parents[0]);
+				const rightNode = dag.get(node.parents[1]);
+				if (leftNode.unit.type === "Clause" && rightNode.unit.type === "Clause") {
+					const leftClause = leftNode.unit as Clause;
+					const rightClause = rightNode.unit as Clause;
+
+					// generate map leftLiteral/rightLiteral -> indexInPremise
+					// ensure that rightLiterals have a higher index than leftLiterals
+					const premiseIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < leftClause.premiseLiterals.length; i++) {
+						const parentLiteral = leftClause.premiseLiterals[i];
+						premiseIndexMap.set(parentLiteral, i);
+					}
+					for (let i = 0; i < rightClause.premiseLiterals.length; i++) {
+						const parentLiteral = rightClause.premiseLiterals[i];
+						premiseIndexMap.set(parentLiteral, i + leftClause.premiseLiterals.length);
+					}
+					// generate map leftLiteral/rightLiteral -> indexInConclusion
+					// ensure that rightLiterals have a higher index than leftLiterals
+					const conclusionIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < leftClause.conclusionLiterals.length; i++) {
+						const parentLiteral = leftClause.conclusionLiterals[i];
+						conclusionIndexMap.set(parentLiteral, i);
+					}
+					for (let i = 0; i < rightClause.conclusionLiterals.length; i++) {
+						const parentLiteral = rightClause.conclusionLiterals[i];
+						conclusionIndexMap.set(parentLiteral, i + leftClause.conclusionLiterals.length);
+					}
+					// sort premise and conclusion
+					premiseLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = premiseIndexMap.get(lit1.literalInParent!);
+						const index2 = premiseIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
+					conclusionLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = conclusionIndexMap.get(lit1.literalInParent!);
+						const index2 = conclusionIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
+				}
+			}
+
+			// Part 3: update literals
 			clause.premiseLiterals = premiseLiterals;
 			clause.conclusionLiterals = conclusionLiterals;
 
-			// Part 3: mark clause to be changed
+			// Part 4: mark clause to be changed
 			changedClauses.add(node.id);
 		}
 	}
