@@ -277,6 +277,7 @@ export function computeParentLiterals(dag: Dag) {
 
 // update in the given dag:
 // - literal orientations
+// - literal representations
 // - ordering of literals in premises and conclusions
 // if changedClauseId is null, update all nodes in the dag
 // if changedClauseId is the id of a clause, update the node and all children of the node
@@ -313,7 +314,7 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 				continue;
 			}
 
-			// Part 1: partition literals into premise and conclusion
+			// Part 1: partition literals into premise and conclusion and compute literal-representation
 			const propagateSingleParent = node.inferenceRule === "subsumption resolution" ||
 				node.inferenceRule === "equality resolution" ||
 				node.inferenceRule === "equality factoring" ||
@@ -332,10 +333,12 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 			for (const literal of clause.premiseLiterals.concat(clause.conclusionLiterals)) {
 
 				let orientation: "premise" | "conclusion" | null = null;
+
 				const parentLiteral = literal.literalInParent;
 				if (literal.orientationReason !== "user" && (propagateSingleParent || propagateTwoParents)) {
 					assert(parentLiteral !== null);
-					// Case 2: propagate orientation from parent literal
+					// propagate orientation and representation from parent literal
+					literal.representation = parentLiteral!.representation;
 					if (propagateSingleParent) {
 						assert(node.parents.length > 0);
 						const hasSwitchedParents = node.inferenceRule === "backward demodulation"
