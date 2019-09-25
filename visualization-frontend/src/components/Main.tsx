@@ -8,7 +8,7 @@ import Graph from './Graph';
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  changedNodeEvent?: [number, number],
+  changedNodesEvent?: Set<number>,
   historyLength: number,
   currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
@@ -25,7 +25,7 @@ export default class Main extends React.Component<Props, {}> {
         <Graph
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
-          changedNodeEvent={this.props.changedNodeEvent}
+          changedNodesEvent={this.props.changedNodesEvent}
           currentTime={this.props.currentTime}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
           onShowPassiveDag={this.props.onShowPassiveDag}

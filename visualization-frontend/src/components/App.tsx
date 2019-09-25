@@ -12,7 +12,7 @@ import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
-import { orientClauses } from '../model/clause-orientation';
+import { orientClauses, computeParentLiterals } from '../model/clause-orientation';
 
 type Props = {
   problem: string,
@@ -35,7 +35,7 @@ type State = {
   dags: Dag[],
   nodeSelection: number[],
   currentTime: number,
-  changedNodeEvent?: [number, number], // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
+  changedNodesEvent?: Set<number>, // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
 };
 
@@ -46,7 +46,7 @@ class App extends Component<Props, State> {
     dags: [],
     nodeSelection: [],
     currentTime: 0,
-    changedNodeEvent: undefined,
+    changedNodesEvent: undefined,
     message: ""
   };
 
@@ -56,7 +56,7 @@ class App extends Component<Props, State> {
       dags,
       nodeSelection,
       currentTime,
-      changedNodeEvent,
+      changedNodesEvent,
       message
     } = this.state;
     
@@ -69,7 +69,7 @@ class App extends Component<Props, State> {
         <Main
           dag={dag}
           nodeSelection={nodeSelection}
-          changedNodeEvent={changedNodeEvent}
+          changedNodesEvent={changedNodesEvent}
           historyLength={dags[0].maximalActiveTime()}
           currentTime={currentTime}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
@@ -244,7 +244,8 @@ class App extends Component<Props, State> {
         await VizWrapper.layoutDag(dag, true);
 
         if (this.props.orientClauses) {
-          orientClauses(dag);
+          computeParentLiterals(dag);
+          orientClauses(dag, null);
         }
         this.setLiteralOptions(dag);
 
@@ -321,7 +322,8 @@ class App extends Component<Props, State> {
         }
 
         if (this.props.orientClauses) {
-          orientClauses(newDag);
+          computeParentLiterals(newDag);
+          orientClauses(newDag, null);
         }
         this.setLiteralOptions(newDag);
   
@@ -489,25 +491,37 @@ class App extends Component<Props, State> {
   private changeLiteralOrientation(nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) {
     const dags = this.state.dags;
     assert(dags.length > 0);
-    const node = dags[0].nodes.get(nodeId);
+    const dag = dags[0];
+    const currentDag = dags[dags.length - 1];
+    const node = dag.nodes.get(nodeId);
     assert(node !== undefined);
     assert(node!.unit.type === "Clause");
     const clause = node!.unit as Clause;
 
     clause.changeLiteralOrientation(oldPosition, newPosition);
-  
-    this.setState({changedNodeEvent: [Math.random(), nodeId]});
+
+    const changedNodes = orientClauses(dag, nodeId);
+    const changedNodesInCurrentDag = new Set<number>();
+    for (const changedNodeId of changedNodes) {
+      if (currentDag.nodes.has(changedNodeId)) {
+        changedNodesInCurrentDag.add(changedNodeId);
+      }
+    }
+    this.setState({changedNodesEvent: changedNodesInCurrentDag});
   }
 
   private changeLiteralRepresentation(nodeId: number, literal: Literal) {
     const dags = this.state.dags;
     assert(dags.length > 0);
-    const node = dags[0].nodes.get(nodeId);
+    const dag = dags[0];
+    const node = dag.nodes.get(nodeId);
     assert(node !== undefined);
 
     literal.switchToNextRepresentation();
     
-    this.setState({changedNodeEvent: [Math.random(), nodeId]});
+    const changedNodes = orientClauses(dag, nodeId);
+
+    this.setState({changedNodesEvent: changedNodes});
   }
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////

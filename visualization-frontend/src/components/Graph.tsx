@@ -12,7 +12,7 @@ const styleTemplates = require('../resources/styleTemplates');
 type Props = {
   dag: Dag,
   nodeSelection: number[],
-  changedNodeEvent?: [number, number],
+  changedNodesEvent?: Set<number>,
   currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
   onShowPassiveDag: (selectionId: number, currentTime: number) => void,
@@ -29,7 +29,7 @@ export default class Graph extends React.Component<Props, {}> {
   graphContainer = React.createRef<HTMLDivElement>();
   dragStartPosition: [number, number] | null = null;
   dragStartNodeId: number | null = null;
-  cachedNodeEvent?: [number, number] = undefined;
+  cachedChangeNodesEvent?: Set<number> = undefined;
 
   componentDidMount() {
     this.generateNetwork();
@@ -47,17 +47,22 @@ export default class Graph extends React.Component<Props, {}> {
       if (this.props.currentTime !== prevProps.currentTime) {
         this.updateNetwork(true);
       }
-      if (this.props.changedNodeEvent !== prevProps.changedNodeEvent) {
-        assert(this.props.changedNodeEvent != undefined);
-        if (this.cachedNodeEvent === undefined || this.props.changedNodeEvent![0] !== this.cachedNodeEvent[0]) {
-          const incomingEvent = this.props.changedNodeEvent;
-          this.cachedNodeEvent = incomingEvent;
+      const incomingEvent = this.props.changedNodesEvent;
+      if (incomingEvent !== prevProps.changedNodesEvent) {
+        assert(incomingEvent !== undefined);
+        if (incomingEvent !== this.cachedChangeNodesEvent) {
+          this.cachedChangeNodesEvent = incomingEvent;
 
-          const updatedNetworkNode = {
-            id : incomingEvent![1],
-            label : this.props.dag.get(incomingEvent![1]).toHTMLString(this.props.currentTime)
-          };
-          this.networkNodes.update(updatedNetworkNode);
+          // update all nodes from event
+          const visNodes = new Array<Node>();
+          for (const nodeId of incomingEvent!) {
+            const visNode = {
+              id : nodeId,
+              label : this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
+            };
+            visNodes.push(visNode);
+          }
+          this.networkNodes.update(visNodes);
         }
       }
     }
