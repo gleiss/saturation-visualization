@@ -107,14 +107,22 @@ export default class Search extends React.Component<Props, State> {
         
           let foundLiteral = false;
           for (const literal of clause.premiseLiterals) {
-            if(literal.toString(false).includes(searchString1)) {
+            if(literal.toString(true).includes(searchString1)) {
               foundLiteral = true;
               break;
             }
           }
           if (!foundLiteral) {
             for (const literal of clause.conclusionLiterals) {
-              if(literal.toString(true).includes(searchString1)) {
+              if(literal.toString(false).includes(searchString1)) {
+                foundLiteral = true;
+                break;
+              }
+            }
+          }
+          if (!foundLiteral) {
+            for (const literal of clause.contextLiterals) {
+              if(literal.toString(false).includes(searchString1)) {
                 foundLiteral = true;
                 break;
               }
@@ -138,14 +146,22 @@ export default class Search extends React.Component<Props, State> {
         
           let foundLiteral = false;
           for (const literal of clause.premiseLiterals) {
-            if(literal.toString(false).includes(searchString2)) {
+            if(literal.toString(true).includes(searchString2)) {
               foundLiteral = true;
               break;
             }
           }
           if (!foundLiteral) {
             for (const literal of clause.conclusionLiterals) {
-              if(literal.toString(true).includes(searchString2)) {
+              if(literal.toString(false).includes(searchString2)) {
+                foundLiteral = true;
+                break;
+              }
+            }
+          }
+          if (!foundLiteral) {
+            for (const literal of clause.contextLiterals) {
+              if(literal.toString(false).includes(searchString2)) {
                 foundLiteral = true;
                 break;
               }

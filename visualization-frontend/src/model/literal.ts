@@ -37,8 +37,8 @@ export class Literal {
 		}
 	}
 
-	toString(orientationIsConclusion: boolean) : string {
-		const occursNegated = orientationIsConclusion ? this.negated : !this.negated;
+	toString(negateLiteral: boolean) : string {
+		const occursNegated = negateLiteral ? !this.negated : this.negated;
 		if (this.name === "=") {
 			assert(this.args.length === 2, "equalities must have exactly two arguments");
 			return this.args[0].toString(this.hideBracketsAssoc) + (occursNegated ? " != " : " = ") + this.args[1].toString(this.hideBracketsAssoc);

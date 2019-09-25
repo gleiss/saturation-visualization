@@ -9,7 +9,7 @@ import SatNode from '../model/sat-node';
 type Props = {
   node: SatNode,
   numberOfTransitiveActivatedChildren: number,
-  onLiteralOrientationChange: (nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) => void,
+  onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
   onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 };
 
@@ -39,11 +39,15 @@ export default class NodeDetails extends React.Component<Props, {}> {
             ) : (
               <section className={'literal-wrapper'}>
                 {
-                  this.toList(this.props.node.id, this.props.node.unit as Clause, false)
+                  this.toList(this.props.node.id, this.props.node.unit as Clause, "premise")
                 }
                 <br/>
                 {
-                  this.toList(this.props.node.id, this.props.node.unit as Clause, true)
+                  this.toList(this.props.node.id, this.props.node.unit as Clause, "conclusion")
+                }
+                <br/>
+                {
+                  this.toList(this.props.node.id, this.props.node.unit as Clause, "context")
                 }
               </section>
             )
@@ -53,34 +57,38 @@ export default class NodeDetails extends React.Component<Props, {}> {
     );
   }
 
-  toList = (nodeId: number, clause: Clause, isConclusion: boolean) => {
-    const literals = isConclusion ? clause.conclusionLiterals : clause.premiseLiterals;
+  toList = (nodeId: number, clause: Clause, orientation: "premise" | "conclusion" | "context") => {
+    const literals = orientation === "premise" ? clause.premiseLiterals : (orientation === "conclusion" ? clause.conclusionLiterals : clause.contextLiterals);
   
     return (
       <Sortable
         options={{
           group: 'shared',
           onAdd: (event) => {
-            this.props.onLiteralOrientationChange(nodeId, [!isConclusion, event.oldIndex], [event.from === event.to ? !isConclusion : isConclusion, event.newIndex])
+            const from = event.from.id === "id1" ? "premise" : event.from.id === "id2" ? "conclusion" : "context";
+            const to = event.to.id === "id1" ? "premise" : event.to.id === "id2" ? "conclusion" : "context";
+            this.props.onLiteralOrientationChange(nodeId, [from, event.oldIndex], [to, event.newIndex]);
           ;},
           onUpdate: (event) => {
-            this.props.onLiteralOrientationChange(nodeId, [isConclusion, event.oldIndex], [isConclusion, event.newIndex])
+            const from = event.from.id === "id1" ? "premise" : event.from.id === "id2" ? "conclusion" : "context";
+            const to = event.to.id === "id1" ? "premise" : event.to.id === "id2" ? "conclusion" : "context";
+            this.props.onLiteralOrientationChange(nodeId, [from, event.oldIndex], [to, event.newIndex]);
           ;}
         }}
         tag={"ul"}
-        id={isConclusion ? "id2" : "id1"}
+        id={orientation === "premise" ? "id1" : (orientation === "conclusion" ? "id2" : "id3")}
       >
         {
-          literals.map((literal, index) => this.toListItem(literal, index, isConclusion))
+          literals.map((literal, index) => this.toListItem(literal, index, orientation))
         }
       </Sortable>
       )
     };
   
-  toListItem = (literal: Literal, index: number, inConclusion: boolean) => {
+  toListItem = (literal: Literal, index: number, orientation: "premise" | "conclusion" | "context") => {
     return <li key={index} data-id={index} onDoubleClick={(event) => {
       this.props.onLiteralRepresentationChange(this.props.node.id, literal);
-      event.currentTarget.innerText = literal.toString(inConclusion);
-    }}>{literal.toString(inConclusion)}</li>
+      event.currentTarget.innerText = literal.toString(orientation === "premise");
+    }}>{literal.toString(orientation === "premise")}</li>
   };
 }

@@ -58,6 +58,10 @@ ul#id2 {
   min-height: 2rem;
 }
 
+ul#id3 {
+  min-height: 2rem;
+}
+
 .component-node-details small {
   display: block;
   padding: 1rem 5px 0.5rem;

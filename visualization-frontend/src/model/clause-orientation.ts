@@ -330,9 +330,10 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 
 			const premiseLiterals = new Array<Literal>();
 			const conclusionLiterals = new Array<Literal>();
-			for (const literal of clause.premiseLiterals.concat(clause.conclusionLiterals)) {
+			const contextLiterals = new Array<Literal>();
+			for (const literal of clause.premiseLiterals.concat(clause.conclusionLiterals, clause.contextLiterals)) {
 
-				let orientation: "premise" | "conclusion" | null = null;
+				let orientation: "premise" | "conclusion" | "context" | null = null;
 
 				const parentLiteral = literal.literalInParent;
 				if (literal.orientationReason !== "user" && (propagateSingleParent || propagateTwoParents)) {
@@ -349,9 +350,11 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 							// figure out whether parentLiteral occurs in premise or conclusion and set orientation accordingly
 							if (parentClause.premiseLiterals.find(l => l === parentLiteral)) {
 								orientation = "premise";
-							} else {
-								assert(parentClause.conclusionLiterals.find(l => l === parentLiteral));
+							} else if (parentClause.conclusionLiterals.find(l => l === parentLiteral)) {
 								orientation = "conclusion";
+							} else {
+								assert(parentClause.contextLiterals.find(l => l === parentLiteral));
+								orientation = "context";
 							}
 						}
 					} else if (propagateTwoParents) {
@@ -366,11 +369,15 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 								orientation = "premise";
 							} else if (leftClause.conclusionLiterals.find(l => l === parentLiteral)) {
 								orientation = "conclusion";
+							} else if (leftClause.contextLiterals.find(l => l === parentLiteral)) {
+								orientation = "context";
 							} else if (rightClause.premiseLiterals.find(l => l === parentLiteral)) {
 								orientation = "premise";
-							} else {
-								assert(rightClause.conclusionLiterals.find(l => l === parentLiteral));
+							} else if (rightClause.conclusionLiterals.find(l => l === parentLiteral)) {
 								orientation = "conclusion";
+							} else {
+								assert(rightClause.contextLiterals.find(l => l === parentLiteral));
+								orientation = "context";
 							}
 						}
 					}
@@ -381,9 +388,11 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 				else if (literal.orientationReason !== "none" ) {
 					if (clause.premiseLiterals.find(l => l === literal)) {
 						orientation = "premise";
-					} else {
-						assert(clause.conclusionLiterals.find(l => l === literal))
+					} else if (clause.conclusionLiterals.find(l => l === literal)) {
 						orientation = "conclusion";
+					} else {
+						assert(clause.contextLiterals.find(l => l === literal))
+						orientation = "context";
 					}
 				}
 				else {
@@ -398,14 +407,24 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 
 				if (orientation === "premise") {
 					premiseLiterals.push(literal);
-				} else {
-					assert(orientation === "conclusion");
+				} else if (orientation === "conclusion") {
 					conclusionLiterals.push(literal);
+				} else {
+					assert(orientation === "context");
+					contextLiterals.push(literal);
 				}
 			}
 
 			// Part 2: order literals according to the order of literals in the parents
-			if (propagateSingleParent) {
+			// only sort if no manually oriented literal in clause
+			let existsUserOrientedLiteral = false;
+			for (const literal of clause.premiseLiterals.concat(clause.conclusionLiterals, clause.contextLiterals)) {
+				if (literal.orientationReason === "user") {
+					existsUserOrientedLiteral = true;
+					break;
+				}
+			}
+			if (!existsUserOrientedLiteral && propagateSingleParent) {
 				const hasSwitchedParents = node.inferenceRule === "backward demodulation"
 				const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
 				
@@ -424,7 +443,13 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 						const parentLiteral = parentClause.conclusionLiterals[i];
 						conclusionIndexMap.set(parentLiteral, i);
 					}
-					// sort premise and conclusion
+					// generate map parentLiteral -> indexInContext
+					const contextIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < parentClause.contextLiterals.length; i++) {
+						const parentLiteral = parentClause.contextLiterals[i];
+						contextIndexMap.set(parentLiteral, i);
+					}
+					// sort premise, conclusion and context
 					premiseLiterals.sort((lit1: Literal, lit2: Literal) => {
 						assert(lit1.literalInParent !== null);
 						assert(lit2.literalInParent !== null);
@@ -443,8 +468,17 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 						assert(index2 !== undefined);
 						return index1! - index2!;
 					});
+					contextLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = contextIndexMap.get(lit1.literalInParent!);
+						const index2 = contextIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
 				}
-			} else if (propagateTwoParents) {
+			} else if (!existsUserOrientedLiteral && propagateTwoParents) {
 				assert(node.parents.length == 2);
 				const leftNode = dag.get(node.parents[0]);
 				const rightNode = dag.get(node.parents[1]);
@@ -474,12 +508,27 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 						const parentLiteral = rightClause.conclusionLiterals[i];
 						conclusionIndexMap.set(parentLiteral, i + leftClause.conclusionLiterals.length);
 					}
-					// sort premise and conclusion
+					// generate map leftLiteral/rightLiteral -> indexInContext
+					// ensure that rightLiterals have a higher index than leftLiterals
+					const contextIndexMap = new Map<Literal, number>();
+					for (let i = 0; i < leftClause.contextLiterals.length; i++) {
+						const parentLiteral = leftClause.contextLiterals[i];
+						contextIndexMap.set(parentLiteral, i);
+					}
+					for (let i = 0; i < rightClause.contextLiterals.length; i++) {
+						const parentLiteral = rightClause.contextLiterals[i];
+						contextIndexMap.set(parentLiteral, i + leftClause.contextLiterals.length);
+					}
+
+					// sort premise, conclusion and context
 					premiseLiterals.sort((lit1: Literal, lit2: Literal) => {
 						assert(lit1.literalInParent !== null);
 						assert(lit2.literalInParent !== null);
 						const index1 = premiseIndexMap.get(lit1.literalInParent!);
 						const index2 = premiseIndexMap.get(lit2.literalInParent!);
+						if(index1 === undefined) {
+							console.log(lit1.literalInParent);
+						}
 						assert(index1 !== undefined);
 						assert(index2 !== undefined);
 						return index1! - index2!;
@@ -493,12 +542,22 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 						assert(index2 !== undefined);
 						return index1! - index2!;
 					});
+					contextLiterals.sort((lit1: Literal, lit2: Literal) => {
+						assert(lit1.literalInParent !== null);
+						assert(lit2.literalInParent !== null);
+						const index1 = contextIndexMap.get(lit1.literalInParent!);
+						const index2 = contextIndexMap.get(lit2.literalInParent!);
+						assert(index1 !== undefined);
+						assert(index2 !== undefined);
+						return index1! - index2!;
+					});
 				}
 			}
 
 			// Part 3: update literals
 			clause.premiseLiterals = premiseLiterals;
 			clause.conclusionLiterals = conclusionLiterals;
+			clause.contextLiterals = contextLiterals;
 
 			// Part 4: mark clause to be changed
 			changedClauses.add(node.id);

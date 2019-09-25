@@ -488,7 +488,7 @@ class App extends Component<Props, State> {
 
   // LITERALS ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private changeLiteralOrientation(nodeId: number, oldPosition: [boolean, number], newPosition: [boolean, number]) {
+  private changeLiteralOrientation(nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) {
     const dags = this.state.dags;
     assert(dags.length > 0);
     const dag = dags[0];
