@@ -15,6 +15,7 @@ export default class SatNode {
   deletionTime: number | null;
   deletionParents: number[];
   position: [number,number] | null;
+  isBoundary: boolean;
 
   constructor(
     id: number,
@@ -26,7 +27,8 @@ export default class SatNode {
     newTime: number | null,
     activeTime: number | null,
     deletionTime: number | null,
-    deletionParents: number[]
+    deletionParents: number[],
+    isBoundary: boolean
   ) {
     this.id = id;
     this.unit = unit;
@@ -39,11 +41,12 @@ export default class SatNode {
     this.deletionTime = deletionTime;
     this.deletionParents = deletionParents;
     this.position = null;
+    this.isBoundary = isBoundary;
   }
 
   // return a copy of this node, where the position is null
   copy(): SatNode {
-    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.activeTime, this.deletionTime, this.deletionParents);
+    return new SatNode(this.id, this.unit, this.inferenceRule, this.parents, this.statistics, this.isFromPreprocessing, this.newTime, this.activeTime, this.deletionTime, this.deletionParents, this.isBoundary);
   }
 
   getPosition(): [number,number] {

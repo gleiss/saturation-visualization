@@ -24,6 +24,7 @@ export class ParsedLine {
   }
 }
 
+export type SatNodeStyle = "passive" | "deleted" | "activated" | "activated-deleted" | "boundary" | "boundary-deleted" | "preprocessing" | "preprocessing-deleted" | "theory-axiom" | 'theory-axiom-deleted' | "conjecture";
 export class Dag {
 
   // TODO: it seems that the result of Graphviz depends on the order of node- and edge declarations.
@@ -35,10 +36,10 @@ export class Dag {
   
   // invar: if isPassiveDag, then styleMap !== null
   readonly isPassiveDag: boolean;
-  readonly styleMap: Map<number, "passive" | "deleted" | "boundary"> | null;
+  readonly styleMap: Map<number, SatNodeStyle> | null;
   readonly activeNodeId: number | null; // the id of the node for which passiveDag was computed
 
-  constructor(nodes: Map<number,SatNode>, mergeMap: Map<number, Array<number>> | null = null, isPassiveDag: boolean = false, styleMap: Map<number, "passive" | "deleted" | "boundary"> | null = null, activeNodeId: number | null = null) {
+  constructor(nodes: Map<number,SatNode>, mergeMap: Map<number, Array<number>> | null = null, isPassiveDag: boolean = false, styleMap: Map<number, SatNodeStyle> | null = null, activeNodeId: number | null = null) {
     this.nodes = nodes;
     this.mergeMap = mergeMap;
 
@@ -180,7 +181,6 @@ export class Dag {
   // in particular, the exhaustiveness axiom consists of a formula labelled "term algebras exhaustiveness" and a child node which is labelled cnf transformation
   nodeIsTheoryAxiom(nodeId: number): boolean {
     const node = this.get(nodeId);
-    assert(node !== undefined, "node doesn't occur in Dag");
 
     if (!node.isFromPreprocessing) {
       return false;
@@ -245,7 +245,7 @@ export class Dag {
           line.parents = [];
         }
 
-        currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, true, null, null, null, []);
+        currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, true, null, null, null, [], false);
         nodes.set(currentNode.id, currentNode);
       }
       else if (line.type === "new") {
@@ -255,7 +255,7 @@ export class Dag {
           // create new node
           const unit = UnitParser.parseClause(line.unitString);
           unit.literalsNewEvent = unit.conclusionLiterals;
-          currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, []);
+          currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, [], false);
           nodes.set(currentNode.id, currentNode);
 
           if(line.unitString === "$false") {
@@ -368,7 +368,7 @@ export class Dag {
     return activeNodeIds;
   }
 
-  // Definition: the active dag contains all nodes which occur in the derivation of a currently active node, and all preprocessing nodes
+  // Definition: the active dag contains all nodes which occur in the derivation of an already activated node, and all preprocessing nodes
   computeNodesInActiveDag(currentTime: number) : Set<number> {
     const nodeIds = this.computeActiveNodes(currentTime);
 

@@ -91,7 +91,7 @@ function computeParentLiteralsCase3(literals: Array<Literal>, parentLiterals: Ar
 
 export function computeParentLiterals(dag: Dag) {
 	for (const node of dag.nodes.values()) {
-		if (node.unit.type === "Clause") {
+		if (!node.isBoundary && node.unit.type === "Clause") {
 			const clause = node.unit as Clause;
 
 			if (node.inferenceRule === "evaluation" ||
@@ -226,7 +226,7 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 	while (iterator.hasNext()) {
 		let node = iterator.getNext();
 
-		if (node.unit.type === "Clause") {
+		if (!node.isBoundary && node.unit.type === "Clause") {
 			const clause = node.unit as Clause;
 
 			// compute whether clause should be updated. This is the case if
@@ -458,9 +458,6 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 						assert(lit2.literalInParent !== null);
 						const index1 = premiseIndexMap.get(lit1.literalInParent!);
 						const index2 = premiseIndexMap.get(lit2.literalInParent!);
-						if(index1 === undefined) {
-							console.log(lit1.literalInParent);
-						}
 						assert(index1 !== undefined);
 						assert(index2 !== undefined);
 						return index1! - index2!;

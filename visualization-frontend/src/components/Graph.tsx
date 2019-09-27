@@ -189,29 +189,30 @@ export default class Graph extends React.Component<Props, {}> {
 
     const nodePartition = new Map<number, any>();
     for (const [nodeId, node] of dag.nodes) {
+
       const isDeleted = (node.deletionTime !== null && node.deletionTime <= currentTime);
 
       if (dag.nodeIsTheoryAxiom(nodeId)) {
-        nodePartition.set(nodeId, isDeleted ? "theoryAxiomDeleted" : "theoryAxiom");
+        nodePartition.set(nodeId, isDeleted ? "theory-axiom-deleted" : "theory-axiom");
         continue;
       }
       if (node.isFromPreprocessing) {
         if (node.inferenceRule === "negated conjecture") {
           nodePartition.set(nodeId, "conjecture");
         } else {
-          nodePartition.set(nodeId, isDeleted ? "preprocessingDeleted" : "preprocessing");
+          nodePartition.set(nodeId, isDeleted ? "preprocessing-deleted" : "preprocessing");
         }
         continue;
       }
 
       const isActivated = (node.activeTime !== null && node.activeTime <= currentTime);
       if (isActivated) {
-        nodePartition.set(nodeId, isDeleted ? "activatedDeleted" : "active");
+        nodePartition.set(nodeId, isDeleted ? "activated-deleted" : "activated");
         continue;
       }
 
       if (nodesInActiveDag.has(nodeId)) {
-        nodePartition.set(nodeId, "deletedButContributing");
+        nodePartition.set(nodeId, "deleted");
         continue;
       } 
 

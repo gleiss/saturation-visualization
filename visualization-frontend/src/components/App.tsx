@@ -414,7 +414,7 @@ class App extends Component<Props, State> {
     const {dags} = this.state;
     const currentDag = dags[dags.length - 1];
     
-    const passiveDag = passiveDagForSelection(currentDag, selectionId, currentTime);
+    const passiveDag = passiveDagForSelection(currentDag, [selectionId], currentTime);
     await VizWrapper.layoutDag(passiveDag, false);
 
     // shift dag so that selected node keeps position

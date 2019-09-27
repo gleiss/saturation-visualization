@@ -16,7 +16,24 @@
     },
     "hidden": false
   },
-  "active": {
+  "boundary-hidden": {
+    "defaultStyle": {
+      "background": "#77aadd",
+      "border": "#4477aa"
+    },
+    "text": "#000000",
+    "shape": "box",
+    "highlightStyle": {
+      "background": "#ee8866",
+      "border": "#ee8866"
+    },
+    "markedStyle": {
+      "background": "#ffaabb",
+      "border": "#ee3377"
+    },
+    "hidden": false
+  },
+  "activated": {
     "defaultStyle": {
       "background": "#dddddd",
       "border": "#bbbbbb"
@@ -33,7 +50,7 @@
     },
     "hidden": false
   },
-  "activatedDeleted": {
+  "activated-deleted": {
     "defaultStyle": {
       "background": "#dddddd",
       "border": "#bbbbbb"
@@ -67,23 +84,6 @@
     },
     "hidden": false
   },
-  "deletedButContributing": {
-    "defaultStyle": {
-      "background": "#f8f8f8",
-      "border": "#f1f1f1"
-    },
-    "text": "#999999",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#f8cfc1",
-      "border": "#f8cfc1"
-    },
-    "markedStyle": {
-      "background": "#ffdde3",
-      "border": "#f8adc8"
-    },
-    "hidden": false
-  },
   "deleted": {
     "defaultStyle": {
       "background": "#f8f8f8",
@@ -101,7 +101,7 @@
     },
     "hidden": false
   },
-  "theoryAxiom": {
+  "theory-axiom": {
     "defaultStyle": {
       "background": "#77aadd",
       "border": "#4477aa"
@@ -118,7 +118,7 @@
     },
     "hidden": false
   },
-  "theoryAxiomDeleted": {
+  "theory-axiom-deleted": {
     "defaultStyle": {
       "background": "#c8ddf1",
       "border": "#b4c8dd"
@@ -169,7 +169,7 @@
     },
     "hidden": false
   },
-  "preprocessingDeleted": {
+  "preprocessing-deleted": {
     "defaultStyle": {
       "background": "#abe0d1",
       "border": "#8cd1c9"
