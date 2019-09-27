@@ -36,9 +36,18 @@ export class UnitParser {
 	static parseLiteral(string: string): Literal {
 		// need to handle equality separately, since it is written in infix-notation
 		// all other predicates are written in prefix-notation
-		const equalityPosition = string.search("=");
+		let equalityPosition = string.search("=");
 		if(equalityPosition !== -1)
 		{
+			// Vampire's printing of FOOL-formulas is quite hacky,
+			// in particular FOOL-equalities always occur inside brackets, even for top-level literals
+			// where the brackets are unnecessary
+			if(string[0] === "(") {
+				assert(string[string.length - 1] === ")");
+				string = string.substring(1, string.length - 1);
+				assert(equalityPosition > 0);
+				equalityPosition -= 1;
+			}
 			if(string[equalityPosition - 1] === "!") {
 				assert(string[equalityPosition - 2] === " ", `negated equality not surrounded by spaces in string ${string}`);
 				assert(string[equalityPosition + 1] === " ", `negated equality not surrounded by spaces in string ${string}`);
