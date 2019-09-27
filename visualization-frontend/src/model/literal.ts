@@ -39,6 +39,7 @@ export class Literal {
 
 	toString(negateLiteral: boolean) : string {
 		const occursNegated = negateLiteral ? !this.negated : this.negated;
+
 		if (this.name === "=") {
 			assert(this.args.length === 2, "equalities must have exactly two arguments");
 			const switchSides = this.representation === 1;
@@ -48,12 +49,18 @@ export class Literal {
 		}
 		if (this.name === "$less" || this.name === "Sub") {
 			assert(this.args.length === 2, "inequalities must have exactly two arguments");
-			if(this.representation === 0) {
-				return this.args[0].toString(this.hideBracketsAssoc) + (occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " >= " : " !< ") : " < ") + this.args[1].toString(this.hideBracketsAssoc);
+			const switchSides = this.representation === 1;
+			const lhs = this.args[switchSides ? 1 : 0].toString(this.hideBracketsAssoc);
+			const rhs = this.args[switchSides ? 0 : 1].toString(this.hideBracketsAssoc);
+			let symbol;
+			if (switchSides) {
+				symbol = occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " <= " : " !> ") : " > ";
 			} else {
-				return this.args[1].toString(this.hideBracketsAssoc) + (occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " <= " : " !> ") : " > ") + this.args[0].toString(this.hideBracketsAssoc);
+				symbol = occursNegated ? (this.nonStrictForNegatedStrictInequalities ? " >= " : " !< ") : " < ";
 			}
+			return lhs + symbol + rhs;
 		}
+
 		// could also use logical-not-symbol: "\u00AC"
 		return (occursNegated ? "!" : "") + this.name + "(" + this.args.map(arg => arg.toString(this.hideBracketsAssoc)).join(",") + ")";
 	}
