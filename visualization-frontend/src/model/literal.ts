@@ -28,7 +28,7 @@ export class Literal {
 	}
 
 	switchToNextRepresentation() {
-		if (this.name === "$less" || this.name === "Sub") {
+		if (this.name === "$less" || this.name === "Sub" || this.name === "=") {
 			if (this.representation === 0) {
 				this.representation = 1;
 			} else {
@@ -41,7 +41,10 @@ export class Literal {
 		const occursNegated = negateLiteral ? !this.negated : this.negated;
 		if (this.name === "=") {
 			assert(this.args.length === 2, "equalities must have exactly two arguments");
-			return this.args[0].toString(this.hideBracketsAssoc) + (occursNegated ? " != " : " = ") + this.args[1].toString(this.hideBracketsAssoc);
+			const switchSides = this.representation === 1;
+			const lhs = this.args[switchSides ? 1 : 0].toString(this.hideBracketsAssoc);
+			const rhs = this.args[switchSides ? 0 : 1].toString(this.hideBracketsAssoc);
+			return lhs + (occursNegated ? " != " : " = ") + rhs;
 		}
 		if (this.name === "$less" || this.name === "Sub") {
 			assert(this.args.length === 2, "inequalities must have exactly two arguments");
