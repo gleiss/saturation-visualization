@@ -96,11 +96,13 @@ export function computeParentLiterals(dag: Dag) {
 
 			if (node.inferenceRule === "evaluation" ||
 				node.inferenceRule === "forward subsumption demodulation" ||
+				(node.inferenceRule === "term algebras injectivity" && node.parents.length == 1) ||
 				node.inferenceRule === "subsumption resolution" ||
 				node.inferenceRule === "equality resolution" ||
 				node.inferenceRule === "trivial inequality removal" ||
 				node.inferenceRule === "factoring" ||
 				node.inferenceRule === "duplicate literal removal" ||
+				(node.inferenceRule === "term algebras distinctness" && node.parents.length == 1) ||
 				node.inferenceRule === "forward demodulation" ||
 				node.inferenceRule === "backward demodulation" ||
 				node.inferenceRule === "equality factoring") {
@@ -129,7 +131,8 @@ export function computeParentLiterals(dag: Dag) {
 					// in full generality, this computation would be computationally expensive and a lot of implementation effort
 					// instead, we hardcode computations of matchings for the most important inference rules implemented in Vampire, and don't compute matchings for other inferences
 					if ((node.inferenceRule === "evaluation" && literals.length === parentLiterals.length) || 
-						node.inferenceRule === "forward subsumption demodulation") {
+						node.inferenceRule === "forward subsumption demodulation" ||
+						node.inferenceRule === "term algebras injectivity") {
 
 						computeParentLiteralsCase1(literals, parentLiterals);
 
@@ -138,6 +141,7 @@ export function computeParentLiterals(dag: Dag) {
 						node.inferenceRule === "trivial inequality removal" ||
 						node.inferenceRule === "factoring" ||
 						node.inferenceRule === "duplicate literal removal" ||
+						node.inferenceRule === "term algebras distinctness" ||
 						(node.inferenceRule === "evaluation" && literals.length + 1 === parentLiterals.length)) {
 
 						const allowSubstitutions = node.inferenceRule === "equality resolution" || node.inferenceRule === "factoring";
