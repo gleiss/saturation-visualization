@@ -15,12 +15,18 @@ type Props = {
   changedNodesEvent?: Set<number>,
   currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
-  onShowPassiveDag: (selectionId: number, currentTime: number) => void,
-  onDismissPassiveDag: (selectedId: number | null) => void,
   onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
 };
 
+type State = {
+  metaPressed: boolean,
+}
+
 export default class Graph extends React.Component<Props, {}> {
+
+  state: State = {
+    metaPressed: false,
+  }
 
   markers = new Set<number>();
   network: Network | null = null;
@@ -83,30 +89,43 @@ export default class Graph extends React.Component<Props, {}> {
     assert(this.graphContainer.current);
     assert(!this.network); // should only be called once
 
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Meta") {
+        this.setState({metaPressed: true});
+      }
+    },false);
+
+    window.addEventListener("keyup", async (event) => {
+      if (event.key === "Meta") {
+        this.setState({metaPressed: false});
+      }
+    },false);
+
     this.network = new Network(this.graphContainer.current!, {
       nodes: this.networkNodes,
       edges: this.networkEdges
     }, {
       physics: false,
       interaction: {
-        multiselect: true
-      }
+        multiselect: false
+      },
     });
 
-    this.network.on('select', (newSelection) => this.props.onNodeSelectionChange(newSelection.nodes));
-
-    this.network.on('oncontext', async (rightClickEvent) => {
-      rightClickEvent.event.preventDefault();
-      const nodeId = this.findNodeAt(rightClickEvent.event) as number | undefined;
-      if (nodeId !== undefined) {
-        if (this.props.dag.isPassiveDag) {
-          const styleMap = this.props.dag.styleMap as Map<number, string>;
-          if (styleMap.get(nodeId) === "passive") {
-            await this.props.onDismissPassiveDag(nodeId);
+    this.network.on('click', async (clickEvent) => {
+      if (clickEvent.nodes.length > 0) {
+        assert(clickEvent.nodes.length === 1);
+        const clickedNodeId = clickEvent.nodes[0];
+        if (this.state.metaPressed) {
+          if (this.props.nodeSelection.find((nodeId: number) => nodeId === clickedNodeId) !== undefined) {
+            this.props.onNodeSelectionChange(this.props.nodeSelection.filter((nodeId: number) => nodeId !== clickedNodeId));
+          } else {
+            this.props.onNodeSelectionChange(this.props.nodeSelection.concat(clickEvent.nodes));
           }
         } else {
-          await this.props.onShowPassiveDag(nodeId, this.props.currentTime);
+          this.props.onNodeSelectionChange(clickEvent.nodes);
         }
+      } else {
+        this.props.onNodeSelectionChange([]);
       }
     });
 

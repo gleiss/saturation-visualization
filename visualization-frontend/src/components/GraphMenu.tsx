@@ -8,10 +8,13 @@ type Props = {
   undoEnabled: boolean,
   filterUpEnabled: boolean,
   filterDownEnabled: boolean,
-  nodeSelection: number[],
+  passiveDagButtonEnabled: boolean,
+  passiveDagButtonFunctionality: "show" | "activate",
   onUndo: () => void,
   onRenderParentsOnly: () => void,
-  onRenderChildrenOnly: () => void
+  onRenderChildrenOnly: () => void,
+  onShowPassiveDag:() => void,
+  onDismissPassiveDag: (performActivation: boolean) => void,
 };
 
 export default class GraphMenu extends React.Component<Props, {}> {
@@ -37,6 +40,12 @@ export default class GraphMenu extends React.Component<Props, {}> {
           <svg viewBox="0 0 24 24" className="icon big">
             <use xlinkHref={`${icons}#graph-down`}/>
           </svg>
+        </button>
+
+        <button title="Select clauses"
+                disabled = {!this.props.passiveDagButtonEnabled}
+                onClick={() => {this.props.passiveDagButtonFunctionality === "activate" ? this.props.onShowPassiveDag() : this.props.onDismissPassiveDag(true)}}>
+          Select
         </button>
       </section>
     );

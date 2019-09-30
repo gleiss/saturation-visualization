@@ -168,60 +168,45 @@ export function passiveDagForSelection(dag: Dag, selectionIds: Array<number>, cu
 	assert(selectionIds.length > 0);
 	const selectionIdsSet = new Set(selectionIds);
 
-	// Part 1: compute the set of passive nodes, which was generated using a generating inference from nodes in selectionIds
+	// Part 1: for each passive node n, we consider the transitive parents p_1,...p_k occuring in the activeDag, 
+	// such that for each parent p_i no other node inbetween n and p_i occurs in the activeDag. If selectionId 
+	// is a subset of {p_1,...,p_k}, then n is added to foundNodes
 	const foundNodes = new Set<number>();
 
-	for (const [nodeId, node] of dag.nodes) {
-		// a node is in passive, if the new-event happened, but neither an active-event nor a deletion-event happened.
-		const nodeIsInPassive = ((node.newTime !== null && node.newTime <= currentTime) && !(node.activeTime !== null && node.activeTime <= currentTime) && !(node.deletionTime !== null && node.deletionTime <= currentTime));
-		if (nodeIsInPassive) {
-			// compute activated clauses or final preprocessing clauses from which node was generated
-			// const cachedNodes = new Map<number, SatNode>(); // TODO: probably more efficient to delay this
-			// const cachedStyles = new Map<number, "passive" | "deleted" | "boundary">();
+	const idToActiveDagParents = new Map<number, Set<number>>();
+	const iterator = new DFPostOrderTraversal(dag);
+	while (iterator.hasNext()) {
+		const node = iterator.getNext();
+		const nodeId = node.id;
 
-			// cachedNodes.set(nodeId, node);
-			// cachedStyles.set(nodeId, "passive");
+		const activeDagParents = new Set<number>();
 
-			let relevantNode = node;
-
-			// first go up in the derivation until the current node was not derived using a simplification
-			while (true) {
-				const mainPremise: SatNode | null = nodeWasDerivedUsingSimplification(dag, relevantNode);
-				if (mainPremise === null) {
-					break;
-				} else {
-					relevantNode = mainPremise;
+		const nodeIsInActiveDag = ((node.activeTime !== null && node.activeTime <= currentTime) || node.isFromPreprocessing);
+		if(nodeIsInActiveDag) {
+			if (selectionIdsSet.has(nodeId)) {
+				activeDagParents.add(nodeId);
+			}
+		} else {
+			for (const parentId of node.parents) {
+				const activeDagParentsParent = idToActiveDagParents.get(parentId);
+				assert(activeDagParentsParent !== undefined);
+				for (const activeDagParent of activeDagParentsParent!) {
+					activeDagParents.add(activeDagParent);
 				}
 			}
 
-			// now either the relevant node is a preprocessing node, or the parents of the current node are active nodes
-			if (relevantNode.isFromPreprocessing) {
-				if (selectionIdsSet.size === 1 && selectionIdsSet.has(relevantNode.id)) {
-					// found a passive node where the relevant node from activeDag is contained in selection
-					foundNodes.add(nodeId);
-				}
-			} else {
-				// sanity check that we found a generating inference
-				for (const parentId of relevantNode.parents) {
-					const parent = dag.get(parentId);
-					assert(parent.activeTime !== null && relevantNode.newTime !== null && parent.activeTime <= relevantNode.newTime, "invar violated: parent is not premise of a generating inference of relevantNode");
-					assert(parent.activeTime !== null && parent.activeTime <= currentTime, "invar violated: parent must occur in current activeDag!");
-				}
-
-				let allSelectionNodesAreParents = true;
-				for (const selectionNodeId of selectionIdsSet) {
-					if (relevantNode.parents.find(parentId => parentId === selectionNodeId) === undefined) {
-						allSelectionNodesAreParents = false;
-						break;
-					}
-				}
-				if (allSelectionNodesAreParents) {
+			// if node is passive and each clause from selection occurs in activeDagParents, then add node to foundNodes
+			const nodeIsInPassive = ((node.newTime !== null && node.newTime <= currentTime) && !(node.activeTime !== null && node.activeTime <= currentTime) && !(node.deletionTime !== null && node.deletionTime <= currentTime));
+			if (nodeIsInPassive) {
+				if (activeDagParents.size === selectionIdsSet.size) {
 					foundNodes.add(nodeId);
 				}
 			}
 		}
-	}
 
+		idToActiveDagParents.set(nodeId, activeDagParents);
+	}
+	
 	// Part 2:
 	// we now know the set of passive nodes, so
 	// - collect all nodes participating in the derivation of the passive nodes from nodes in the current activeDag
@@ -236,9 +221,9 @@ export function passiveDagForSelection(dag: Dag, selectionIds: Array<number>, cu
 		relevantNodes.add(nodeId);
 	}
 
-	const iterator = new ReversePostOrderTraversal(dag);
-	while (iterator.hasNext()) {
-		const node = iterator.getNext();
+	const iterator2 = new ReversePostOrderTraversal(dag);
+	while (iterator2.hasNext()) {
+		const node = iterator2.getNext();
 		const nodeId = node.id;
 
 		if (relevantNodes.has(nodeId)) {
