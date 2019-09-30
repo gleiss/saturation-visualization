@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import App from './App'
+import { AppWrapper } from './AppWrapper'
 import { Menu } from './Menu'
 
 type State = {
@@ -63,7 +63,8 @@ export class AppRouter extends React.Component<{}, State> {
 		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
 		const vampireUserOptions = `${this.state.vampireUserOptions} --input_syntax ${inputSyntax}`;
 
-		return <App
+		return <AppWrapper
+			name={this.state.problemName}
 			mode={mode}
 			problem={this.state.problem!}
 			vampireUserOptions={vampireUserOptions}
