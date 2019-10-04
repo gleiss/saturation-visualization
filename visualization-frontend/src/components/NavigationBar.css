@@ -1,3 +1,53 @@
 #navigationBar {
-	height: 48px
+  display: flex;
+  padding: 0.133rem 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+
+  background: #64656e;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, .2);
+}
+
+#navigationBar .hidden {
+  visibility: hidden;
+  width: 65px;
+}
+
+#navigationBar button {
+  height: 25px;
+  width: 65px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  color: transparent;
+
+  border-radius: 2px;
+}
+
+#navigationBar svg {
+  width: 15px;
+  stroke: #f8f9fb;
+}
+
+#navigationBar button span {
+  padding: 5px 10px 5px 5px;
+  color: #f8f9fb;
+}
+
+#navigationBar button:hover svg {
+  stroke: #d4d8d9;
+}
+
+#navigationBar button:hover span {
+  color: #d4d8d9;
+}
+
+#navigationBar > small {
+  color: #f4f5f7;
 }

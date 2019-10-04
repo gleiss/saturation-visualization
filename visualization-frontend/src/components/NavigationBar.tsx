@@ -1,18 +1,26 @@
 import * as React from 'react';
 import './NavigationBar.css';
 
+const icons = require('../resources/icons/all.svg') as string;
+
 type Props = {
-	name: string
+  name: string
 }
 
 export class NavigationBar extends React.Component<Props, {}> {
 
-	render() {
-		return (
-			<nav id="navigationBar">
-				<button onClick={() => history.back()}>Back</button>
-				<span>{this.props.name}</span>
-			</nav>
-		)
-	}
+  render() {
+    return (
+      <nav id="navigationBar">
+        <button onClick={() => history.back()}>
+          <svg viewBox="0 0 24 24" className="icon">
+            <use xlinkHref={`${icons}#nav-back`}/>
+          </svg>
+					<span>Back</span>
+        </button>
+        <small>{this.props.name}</small>
+        <div className="hidden"></div>
+      </nav>
+    )
+  }
 }
