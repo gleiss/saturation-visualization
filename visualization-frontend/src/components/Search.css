@@ -1,7 +1,7 @@
 .component-search input {
   height: 2rem;
   width: calc(100% - 10px);
-  margin: 1rem 5px;
+  margin: 0.25rem 5px;
   padding: 0 0.5rem;
   position: relative;
   box-sizing: border-box;
@@ -15,9 +15,17 @@
   line-height: 2rem;
 }
 
-.component-search input:hover + ul,
-.component-search input:focus + ul,
-.component-search input:active + ul {
+.component-search input:first-of-type {
+  margin-top: 1.5rem;
+}
+
+.component-search input:last-of-type {
+  margin-bottom: 1rem;
+}
+
+.component-search input:hover ~ ul,
+.component-search input:focus ~ ul,
+.component-search input:active ~ ul {
   box-shadow: 1px 3px 30px 0 rgba(0, 0, 0, .25);
 }
 
@@ -28,8 +36,8 @@
 .component-search ul {
   background: #fff;
   position: absolute;
-  margin: calc(-3rem - 5px) 0 0;
-  padding: calc(1.5rem + 10px) 0.5rem 0.5rem;
+  margin: calc(-8rem - 5px) 0 0;
+  padding: calc(6.5rem + 10px) 0.5rem 0.5rem;
   overflow: hidden;
   border-radius: 5px;
   width: 225px;
