@@ -1,4 +1,4 @@
-main {
+.app main {
   flex-direction: column;
   flex-grow: 1;
   padding: 1.5rem 1rem;
@@ -6,7 +6,7 @@ main {
   background: #f8f9fb;
 }
 
-main > .graph-placeholder {
+.app main > .graph-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,7 +20,7 @@ main > .graph-placeholder {
   color: rgba(0, 0, 0, .5);
 }
 
-main > .upload-info {
+.app main > .upload-info {
   align-items: start;
   justify-content: right;
   padding: 1rem 1.5rem;
@@ -29,11 +29,11 @@ main > .upload-info {
   color: #343539;
 }
 
-main > .upload-info > span  {
+.app main > .upload-info > span  {
   margin-left: auto;
 }
 
-main > .slider-placeholder {
+.app main > .slider-placeholder {
   margin-top: 0.5rem;
   height: 2rem;
   width: 100%;
@@ -43,7 +43,7 @@ main > .slider-placeholder {
   border-radius: 2px;
 }
 
-aside {
+.app aside {
   flex-grow: 0;
   flex-shrink: 0;
   flex-direction: column;

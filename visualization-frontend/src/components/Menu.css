@@ -1,17 +1,188 @@
-.component-menu input[type=file] {
-	display: none !important;
-  }
-
-.component-menu textarea {
-	width: 500px;
-	height: 400px;
-	resize: none;
+.component-menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #f4f5f7;
 }
 
-.monaco {
-	height: 400px;
-	width: 600px;
-	border-width:1px;
-	border-style:solid;
-	border-color:black;
+.component-menu h1 {
+  margin: 0;
+  padding: 1.25rem 2rem 1rem;
+  opacity: 0.5;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.component-menu .editor {
+  display: flex;
+  flex-grow: 1;
+  background: #f8f9fb;
+}
+
+
+/* INPUT */
+
+.component-menu main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1rem 2rem 2rem;
+}
+
+.component-menu .headline-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.component-menu .headline-wrapper button {
+  height: 25px;
+  width: 25px;
+  margin: 0;
+  padding: 0;
+
+  background-color: #d4d8d9;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  color: transparent;
+
+  border-radius: 2px;
+}
+
+.component-menu .headline-wrapper button:hover {
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-menu .headline-wrapper button:focus {
+  outline: none;
+}
+
+.component-menu .headline-wrapper button:active {
+  box-shadow: inset 1px 3px 8px 2px rgba(0, 0, 0, .1);
+  outline: none;
+}
+
+.component-menu .headline-wrapper svg {
+  padding-top: 10%;
+  width: 60%;
+}
+
+.component-menu .file-name {
+  flex-grow: 1;
+  text-align: right;
+  padding: 0 0.75rem;
+}
+
+.component-menu h2 {
+  margin: 1rem 5px calc(1rem - 5px);
+  font-size: 1.3rem;
+  font-weight: 100;
+}
+
+.component-menu input[type=file] {
+  display: none !important;
+}
+
+.component-menu textarea {
+  resize: none;
+}
+
+.component-menu .monaco {
+  flex-grow: 1;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .05);
+  border: solid 1px #ddd;
+  color: rgba(0, 0, 0, .5);
+}
+
+
+/* OPTIONS */
+
+.component-menu aside {
+  width: 38%;
+  max-width: 400px;
+  padding: 1rem 2rem 2rem;
+}
+
+.component-menu .options-card {
+  margin: 0.5rem 0;
+  padding: 1rem;
+  overflow: hidden;
+  border: none;
+  border-radius: 2px;
+
+  background: #fff;
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-menu .options-card small {
+  opacity: 0.5;
+}
+
+.component-menu .options-card ul {
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.component-menu .options-card li {
+  padding: 0.25rem 0;
+  list-style: none;
+}
+
+.component-menu .options-card .form-label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+}
+
+.component-menu .options-card li:first-child .form-label {
+  margin-top: 0;
+}
+
+.component-menu .options-card input[type="text"],
+.component-menu .options-card select {
+  height: 2rem;
+  width: 100%;
+  padding: 0 0.5rem;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 20;
+  background: transparent;
+  border: solid 1px #ddd;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, .07);
+  outline: none;
+  line-height: 2rem;
+}
+
+.component-menu input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+
+/* RUN SECTION */
+
+.component-menu .run-menu {
+  padding: 2rem;
+}
+
+.component-menu .fake-button {
+  margin: 0 5px;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 2px;
+
+  background: #d4d8d9;
+  color: #343539;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.component-menu .fake-button:hover {
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-menu .fake-button:active {
+  box-shadow: inset 1px 3px 8px 2px rgba(0, 0, 0, .1);
 }
