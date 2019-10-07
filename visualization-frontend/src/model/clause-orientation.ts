@@ -247,8 +247,13 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 			}
 
 			// Part 1: partition literals into premise and conclusion and compute literal-representation
+			// Hack: Vampire by default uses "equality resolution with deletion" as inference rule during preprocessing.
+			//       Unfortunately the produced inference is named "equality resolution" and therefore clashes with
+			//       inferences produced by the generating inference rule with the same name.
+			//       We therefore check that inferences with name "equality resolution" are not "equality resolution with deletion"-inferences.
+			const isEqualityResolutionWithDeletion = node.inferenceRule === "equality resolution" && dag.get(node.parents[0]).isFromPreprocessing === true;
 			const propagateSingleParent = node.inferenceRule === "subsumption resolution" ||
-				node.inferenceRule === "equality resolution" ||
+				(node.inferenceRule === "equality resolution" && !isEqualityResolutionWithDeletion) ||
 				node.inferenceRule === "equality factoring" ||
 				node.inferenceRule === "forward demodulation" ||
 				node.inferenceRule === "backward demodulation" ||
