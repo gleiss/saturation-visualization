@@ -16,7 +16,7 @@ type Props = {
   onNodeSelectionChange: (selection: number[]) => void,
   onCurrentTimeChange: (newState: number) => void,
   onDismissPassiveDag: (performActivation: boolean) => void,
-  onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
+  onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -48,7 +48,7 @@ export default class Main extends React.Component<Props, {}> {
           changedNodesEvent={this.props.changedNodesEvent}
           currentTime={this.props.currentTime}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
-          onUpdateNodePosition={this.props.onUpdateNodePosition}
+          onUpdateNodePositions={this.props.onUpdateNodePositions}
         />
       </ReactModal>  
     }
@@ -61,7 +61,7 @@ export default class Main extends React.Component<Props, {}> {
           changedNodesEvent={this.props.changedNodesEvent}
           currentTime={this.props.currentTime}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
-          onUpdateNodePosition={this.props.onUpdateNodePosition}
+          onUpdateNodePositions={this.props.onUpdateNodePositions}
         />
         {modal}
         <Slider

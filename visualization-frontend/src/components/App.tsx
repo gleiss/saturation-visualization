@@ -81,7 +81,7 @@ class App extends Component<Props, State> {
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
-          onUpdateNodePosition={this.updateNodePosition.bind(this)}
+          onUpdateNodePositions={this.updateNodePositions.bind(this)}
         />
       );
     } else {
@@ -554,14 +554,15 @@ class App extends Component<Props, State> {
 
   // HELPERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  updateNodePosition(nodeId: number, delta: [number, number]) {
+  updateNodePositions(nodeIds: Array<number>, delta: [number, number]) {
     const dags = this.state.dags
     assert(this.state.dags.length > 0);
     const dag = dags[dags.length - 1];
-    const node = dag.get(nodeId);
-    assert(node.position !== null);
-
-    node.position = [node.position![0] + delta[0], node.position![1] + delta[1]];
+    for (const nodeId of nodeIds) {
+      const node = dag.get(nodeId);
+      assert(node.position !== null);
+      node.position = [node.position![0] + delta[0], node.position![1] + delta[1]];
+    }
   }
 
   // push a new dag on the stack of dags

@@ -15,7 +15,7 @@ type Props = {
   changedNodesEvent?: Set<number>,
   currentTime: number,
   onNodeSelectionChange: (selection: number[]) => void,
-  onUpdateNodePosition: (nodeId: number, delta: [number, number]) => void
+  onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void
 };
 
 type State = {
@@ -33,8 +33,7 @@ export default class Graph extends React.Component<Props, {}> {
   networkNodes = new DataSet<Node>([]);
   networkEdges = new DataSet<Edge>([]);
   graphContainer = React.createRef<HTMLDivElement>();
-  dragStartPosition: [number, number] | null = null;
-  dragStartNodeId: number | null = null;
+  dragStartEvent: any = null;
   cachedChangeNodesEvent?: Set<number> = undefined;
 
   componentDidMount() {
@@ -130,22 +129,15 @@ export default class Graph extends React.Component<Props, {}> {
     });
 
     this.network.on('dragStart', (dragStartEvent) => {
-      const nodeId = dragStartEvent.nodes[0];
-      if(nodeId !== null && nodeId !== undefined) {
-        this.dragStartNodeId = nodeId;
-        this.dragStartPosition = [dragStartEvent.pointer.canvas.x, dragStartEvent.pointer.canvas.y];
-      }
+      this.dragStartEvent = dragStartEvent;
     });
 
     this.network.on('dragEnd', (dragEndEvent) => {
-      if (this.dragStartNodeId !== null) {
-        assert(this.dragStartPosition !== null);
-        
-        if (!this.props.dag.isPassiveDag) {
-          const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartPosition![0];
-          const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartPosition![1];
-          this.props.onUpdateNodePosition(this.dragStartNodeId as number, [deltaX / (-70), deltaY / (-120)]);
-        }
+      assert(this.dragStartEvent !== null);
+      if (dragEndEvent.nodes.length > 0 && !this.props.dag.isPassiveDag) {
+        const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartEvent.pointer.canvas.x;
+        const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartEvent.pointer.canvas.y;
+        this.props.onUpdateNodePositions(dragEndEvent.nodes as Array<number>, [deltaX / (-70), deltaY / (-120)]);
       }
     });
   }
