@@ -130,7 +130,9 @@ export default class Graph extends React.Component<Props, {}> {
 
     this.network.on('dragStart', (dragStartEvent) => {
       this.dragStartEvent = dragStartEvent;
-      this.props.onNodeSelectionChange(dragStartEvent.nodes);
+      if (dragStartEvent.nodes.length > 0) {
+        this.props.onNodeSelectionChange(dragStartEvent.nodes);
+      }
     });
 
     this.network.on('dragEnd', (dragEndEvent) => {
