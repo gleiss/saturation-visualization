@@ -98,6 +98,9 @@
   color: rgba(0, 0, 0, .5);
 }
 
+.component-menu .monaco .lines-content.monaco-editor-background {
+  margin-top: 14px;
+}
 
 /* OPTIONS */
 
