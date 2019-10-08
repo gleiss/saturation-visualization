@@ -261,7 +261,9 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 				node.inferenceRule === "factoring" ||
 				node.inferenceRule === "duplicate literal removal" ||
 				node.inferenceRule === "evaluation" ||
-				node.inferenceRule === "trivial inequality removal";
+				node.inferenceRule === "trivial inequality removal" ||
+				(node.inferenceRule === "term algebras injectivity" && node.parents.length == 1) ||
+				(node.inferenceRule === "term algebras distinctness" && node.parents.length == 1);
 			const propagateTwoParents = node.inferenceRule === "resolution" ||
 				node.inferenceRule === "superposition";
 
