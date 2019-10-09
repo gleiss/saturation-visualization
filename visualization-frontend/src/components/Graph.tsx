@@ -39,12 +39,23 @@ export default class Graph extends React.Component<Props, {}> {
   componentDidMount() {
     this.generateNetwork();
     this.updateNetwork(false);
+    this.network!.fit();
   }
 
   componentDidUpdate(prevProps: Props) {
     if (this.props.dag !== prevProps.dag) {
       this.updateNetwork(false);
       this.network!.selectNodes(this.props.nodeSelection);
+      if (this.props.nodeSelection.length > 0) {
+        // center the view to selected nodes
+        this.network!.fit({
+          nodes: this.props.nodeSelection.map(nodeId => nodeId.toString()), 
+          animation: true
+        });
+      } else {
+        // set the view so that the whole graph is visible
+        this.network!.fit();
+      }
     } else {
       if (this.props.nodeSelection !== prevProps.nodeSelection) {
         this.network!.selectNodes(this.props.nodeSelection);
@@ -189,9 +200,6 @@ export default class Graph extends React.Component<Props, {}> {
       this.networkNodes.add(visNodes);
       this.networkEdges.clear();
       this.networkEdges.add(visEdges);
-
-      // center the dag
-      this.network!.fit();
     }
   }
 

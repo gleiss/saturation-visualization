@@ -335,10 +335,14 @@ class App extends Component<Props, State> {
         this.setLiteralOptions(newDag);
   
         const state = json.vampireState === "running" ? "loaded select" : "loaded";
+        const nodeSelection = new Array<number>();
+        for (const nodeId of newNodes.keys()) {
+          nodeSelection.push(nodeId);
+        }
         this.setState({
           state: state,
           dags: [newDag],
-          nodeSelection: [],
+          nodeSelection: nodeSelection,
           currentTime: newDag.maximalActiveTime(),
         });
       } else {
@@ -463,7 +467,7 @@ class App extends Component<Props, State> {
       assert(positioningHint !== null);
     
       // remove passive dag
-      this.setState({ passiveDag: null, nodeSelection: []}); // reset node selection, since selected nodes are not necessarily present in currentDag
+      this.setState({ passiveDag: null}); // no need to reset node selection, since it will be set by selectClause()
 
       // switch from currentDag to dag resulting from selecting nodeIdToActivate
       await this.selectClause(selectedId, positioningHint as [number, number]);
