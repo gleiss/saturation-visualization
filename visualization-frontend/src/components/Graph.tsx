@@ -40,6 +40,14 @@ export default class Graph extends React.Component<Props, {}> {
     this.generateNetwork();
     this.updateNetwork(false);
     this.network!.fit();
+
+    window.addEventListener("keydown", this.keydownHandler.bind(this), false);
+    window.addEventListener("keyup", this.keyupHandler.bind(this), false);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.keydownHandler.bind(this), false);
+    window.removeEventListener("keyup", this.keyupHandler.bind(this), false);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -98,18 +106,6 @@ export default class Graph extends React.Component<Props, {}> {
   generateNetwork() {
     assert(this.graphContainer.current);
     assert(!this.network); // should only be called once
-
-    window.addEventListener("keydown", (event) => {
-      if (event.key === "Meta") {
-        this.setState({metaPressed: true});
-      }
-    },false);
-
-    window.addEventListener("keyup", async (event) => {
-      if (event.key === "Meta") {
-        this.setState({metaPressed: false});
-      }
-    },false);
 
     this.network = new Network(this.graphContainer.current!, {
       nodes: this.networkNodes,
@@ -295,6 +291,16 @@ export default class Graph extends React.Component<Props, {}> {
     });
   }
 
+  keydownHandler(event) {
+    if (event.key === "Meta") {
+      this.setState({metaPressed: true});
+    }
+  }
+  keyupHandler(event) {
+    if (event.key === "Meta") {
+      this.setState({metaPressed: false});
+    }
+  }
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
