@@ -482,13 +482,17 @@ class App extends Component<Props, State> {
   // NODE SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   selectParents() {
-    const {dags, nodeSelection} = this.state;
+    const {dags, nodeSelection, currentTime} = this.state;
     const currentDag = dags[dags.length - 1];
+    const nodesInActiveDag = currentDag.computeNodesInActiveDag(currentTime);
 
-    const newSelection: Set<number> = new Set(nodeSelection);
+    const newSelection = new Set(nodeSelection);
     for (const nodeId of nodeSelection) {
+      assert(nodesInActiveDag.has(nodeId));
       for (const parentId of currentDag.get(nodeId).parents) {
-        newSelection.add(parentId);
+        if(nodesInActiveDag.has(parentId)) {
+          newSelection.add(parentId);
+        }
       }
     }
 
@@ -496,25 +500,34 @@ class App extends Component<Props, State> {
   }
 
   selectChildren() {
-    const {dags, nodeSelection} = this.state;
+    const {dags, nodeSelection, currentTime} = this.state;
     const currentDag = dags[dags.length - 1];
+    const nodesInActiveDag = currentDag.computeNodesInActiveDag(currentTime);
 
-    const newSelection: Set<number> = new Set(nodeSelection);
+    const newSelection = new Set(nodeSelection);
     for (const nodeId of nodeSelection) {
+      assert(nodesInActiveDag.has(nodeId));
       for (const childId of currentDag.getChildren(nodeId)) {
-        newSelection.add(childId);
+        if(nodesInActiveDag.has(childId)) {
+          newSelection.add(childId);
+        }
       }
     }
-
     this.updateNodeSelection(Array.from(newSelection));
   }
 
   selectCommonConsequences() {
-    const {dags, nodeSelection} = this.state;
+    const {dags, nodeSelection, currentTime} = this.state;
     const currentDag = dags[dags.length - 1];
+    const nodesInActiveDag = currentDag.computeNodesInActiveDag(currentTime);
 
-    const newSelection = findCommonConsequences(currentDag, new Set(nodeSelection));
-    
+    const commonConsequences = findCommonConsequences(currentDag, new Set(nodeSelection));
+    const newSelection = new Array<number>();
+    for (const nodeId of commonConsequences) {
+      if (nodesInActiveDag.has(nodeId)) {
+        newSelection.push(nodeId);
+      }
+    }
     this.updateNodeSelection(newSelection);
   }
 
