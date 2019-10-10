@@ -129,6 +129,8 @@ export default class Graph extends React.Component<Props, {}> {
     });
 
     this.network.on('dragStart', (dragStartEvent) => {
+      assert(dragStartEvent !== undefined && dragStartEvent !== null);
+      assert(dragStartEvent.nodes !== undefined && dragStartEvent.nodes !== null);
       this.dragStartEvent = dragStartEvent;
       if (dragStartEvent.nodes.length > 0) {
         this.props.onNodeSelectionChange(dragStartEvent.nodes);
@@ -136,7 +138,10 @@ export default class Graph extends React.Component<Props, {}> {
     });
 
     this.network.on('dragEnd', (dragEndEvent) => {
-      assert(this.dragStartEvent !== null);
+      assert(this.dragStartEvent !== undefined && this.dragStartEvent !== null);
+      assert(this.dragStartEvent.nodes !== undefined && this.dragStartEvent.nodes !== null);
+      assert(dragEndEvent !== undefined && dragEndEvent !== null);
+      assert(dragEndEvent.nodes !== undefined && dragEndEvent.nodes !== null);
       if (dragEndEvent.nodes.length > 0 && !this.props.dag.isPassiveDag) {
         const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartEvent.pointer.canvas.x;
         const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartEvent.pointer.canvas.y;
