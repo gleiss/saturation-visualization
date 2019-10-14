@@ -63,7 +63,6 @@ def startVampire(manualCS):
             'status' : "success",
             'vampireState' : vampireWrapper.vampireState, 
             'lines' : [line.to_json() for line in lines], 
-            'remainingChoices' : vampireWrapper.remainingChoices
         })
     else:
         return json.dumps({
@@ -93,15 +92,7 @@ def handle_selection():
             "message" : message,
             'vampireState' : vampireWrapper.vampireState
         })
-    if(not selectedId in vampireWrapper.remainingChoices):
-        message = "User error: Selected id " + str(selectedId) + " is not a valid choice and will be ignored."
-        print(message)
-        return json.dumps({
-            'status' : "error",
-            "message" : message,
-            'remainingChoices' : vampireWrapper.remainingChoices
-        })
-
+    # TODO: check that selectedId was accepted by Vampire
     output = vampireWrapper.select(selectedId)
     lines = parse(output)
 
@@ -109,7 +100,6 @@ def handle_selection():
         "status" : "success",
         'vampireState' : vampireWrapper.vampireState, 
         'lines' : [line.to_json() for line in lines], 
-        'remainingChoices' : vampireWrapper.remainingChoices
     })  
 
 if __name__ == '__main__':

@@ -5,7 +5,6 @@ class VampireWrapper:
 	def __init__(self, vampirePath):
 		self.vampireProcess = None # Process | None
 		self.vampireState = None # "running" | "saturation" | "refutation" | "error" | "timeout" | None
-		self.remainingChoices = None # [clauseIdsToBeActivatedInTheFuture] | None
 
 		self.optionsForVisualization = ["-av", "off", "--show_preprocessing", "on", "--show_new", "on", "--show_active", "on", "--show_reductions", "on", "--proof_extra", "full"]
 		self.vampirePath = vampirePath
@@ -84,21 +83,17 @@ class VampireWrapper:
 		newLines = []
 		line = self.vampireProcess.stdout.readline().decode().rstrip()
 		while(True):
-			if line.startswith("Pick a clause from:"):
+			if line.startswith("Pick a clause:"):
 				self.vampireState = "running"
-				self.remainingChoices = list(map(lambda id: int(id), line[20:-1].split(","))) # remove "Pick a clause from: " and last comma, then split by commas, then convert to ints
 				return newLines
 			elif line.startswith("% Refutation found. Thanks to"): # TODO: use SZS status instead?
 				self.vampireState = "refutation"
-				self.remainingChoices = None
 				return newLines
 			elif line.startswith("% SZS status Satisfiable"):
 				self.vampireState = "saturation"
-				self.remainingChoices = []
 				return newLines
 			elif line.startswith("User error: "):
 				self.vampireState = "error"
-				self.remainingChoices = None
 				return newLines
 			else:
 				newLines.append(line)
