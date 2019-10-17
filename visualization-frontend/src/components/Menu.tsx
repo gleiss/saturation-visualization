@@ -66,80 +66,81 @@ export class Menu extends React.Component<Props, {}> {
         <h1>Vampire Saturation Visualization</h1>
 
         <section className="editor">
-          <main>
-            <div className="headline-wrapper">
-              <h2>Input</h2>
-              <small className="file-name">{this.props.problemName}</small>
-              <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
-                <svg viewBox="0 0 24 24" className="icon big">
-                  <use xlinkHref={`${icons}#graph-upload`}/>
-                </svg>
-              </button>
-            </div>
+          <div className="editor-spacer">
+            <main>
+              <div className="headline-wrapper">
+                <h2>Input</h2>
+                <small className="file-name">{this.props.problemName}</small>
+                <button title="Pick a new file" onClick={this.chooseFile.bind(this)}>
+                  <svg viewBox="0 0 24 24" className="icon big">
+                    <use xlinkHref={`${icons}#graph-upload`}/>
+                  </svg>
+                </button>
+              </div>
 
-            <input
-              ref={this.fileUpload}
-              type="file"
-              onChange={this.uploadEncoding.bind(this)}
-            />
-            <div ref={this.monacoDiv} className="monaco"></div>
-          </main>
+              <input
+                ref={this.fileUpload}
+                type="file"
+                onChange={this.uploadEncoding.bind(this)}
+              />
+              <div ref={this.monacoDiv} className="monaco"></div>
+            </main>
 
-          <aside>
-            <h2>Options</h2>
+            <aside>
+              <fieldset className="options-card">
+                <h3>Vampire Options</h3>
+                <ul>
+                  <li>
+                    <label htmlFor="inputSyntax" className="form-label">Input language</label>
+                    <select id="inputSyntax" onChange={this.changeInputSyntax.bind(this)}
+                            value={this.props.inputSyntax}>
+                      <option value="smtlib">SMTLIB</option>
+                      <option value="tptp">TPTP</option>
+                    </select>
+                  </li>
+                  <li>
+                    <label htmlFor="userOptions" className="form-label">Additional Vampire options</label>
+                    <input id="userOptions" type="text" onChange={this.changeVampireUserOptions.bind(this)}
+                           value={this.props.vampireUserOptions}>
+                    </input>
+                  </li>
+                </ul>
+              </fieldset>
 
-            <fieldset className="options-card">
-              <small><strong>Vampire</strong></small>
-              <ul>
-                <li>
-                  <label htmlFor="inputSyntax" className="form-label">Input language</label>
-                  <select id="inputSyntax" onChange={this.changeInputSyntax.bind(this)} value={this.props.inputSyntax}>
-                    <option value="smtlib">SMTLIB</option>
-                    <option value="tptp">TPTP</option>
-                  </select>
-                </li>
-                <li>
-                  <label htmlFor="userOptions" className="form-label">Additional Vampire options</label>
-                  <input id="userOptions" type="text" onChange={this.changeVampireUserOptions.bind(this)}
-                         value={this.props.vampireUserOptions}>
-                  </input>
-                </li>
-              </ul>
-            </fieldset>
-
-            <fieldset className="options-card">
-              <small><strong>Visualization</strong></small>
-              <ul>
-                <li>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={this.props.hideBracketsAssoc}
-                      onChange={this.changeHideBracketsAssoc.bind(this)}/>
-                    Hide brackets for associative operators
-                  </label>
-                </li>
-                <li>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={this.props.nonStrictForNegatedStrictInequalities}
-                      onChange={this.changeNonStrictForNegatedStrictInequalities.bind(this)}/>
-                    Show negated strict inequalities as (positive) nonstrict inequalities
-                  </label>
-                </li>
-                <li>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={this.props.orientClauses}
-                      onChange={this.changeOrientClauses.bind(this)}/>
-                    Heuristically orient clauses
-                  </label>
-                </li>
-              </ul>
-            </fieldset>
-          </aside>
+              <fieldset className="options-card">
+                <h3>Visualization Options</h3>
+                <ul>
+                  <li>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={this.props.hideBracketsAssoc}
+                        onChange={this.changeHideBracketsAssoc.bind(this)}/>
+                      Hide brackets for associative operators
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={this.props.nonStrictForNegatedStrictInequalities}
+                        onChange={this.changeNonStrictForNegatedStrictInequalities.bind(this)}/>
+                      Show negated strict inequalities as (positive) nonstrict inequalities
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={this.props.orientClauses}
+                        onChange={this.changeOrientClauses.bind(this)}/>
+                      Heuristically orient clauses
+                    </label>
+                  </li>
+                </ul>
+              </fieldset>
+            </aside>
+          </div>
         </section>
 
         <section className="run-menu">
