@@ -8,10 +8,9 @@
 
 .component-menu h1 {
   margin: 0;
-  padding: 1.25rem 2rem 1rem;
-  opacity: 0.5;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 2.5rem 1rem 2rem;
+  text-align: center;
+  color: #64656e;
 }
 
 .component-menu .editor {
@@ -25,7 +24,7 @@
   max-width: 1500px;
   margin-left: auto;
   margin-right: auto;
-  padding: 1rem 2rem 2rem;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-grow: 1;
   justify-content: space-evenly;
@@ -140,13 +139,14 @@
 
 .component-menu .options-card h3 {
   margin: -1rem -1rem 0;
-  padding: 1.1rem 1rem 1.2rem;
+  padding: 1.3rem 1rem calc(1.4rem - 5px);
   background: #f8f9fb;
   color: rgba(0, 0, 0, .5);
+  font-weight: 100;
 }
 
 .component-menu .options-card ul {
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 0;
   padding: 0;
 }
 
@@ -187,7 +187,9 @@
 /* RUN SECTION */
 
 .component-menu .run-menu {
-  padding: 2rem;
+  padding: 2rem 2rem 3rem;
+  text-align: center;
+  background: #f4f5f7;
 }
 
 .component-menu .fake-button {
@@ -196,13 +198,14 @@
   border: none;
   border-radius: 2px;
 
-  background: #d4d8d9;
-  color: #343539;
+  background: #64656e;
+  color: #f8f9fb;
   text-decoration: none;
   font-size: 0.8rem;
 }
 
 .component-menu .fake-button:hover {
+  color: #d4d8d9;
   box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
 }
 
