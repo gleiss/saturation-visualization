@@ -66,3 +66,9 @@
   box-shadow: 5px 5px 50px 0 rgba(0,0,0,0.2) !important;
   box-sizing: border-box !important;
 }
+
+.ReactModal__Content .component-graph {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
