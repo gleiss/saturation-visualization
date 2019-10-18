@@ -61,6 +61,9 @@
   width: calc(100% - 384px) !important;
   padding: 1rem !important;
   inset: 5rem 3rem 6rem !important;
+  top: 5rem !important;
+  left: 3rem !important;
+  bottom: 6rem !important;
   border: none !important;
   border-radius: 2px !important;
   box-shadow: 5px 5px 50px 0 rgba(0,0,0,0.2) !important;
