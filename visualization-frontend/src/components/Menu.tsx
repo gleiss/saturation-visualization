@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Link} from 'react-router-dom';
 import './Menu.css';
 import * as Monaco from 'monaco-editor'
+import { assert } from '../model/util';
 
 const icons = require('../resources/icons/all.svg') as string;
 
@@ -23,12 +24,15 @@ type Props = {
 }
 
 export class Menu extends React.Component<Props, {}> {
-
+  private isChromeOrFirefox = navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Firefox') > -1;
   private fileUpload = React.createRef<HTMLInputElement>();
   monacoDiv = React.createRef<HTMLDivElement>();
   monaco: Monaco.editor.IStandaloneCodeEditor | null = null
 
   componentDidMount() {
+    if (!this.isChromeOrFirefox) {
+      return;
+    }
     // generate instance of Monaco Editor
     this.monaco = Monaco.editor.create(this.monacoDiv.current!, {
       lineNumbers: 'off',
@@ -55,12 +59,19 @@ export class Menu extends React.Component<Props, {}> {
   }
 
   componentDidUpdate(prevProps: Props) {
+    assert(this.isChromeOrFirefox);
     if (this.props.problem !== prevProps.problem) {
       this.monaco!.setValue(this.props.problem);
     }
   }
 
   render() {
+    if (!this.isChromeOrFirefox) {
+      return (
+        <section className="unsupported-message"> Your current browser is not supported. Please use Chrome or Firefox!</section>
+      );
+    }
+
     return (
       <section className="component-menu">
         <h1>Vampire Saturation Visualization</h1>
