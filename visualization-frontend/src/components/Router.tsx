@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { HashRouter as HashRouter, Route, Link } from "react-router-dom";
 import { AppWrapper } from './AppWrapper'
 import { Menu } from './Menu'
 
@@ -27,7 +27,7 @@ export class AppRouter extends React.Component<{}, State> {
 
 	render() {
 		return (
-			<Router>
+			<HashRouter>
 				<Route path="/" exact render={() => 
 					<Menu 
 						problem={this.state.problem}
@@ -55,7 +55,7 @@ export class AppRouter extends React.Component<{}, State> {
 				<Route path="/manualcs/" render={() => 
 					this.appComponent("manualcs")
 				}/>
-			</Router>
+			</HashRouter>
 		);
 	}
 
