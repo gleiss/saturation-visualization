@@ -6,6 +6,20 @@
   background: #f4f5f7;
 }
 
+.unsupported-message {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.unsupported-message svg {
+  width: 8rem;
+  margin-bottom: 2rem;
+  stroke: #64656e;
+}
+
 .component-menu h1 {
   margin: 0;
   padding: 2.5rem 1rem 2rem;

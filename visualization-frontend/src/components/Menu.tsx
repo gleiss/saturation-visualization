@@ -68,7 +68,12 @@ export class Menu extends React.Component<Props, {}> {
   render() {
     if (!this.isChromeOrFirefox) {
       return (
-        <section className="unsupported-message"> Your current browser is not supported. Please use Chrome or Firefox!</section>
+        <section className="unsupported-message">
+            <svg viewBox="0 0 24 24" className="icon">
+              <use xlinkHref={`${icons}#alert-triangle`}/>
+            </svg>
+            <span>Your current browser is not supported. Please use Chrome or Firefox!</span>
+        </section>
       );
     }
 
