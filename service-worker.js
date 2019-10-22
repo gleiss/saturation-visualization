@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "http(s)://gleiss.github.io/saturation-visualization/precache-manifest.a19ea7a8667138e9181522e4e248c398.js"
+  "/saturation-visualization/precache-manifest.836e8db1db32da4cd217219eacbb8258.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("http(s)://gleiss.github.io/saturation-visualization/index.html", {
+workbox.routing.registerNavigationRoute("/saturation-visualization/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });
