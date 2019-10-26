@@ -18,3 +18,4 @@ The Vampire Server is used as backend by the Saturation Visualization.
 
 ### Step 2: Access the Saturation Visualization
 https://gleiss.github.io/saturation-visualization/
+The Saturation Visualization communicates with the Vampire Server on localhost:5000.
