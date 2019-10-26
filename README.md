@@ -14,8 +14,10 @@ This tool visualizes Saturation Runs of Vampire, with the main aim to let a user
 ## Running the visualization
 ### Step 1: Install and run a Vampire Server
 Described at https://github.com/gleiss/server-vampire
+
 The Vampire Server is used as backend by the Saturation Visualization.
 
 ### Step 2: Access the Saturation Visualization
 https://gleiss.github.io/saturation-visualization/
+
 The Saturation Visualization communicates with the Vampire Server on localhost:5000.
