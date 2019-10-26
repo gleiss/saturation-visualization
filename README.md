@@ -10,6 +10,11 @@ This tool visualizes Saturation Runs of Vampire, with the main aim to let a user
   * Ordering doesn’t allow inference
   * Weight is to big for clause to be selected
   * ...
+  
+There are three modes:
+* **Proof:** Run Vampire on the problem. If a proof is found, visualize it.
+* **Saturation:** Run Vampire on the problem. Visualize the whole saturation attempt.
+* **Manual Clause Selection:** Run Vampire on the problem, but interactively decide in each step which clause Vampire should explore next.
 
 ## Running the visualization
 ### Step 1: Install and run a Vampire Server
