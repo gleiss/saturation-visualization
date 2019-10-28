@@ -36,18 +36,21 @@ export default class Graph extends React.Component<Props, {}> {
   dragStartEvent: any = null;
   cachedChangeNodesEvent?: Set<number> = undefined;
 
+  boundKeydownHandler = this.keydownHandler.bind(this);
+  boundKeyupHandler =  this.keyupHandler.bind(this);
+
   componentDidMount() {
     this.generateNetwork();
     this.updateNetwork(false);
     this.network!.fit();
 
-    window.addEventListener("keydown", this.keydownHandler.bind(this), false);
-    window.addEventListener("keyup", this.keyupHandler.bind(this), false);
+    window.addEventListener("keydown", this.boundKeydownHandler, false);
+    window.addEventListener("keyup", this.boundKeyupHandler, false);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("keydown", this.keydownHandler.bind(this), false);
-    window.removeEventListener("keyup", this.keyupHandler.bind(this), false);
+    window.removeEventListener("keydown", this.boundKeydownHandler, false);
+    window.removeEventListener("keyup", this.boundKeyupHandler, false);
   }
 
   componentDidUpdate(prevProps: Props) {
