@@ -42,6 +42,7 @@ export default class Graph extends React.Component<Props, {}> {
   componentDidMount() {
     this.generateNetwork();
     this.updateNetwork(false);
+    this.network!.selectNodes(this.props.nodeSelection);
     this.network!.fit();
 
     window.addEventListener("keydown", this.boundKeydownHandler, false);
@@ -80,14 +81,16 @@ export default class Graph extends React.Component<Props, {}> {
         if (incomingEvent !== this.cachedChangeNodesEvent) {
           this.cachedChangeNodesEvent = incomingEvent;
 
-          // update all nodes from event
+          // update all nodes from event which occur in the dag
           const visNodes = new Array<Node>();
           for (const nodeId of incomingEvent!) {
-            const visNode = {
-              id : nodeId,
-              label : this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
-            };
-            visNodes.push(visNode);
+            if (this.props.dag.nodes.has(nodeId)) {
+              const visNode = {
+                id : nodeId,
+                label : this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
+              };
+              visNodes.push(visNode);
+            }
           }
           this.networkNodes.update(visNodes);
         }

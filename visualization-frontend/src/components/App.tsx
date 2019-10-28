@@ -7,7 +7,7 @@ import { Dag, ParsedLine } from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
 import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
+import { filterNonParents, filterNonConsequences, mergePreprocessing } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
 import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
@@ -37,7 +37,7 @@ type State = {
   currentTime: number,
   changedNodesEvent?: Set<number>, // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
-  passiveDag: Dag | null,
+  showPassiveDag: boolean
   nodeIdToActivate: number | null
 }
 
@@ -50,7 +50,7 @@ class App extends Component<Props, State> {
     currentTime: 0,
     changedNodesEvent: undefined,
     message: "",
-    passiveDag: null,
+    showPassiveDag: false,
     nodeIdToActivate: null
   }
 
@@ -62,7 +62,7 @@ class App extends Component<Props, State> {
       currentTime,
       changedNodesEvent,
       message,
-      passiveDag
+      showPassiveDag
     } = this.state;
     
     let dag;
@@ -73,7 +73,7 @@ class App extends Component<Props, State> {
       main = (
         <Main
           dag={dag}
-          passiveDag={passiveDag}
+          showPassiveDag={showPassiveDag}
           nodeSelection={nodeSelection}
           changedNodesEvent={changedNodesEvent}
           historyLength={dags[0].maximalActiveTime()}
@@ -82,6 +82,8 @@ class App extends Component<Props, State> {
           onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
           onUpdateNodePositions={this.updateNodePositions.bind(this)}
+          onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
+          onLiteralRepresentationChange={this.changeLiteralRepresentation.bind(this)}
         />
       );
     } else {
@@ -98,16 +100,15 @@ class App extends Component<Props, State> {
       <div className="app">
         {main}
         <Aside
-          dag={passiveDag === null ? dag : passiveDag}
+          dag={dag}
           currentTime={currentTime}
           nodeSelection={nodeSelection}
-          multipleVersions={passiveDag === null && dags.length > 1}
+          multipleVersions={dags.length > 1}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
           onRenderChildrenOnly={this.renderChildrenOnly.bind(this)}
           onShowPassiveDag={this.showPassiveDag.bind(this)}
-          onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
           onSelectParents={this.selectParents.bind(this)}
           onSelectChildren={this.selectChildren.bind(this)}
           onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
@@ -422,59 +423,22 @@ class App extends Component<Props, State> {
   // PASSIVE DAG ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   async showPassiveDag() {
-    assert(this.state.passiveDag === null);
+    assert(this.state.showPassiveDag === false);
     assert(this.state.nodeSelection.length > 0);
 
-    const dags = this.state.dags;
-    assert(dags.length > 0);
-    const currentDag = dags[dags.length - 1];
-
-    // generate passive dag
-    const passiveDag = passiveDagForSelection(currentDag, this.state.nodeSelection, this.state.currentTime);
-    
-    // layout node positions of passive dag
-    await VizWrapper.layoutDag(passiveDag, false);
-
-    // shift dag so that selected node occurs at same screen position as in currentDag
-    const [posCurrentX, posCurrentY] = currentDag.get(this.state.nodeSelection[0]).getPosition();
-    const [posPassiveX, posPassiveY] = passiveDag.get(this.state.nodeSelection[0]).getPosition();
-    const deltaX = posCurrentX-posPassiveX;
-    const deltaY = posCurrentY-posPassiveY;
-    for (const [nodeId, node] of passiveDag.nodes) {
-      assert(node.position != null);
-      const position = node.position as [number, number];
-      node.position = [position[0] + deltaX, position[1] + deltaY];
-    }
-
-    this.setState({ passiveDag: passiveDag });
+    this.setState({showPassiveDag: true});
   }
 
-  async dismissPassiveDag(performActivation: boolean) {
-    assert(this.state.dags.length >= 1);
-    assert(this.state.passiveDag !== null);
-    assert(this.state.passiveDag!.isPassiveDag);
-    assert(this.state.passiveDag!.styleMap !== null);
-    assert(this.state.passiveDag!.activeNodeId !== null);
+  async dismissPassiveDag(selectedId: number | null, positioningHint: [number, number] | null) {
+    assert((selectedId === null) === (positioningHint === null));
+    assert(this.state.showPassiveDag === true);
 
-    if (performActivation && this.state.nodeSelection.length === 1) {
-      const selectedId = this.state.nodeSelection[0];
+    // remove passive dag
+    this.setState({ showPassiveDag: false});
 
-      const styleMap = this.state.passiveDag!.styleMap!
-      if (styleMap.get(selectedId) === "passive") {
-        // compute positioning hint
-      const currentDag = this.state.dags[this.state.dags.length-1];
-      const positioningHint = currentDag.get(this.state.passiveDag!.activeNodeId as number).position;
-      assert(positioningHint !== null);
-    
-      // remove passive dag
-      this.setState({ passiveDag: null}); // no need to reset node selection, since it will be set by selectClause()
-
+    if (selectedId !== null) {
       // switch from currentDag to dag resulting from selecting nodeIdToActivate
-      await this.selectClause(selectedId, positioningHint as [number, number]);
-      }
-    } else {
-      // remove passive dag
-      this.setState({ passiveDag: null, nodeSelection: []}); // reset node selection, since selected nodes are not necessarily present in currentDag
+      await this.selectClause(selectedId, positioningHint!);
     }
   }
 
@@ -546,13 +510,8 @@ class App extends Component<Props, State> {
     clause.changeLiteralOrientation(oldPosition, newPosition);
 
     const changedNodes = computeClauseRepresentation(dag, nodeId);
-    const changedNodesInCurrentDag = new Set<number>();
-    for (const changedNodeId of changedNodes) {
-      if (currentDag.nodes.has(changedNodeId)) {
-        changedNodesInCurrentDag.add(changedNodeId);
-      }
-    }
-    this.setState({changedNodesEvent: changedNodesInCurrentDag});
+    
+    this.setState({changedNodesEvent: changedNodes});
   }
 
   private changeLiteralRepresentation(nodeId: number, literal: Literal) {

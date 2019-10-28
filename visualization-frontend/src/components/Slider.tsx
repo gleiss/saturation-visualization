@@ -9,7 +9,6 @@ type Props = {
   historyLength: number,
   currentTime: number,
   onCurrentTimeChange: (newState: number) => void,
-  enabled: boolean
 };
 export default class Slider extends React.Component<Props, {}> {
 
@@ -21,7 +20,7 @@ export default class Slider extends React.Component<Props, {}> {
     return (
       <section className="component-slider">
 
-        <button disabled={!this.props.enabled || currentTime <= 0} onClick={() => onCurrentTimeChange(currentTime - 1)}>
+        <button disabled={currentTime <= 0} onClick={() => onCurrentTimeChange(currentTime - 1)}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#history-back`}/>
           </svg>
@@ -34,12 +33,11 @@ export default class Slider extends React.Component<Props, {}> {
             min={0}
             max={historyLength}
             value={currentTime}
-            disabled={!this.props.enabled}
             onChange={() => onCurrentTimeChange(this.getSliderValue())}
           />
         </section>
 
-        <button disabled={!this.props.enabled || currentTime >= historyLength} onClick={() => onCurrentTimeChange(currentTime + 1)}>
+        <button disabled={currentTime >= historyLength} onClick={() => onCurrentTimeChange(currentTime + 1)}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#history-forward`}/>
           </svg>
