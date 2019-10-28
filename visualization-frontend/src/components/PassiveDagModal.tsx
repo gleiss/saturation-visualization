@@ -71,6 +71,7 @@ export class PassiveDagModal extends React.Component<Props, State> {
 					nodeSelection={this.state.nodeSelectionPassiveDag}
 					changedNodesEvent={this.props.changedNodesEvent}
 					currentTime={this.props.currentTime}
+					animateDagChanges={false}
 					onNodeSelectionChange={this.nodeSelectionChange.bind(this)}
 					onUpdateNodePositions={this.updateNodePositions.bind(this)}
 				/>

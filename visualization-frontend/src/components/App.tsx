@@ -35,6 +35,7 @@ type State = {
   dags: Dag[],
   nodeSelection: number[],
   currentTime: number,
+  animateDagChanges,
   changedNodesEvent?: Set<number>, // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
   showPassiveDag: boolean
@@ -48,6 +49,7 @@ class App extends Component<Props, State> {
     dags: [],
     nodeSelection: [],
     currentTime: 0,
+    animateDagChanges: false,
     changedNodesEvent: undefined,
     message: "",
     showPassiveDag: false,
@@ -60,6 +62,7 @@ class App extends Component<Props, State> {
       dags,
       nodeSelection,
       currentTime,
+      animateDagChanges,
       changedNodesEvent,
       message,
       showPassiveDag
@@ -78,6 +81,7 @@ class App extends Component<Props, State> {
           changedNodesEvent={changedNodesEvent}
           historyLength={dags[0].maximalActiveTime()}
           currentTime={currentTime}
+          animateDagChanges={animateDagChanges}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
@@ -262,7 +266,8 @@ class App extends Component<Props, State> {
           state: state,
           dags: [dag],
           nodeSelection: [],
-          currentTime: dag.maximalActiveTime()
+          currentTime: dag.maximalActiveTime(),
+          animateDagChanges: false
         });
       } else {
         assert(json.status === "error");
@@ -345,6 +350,7 @@ class App extends Component<Props, State> {
           dags: [newDag],
           nodeSelection: nodeSelection,
           currentTime: newDag.maximalActiveTime(),
+          animateDagChanges: true
         });
       } else {
         assert(json.status === "error");
@@ -558,7 +564,8 @@ class App extends Component<Props, State> {
 
     this.setState({
       dags: dags.concat([newDag]),
-      nodeSelection: selectedNodesInNewDag
+      nodeSelection: selectedNodesInNewDag,
+      animateDagChanges: false
     });
   }
 
@@ -566,7 +573,8 @@ class App extends Component<Props, State> {
     assert(this.state.dags.length > 1, "Undo last step must only be called if there exist at least two dags");
 
     this.setState((state, props) => ({
-      dags: state.dags.slice(0, state.dags.length-1)
+      dags: state.dags.slice(0, state.dags.length-1),
+      animateDagChanges: false
     }));
   }
 

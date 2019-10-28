@@ -14,6 +14,7 @@ type Props = {
   changedNodesEvent?: Set<number>,
   historyLength: number,
   currentTime: number,
+  animateDagChanges: boolean,
   onNodeSelectionChange: (selection: number[]) => void,
   onCurrentTimeChange: (newState: number) => void,
   onDismissPassiveDag: (selectedId: number | null, positioningHint: [number, number] | null) => void,
@@ -46,6 +47,7 @@ export default class Main extends React.Component<Props, {}> {
           nodeSelection={this.props.nodeSelection}
           changedNodesEvent={this.props.changedNodesEvent}
           currentTime={this.props.currentTime}
+          animateDagChanges={this.props.animateDagChanges}
           onNodeSelectionChange={this.props.onNodeSelectionChange}
           onUpdateNodePositions={this.props.onUpdateNodePositions}
         />

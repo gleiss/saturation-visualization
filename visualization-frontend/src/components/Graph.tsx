@@ -14,6 +14,7 @@ type Props = {
   nodeSelection: number[],
   changedNodesEvent?: Set<number>,
   currentTime: number,
+  animateDagChanges: boolean,
   onNodeSelectionChange: (selection: number[]) => void,
   onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void
 };
@@ -58,7 +59,7 @@ export default class Graph extends React.Component<Props, {}> {
     if (this.props.dag !== prevProps.dag) {
       this.updateNetwork(false);
       this.network!.selectNodes(this.props.nodeSelection);
-      if (this.props.nodeSelection.length > 0) {
+      if (this.props.animateDagChanges) {
         // center the view to selected nodes
         this.network!.fit({
           nodes: this.props.nodeSelection.map(nodeId => nodeId.toString()), 
