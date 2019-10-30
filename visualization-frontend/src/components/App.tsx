@@ -17,10 +17,11 @@ import { computeClauseRepresentation, computeParentLiterals } from '../model/cla
 type Props = {
   problem: string,
   vampireUserOptions: string,
-  mode: "proof" | "saturation" | "manualcs"
+  mode: "proof" | "saturation" | "manualcs",
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
   orientClauses: boolean,
+  logging: boolean
 };
 
 /* Invariant: the state is always in one of the following phases
@@ -150,10 +151,16 @@ class App extends Component<Props, State> {
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   updateNodeSelection(nodeSelection: number[]) {
+    if (this.props.logging) {
+      console.log(`Updating node selection to [${nodeSelection.toString()}]`);
+    }
     this.setState({nodeSelection: nodeSelection});
   }
 
   updateCurrentTime(currentTime: number) {
+    if (this.props.logging) {
+      console.log(`Updating current time to ${currentTime}`);
+    }
     const dags = this.state.dags
     assert(dags.length > 0);
     const dag = dags[dags.length - 1];
@@ -197,7 +204,11 @@ class App extends Component<Props, State> {
       currentTime: 0
     });
 
-    const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
+    const url = mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start';
+    if (this.props.logging) {
+      console.log(`Starting request to url '${url}' with Vampire-user-options '${vampireUserOptions}'.`);
+    }
+    const fetchedJSON = await fetch(url, {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -213,6 +224,9 @@ class App extends Component<Props, State> {
     try {
       const json = await fetchedJSON.json();
 
+      if (this.props.logging) {
+        console.log(`Received response from Vampire server.`);
+      }
       if (json.status === "success") {
         assert(json.vampireState === "running" ||
           json.vampireState === "refutation" ||
@@ -253,9 +267,19 @@ class App extends Component<Props, State> {
             return;
           }
         }
+        if (this.props.logging) {
+          console.log(`Constructing Vampire-saturation-events from received JSON.`);
+        }
         const parsedLines = this.jsonToParsedLines(json);
 
+        if (this.props.logging) {
+          console.log(`Constructing saturation graph from Vampire-saturation-events.`);
+        }
         let dag = Dag.fromParsedLines(parsedLines, null);
+
+        if (this.props.logging) {
+          console.log(`Merging preprocessing-subgraph of saturation graph.`);
+        }
         dag = mergePreprocessing(dag);
 
         if (mode === "proof") {
@@ -275,16 +299,25 @@ class App extends Component<Props, State> {
             }
           }
         }
-  
+        if (this.props.logging) {
+          console.log(`Computing layout for saturation graph.`);
+        }
         await VizWrapper.layoutDag(dag, true);
 
         if (this.props.orientClauses) {
+          if (this.props.logging) {
+            console.log(`Computing literal flows for saturation graph.`);
+          }
           computeParentLiterals(dag);
+          if (this.props.logging) {
+            console.log(`Computing clause representations for saturation graph.`);
+          }
           computeClauseRepresentation(dag, null);
         }
         this.setLiteralOptions(dag);
 
         const state = (mode == "manualcs" && json.vampireState === "running") ? "loaded select" : "loaded";
+
         this.setState({
           state: state,
           dags: [dag],
@@ -292,6 +325,9 @@ class App extends Component<Props, State> {
           currentTime: dag.maximalActiveTime(),
           animateDagChanges: false
         });
+        if (this.props.logging) {
+          console.log(`Finished preparation of saturation graph.`);
+        }
       } else {
         assert(json.status === "error");
         const errorMessage = json.message;
@@ -326,7 +362,11 @@ class App extends Component<Props, State> {
     assert(currentDag.mergeMap !== null);
 
     // ask server to select clause and await resulting saturation events
-    const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
+    const url = 'http://localhost:5000/vampire/select';
+    if (this.props.logging) {
+      console.log(`Starting request to url '${url}' with selected-id '${selectedId}'.`);
+    }
+    const fetchedJSON = await fetch(url, {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -338,10 +378,19 @@ class App extends Component<Props, State> {
 
     try {
       const json = await fetchedJSON.json();
+      if (this.props.logging) {
+        console.log(`Received response from Vampire server.`);
+      }
       if (json.status === "success") {
+        if (this.props.logging) {
+          console.log(`Constructing Vampire-saturation-events from received JSON.`);
+        }
         const parsedLines = this.jsonToParsedLines(json);
 
         // extend existing dag with new saturation events from server
+        if (this.props.logging) {
+          console.log(`Extending existing saturation graph with Vampire-saturation-events.`);
+        }
         const newDag = Dag.fromParsedLines(parsedLines, currentDag);
 
         // compute which nodes have been newly generated
@@ -354,11 +403,20 @@ class App extends Component<Props, State> {
         }
 
         if (newNodes.size > 0) {
+          if (this.props.logging) {
+            console.log(`Extending layout to new nodes of saturation graph.`);
+          }
           await VizWrapper.layoutNodesAtPosition(newNodes, positioningHint);
         }
 
         if (this.props.orientClauses) {
+          if (this.props.logging) {
+            console.log(`Updating literal flows for saturation graph.`);
+          }
           computeParentLiterals(newDag);
+          if (this.props.logging) {
+            console.log(`Updating clause representations for saturation graph.`);
+          }
           computeClauseRepresentation(newDag, null);
         }
         this.setLiteralOptions(newDag);
@@ -375,6 +433,9 @@ class App extends Component<Props, State> {
           currentTime: newDag.maximalActiveTime(),
           animateDagChanges: true
         });
+        if (this.props.logging) {
+          console.log(`Finished extension of saturation graph.`);
+        }
       } else {
         assert(json.status === "error");
         const errorMessage = json.message;
@@ -402,6 +463,9 @@ class App extends Component<Props, State> {
   }
 
   async selectFinalPreprocessingClauses() {
+    if (this.props.logging) {
+      console.log(`Starting to select all clauses from preprocessing.`);
+    }
     // iterate as long as the server waits for clause selections and as long as a suitable clause is found
     let stop = false;
     while (this.state.state === "loaded select" && !stop) {
@@ -421,11 +485,17 @@ class App extends Component<Props, State> {
         }
       }
     }
+    if (this.props.logging) {
+      console.log(`Finished to select all clauses from preprocessing.`);
+    }
   }
 
   // SUBGRAPH SELECTION ////////////////////////////////////////////////////////////////////////////////////////////////
 
   undoLastStep() {
+    if (this.props.logging) {
+      console.log(`Pop last saturation graph from the stack.`);
+    }
     this.popDag();
   }
 
@@ -433,9 +503,18 @@ class App extends Component<Props, State> {
     const {dags, nodeSelection} = this.state;
     const currentDag = dags[dags.length - 1];
 
+    if (this.props.logging) {
+      console.log(`Generate saturation graph which consists only of the (transitive) parents of clauses [${nodeSelection}].`);
+    }
     const newDag = filterNonParents(currentDag, new Set(nodeSelection));
+    if (this.props.logging) {
+      console.log(`Computing layout for new saturation graph.`);
+    }
     await VizWrapper.layoutDag(newDag, true);
 
+    if (this.props.logging) {
+      console.log(`Finished preparation of new saturation graph. Pushing it to the stack.`);
+    }
     this.pushDag(newDag);
   }
 
@@ -443,9 +522,18 @@ class App extends Component<Props, State> {
     const {dags, nodeSelection} = this.state;
     const currentDag = dags[dags.length - 1];
 
+    if (this.props.logging) {
+      console.log(`Generate saturation graph which consists only of the (transitive) children of clauses [${nodeSelection}].`);
+    }
     const newDag = filterNonConsequences(currentDag, new Set(nodeSelection));
+    if (this.props.logging) {
+      console.log(`Computing layout for new saturation graph.`);
+    }
     await VizWrapper.layoutDag(newDag, true);
 
+    if (this.props.logging) {
+      console.log(`Finished preparation of new saturation graph. Pushing it to the stack.`);
+    }
     this.pushDag(newDag);
   }
 
@@ -455,6 +543,9 @@ class App extends Component<Props, State> {
     assert(this.state.showPassiveDag === false);
     assert(this.state.nodeSelection.length > 0);
 
+    if (this.props.logging) {
+      console.log(`Display selection graph containing all clauses which can be selected for activation and whose derivation contains all the clauses [${this.state.nodeSelection}].`);
+    }
     this.setState({showPassiveDag: true});
   }
 
@@ -467,7 +558,14 @@ class App extends Component<Props, State> {
 
     if (selectedId !== null) {
       // switch from currentDag to dag resulting from selecting nodeIdToActivate
+      if (this.props.logging) {
+        console.log(`Removing selection graph. Clause ${selectedId} was selected.`);
+      }
       await this.selectClause(selectedId, positioningHint!);
+    } else {
+      if (this.props.logging) {
+        console.log(`Removing selection graph. No clause was selected.`);
+      }
     }
   }
 

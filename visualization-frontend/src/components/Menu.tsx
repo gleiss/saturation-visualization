@@ -12,15 +12,17 @@ type Props = {
   inputSyntax: 'smtlib' | 'tptp',
   vampireUserOptions: string,
   hideBracketsAssoc: boolean,
-  nonStrictForNegatedStrictInequalities: boolean
+  nonStrictForNegatedStrictInequalities: boolean,
   orientClauses: boolean,
+  logging: boolean,
   onChangeProblem: (problem: string) => void,
   onChangeProblemName: (problemName: string) => void,
   onChangeInputSyntax: (syntax: 'smtlib' | 'tptp') => void
   onChangeVampireUserOptions: (vampireUserOptions: string) => void,
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
-  onChangeOrientClauses: (newValue: boolean) => void
+  onChangeOrientClauses: (newValue: boolean) => void,
+  onChangeLogging: (newValue: boolean) => void
 }
 
 export class Menu extends React.Component<Props, {}> {
@@ -153,6 +155,15 @@ export class Menu extends React.Component<Props, {}> {
                       Heuristically orient clauses
                     </label>
                   </li>
+                  <li>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={this.props.logging}
+                        onChange={this.changeLogging.bind(this)}/>
+                      Logging enabled
+                    </label>
+                  </li>
                 </ul>
               </fieldset>
             </aside>
@@ -224,5 +235,10 @@ export class Menu extends React.Component<Props, {}> {
   changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {
     const newValue = event.target.checked;
     this.props.onChangeOrientClauses(newValue);
+  }
+
+  changeLogging(event: React.ChangeEvent<HTMLInputElement>) {
+    const newValue = event.target.checked;
+    this.props.onChangeLogging(newValue);
   }
 }

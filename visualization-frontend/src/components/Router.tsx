@@ -10,7 +10,8 @@ type State = {
 	vampireUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
-	orientClauses: boolean
+	orientClauses: boolean,
+	logging: boolean
 }
 
 export class AppRouter extends React.Component<{}, State> {
@@ -22,7 +23,8 @@ export class AppRouter extends React.Component<{}, State> {
 		vampireUserOptions: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
-		orientClauses: true
+		orientClauses: true,
+		logging: false
 	}
 
 	render() {
@@ -37,6 +39,7 @@ export class AppRouter extends React.Component<{}, State> {
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
+						logging={this.state.logging}
 						onChangeProblem={this.changeProblem.bind(this)}
 						onChangeProblemName={this.changeProblemName.bind(this)}
 						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
@@ -44,6 +47,7 @@ export class AppRouter extends React.Component<{}, State> {
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
 						onChangeOrientClauses={this.changeOrientClauses.bind(this)}
+						onChangeLogging={this.changeLogging.bind(this)}
 					/>
 				}/>
 				<Route path="/proof/" render={() => 
@@ -71,6 +75,7 @@ export class AppRouter extends React.Component<{}, State> {
 			hideBracketsAssoc={this.state.hideBracketsAssoc}
 			nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 			orientClauses={this.state.orientClauses}
+			logging={this.state.logging}
 		/>
 	}
 
@@ -94,5 +99,8 @@ export class AppRouter extends React.Component<{}, State> {
 	}
 	changeOrientClauses(newValue: boolean) {
 		this.setState({orientClauses: newValue});
+	}
+	changeLogging(newValue: boolean) {
+		this.setState({logging: newValue});
 	}
 }

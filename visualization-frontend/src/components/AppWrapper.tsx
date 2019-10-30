@@ -11,6 +11,7 @@ type Props = {
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean, 
 	orientClauses: boolean,
+	logging: boolean
   };
   
   export class AppWrapper extends React.Component<Props, {}> {
@@ -28,6 +29,7 @@ type Props = {
 					hideBracketsAssoc={this.props.hideBracketsAssoc}
 					nonStrictForNegatedStrictInequalities={this.props.nonStrictForNegatedStrictInequalities}
 					orientClauses={this.props.orientClauses}
+					logging={this.props.logging}
 				/>
 			</div>
 		)
