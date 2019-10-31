@@ -229,6 +229,17 @@ class App extends Component<Props, State> {
             });
             return;
           }
+        } else {
+          if (json.vampireState === "saturation" && json.lines.length === 0) {
+            this.setState({
+              state: "error",
+              message: "The example was already identified to be satisfiable during Vampire's preprocessing.",
+              dags: [],
+              nodeSelection: [],
+              currentTime: 0
+            });
+            return;
+          }
         }
         const parsedLines = this.jsonToParsedLines(json);
 
