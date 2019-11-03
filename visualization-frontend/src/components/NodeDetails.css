@@ -17,6 +17,35 @@
   background: #fff;
 }
 
+.component-node-details.details article {
+  position: relative;
+}
+
+.component-node-details .button-bar {
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+}
+
+.component-node-details .toggle-button {
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0.2rem;
+  margin: 0.1rem 0.25rem 0 0;
+  border: none;
+  border-radius: 50rem;
+  background: none;
+  cursor: pointer;
+}
+
+.component-node-details .toggle-button.toggled {
+  background: #e6ebef;
+}
+
+.component-node-details .toggle-button:hover svg {
+  stroke: #64656e;
+}
+
 .component-node-details.overview {
   background: #fff;
 }
