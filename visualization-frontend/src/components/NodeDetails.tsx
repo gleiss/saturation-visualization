@@ -22,7 +22,9 @@ export default class NodeDetails extends React.Component<Props, {}> {
   render() {
     const statisticsStrings = new Array<string>();
     for (const [key, value] of this.props.node.statistics) {
-      statisticsStrings.push(`${key}: ${value}`);
+      if (!['nSel', 'inD'].includes(key)) {
+        statisticsStrings.push(`${key}: ${value}`);
+      }
     }
 
     return (
@@ -33,10 +35,12 @@ export default class NodeDetails extends React.Component<Props, {}> {
       >
         <article>
           <h2>Node <strong>{this.props.node.id}</strong></h2>
-          <h3>{statisticsStrings.join(', ')}</h3>
-          <small className='node-data'>
-            {this.props.node.inferenceRule}, {this.props.numberOfTransitiveActivatedChildren} {this.props.numberOfTransitiveActivatedChildren === 1 ? 'child' : 'children'}
-          </small>
+          <h3>
+            {this.props.node.inferenceRule},
+            <br/>
+            {this.props.numberOfTransitiveActivatedChildren} {this.props.numberOfTransitiveActivatedChildren === 1 ? 'child' : 'children'}
+          </h3>
+          <ul className="stats">{ statisticsStrings.map(string => <li>{string}</li>) }</ul>
           {
             this.props.node.unit.type === "Formula" ? (
               <section className={'literal-wrapper'}>
