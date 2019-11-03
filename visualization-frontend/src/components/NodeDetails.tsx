@@ -54,6 +54,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
               className={'toggle-button' + (this.state.editToggle ? ' toggled': '')}
               title={ this.state.editToggle ? 'Terminate edit mode': 'Enter edit mode' }
               onClick={this.toggleEdit.bind(this)}
+              disabled={this.props.node.unit.type !== 'Clause'}
             >
               <svg viewBox="0 0 24 24" className="icon">
                 <use xlinkHref={`${icons}#toggle-edit`}/>
@@ -71,13 +72,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
           }
 
           {
-            this.props.node.unit.type === "Formula" ? (
-              <section className={'literal-wrapper'}>
-                {
-                  this.props.node.toString()
-                }
-              </section>
-            ) : (
+            (this.props.node.unit.type === 'Clause' && this.state.editToggle) ? (
               <section
                 className={'literal-wrapper' + (this.state.draggable ? ' drag' : '')}
                 onMouseEnter={() => this.setState({draggable: true})}
@@ -93,6 +88,12 @@ export default class NodeDetails extends React.Component<Props, {}> {
                 <span className={'separator separator-line count-' + (this.props.node.unit as Clause).contextLiterals.length}>&nbsp;</span>
                 {
                   this.toList(this.props.node.id, this.props.node.unit as Clause, "context")
+                }
+              </section>
+            ) : (
+              <section className={'literal-wrapper read-mode'}>
+                {
+                  this.props.node.unit.toHTMLString(false)
                 }
               </section>
             )

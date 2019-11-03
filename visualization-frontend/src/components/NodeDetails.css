@@ -42,8 +42,12 @@
   background: #e6ebef;
 }
 
-.component-node-details .toggle-button:hover svg {
+.component-node-details .toggle-button:not(:disabled):hover svg {
   stroke: #64656e;
+}
+
+.component-node-details .toggle-button:disabled {
+  cursor: default;
 }
 
 .component-node-details.overview {
@@ -109,6 +113,11 @@
 
   font-family: monospace;
   word-break: break-word;
+}
+
+.component-node-details .literal-wrapper.read-mode {
+  white-space: pre-wrap;
+  text-align: center;
 }
 
 .component-node-details .literal-wrapper .separator {
