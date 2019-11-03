@@ -1,6 +1,10 @@
+#nodeInfo {
+  padding-bottom: 1rem;
+}
+
 .component-node-details {
   margin: 1rem -0.5rem 0;
-  padding: 0 0.5rem 0.5rem;
+  padding: 0 0.5rem;
   overflow: hidden;
 
   box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
@@ -18,7 +22,7 @@
 }
 
 .component-node-details article {
-  padding: 0.5rem 0;
+  padding: 0.5rem 0 0;
 }
 
 .component-node-details article h2 {
@@ -70,7 +74,9 @@
 .component-node-details .literal-wrapper {
   margin: 0.5rem -0.5rem 0;
   padding: 0.75rem;
+
   background: #f8f9fb;
+  border-radius: 0 0 2px 2px;
 
   font-family: monospace;
   word-break: break-word;
@@ -104,7 +110,7 @@
 }
 
 .component-node-details .literal-wrapper ul {
-  min-height: 0.5rem;
+  min-height: 1.5rem;
   margin: 0;
   padding: 0.25rem;
 
@@ -119,7 +125,7 @@
 }
 
 .component-node-details .literal-wrapper.drag ul {
-  background: #f4f5f7;
+  background: #fff;
 }
 
 .component-node-details .literal-wrapper li {
