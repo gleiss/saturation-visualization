@@ -8,8 +8,12 @@ type Props = {
   dag: Dag | null,
   nodeSelection: number[],
   currentTime: number,
-  onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
-  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
+  infoToggle: boolean,
+  editToggle: boolean,
+  onLiteralOrientationChange: (nodeId: number, oldPosition: ['premise' | 'conclusion' | 'context', number], newPosition: ['premise' | 'conclusion' | 'context', number]) => void,
+  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void,
+  onToggleInfo: () => void,
+  onToggleEdit: () => void
 };
 
 export class NodeDetailsWrapper extends React.Component<Props, {}> {
@@ -21,8 +25,12 @@ export class NodeDetailsWrapper extends React.Component<Props, {}> {
         <NodeDetails
           node={node}
           numberOfTransitiveActivatedChildren={this.props.dag!.numberOfTransitiveActivatedChildren(node.id, this.props.currentTime)}
+          infoToggle={this.props.infoToggle}
+          editToggle={this.props.editToggle}
           onLiteralOrientationChange={this.props.onLiteralOrientationChange}
           onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
+          onToggleInfo={this.props.onToggleInfo}
+          onToggleEdit={this.props.onToggleEdit}
         />
       )
     } else {

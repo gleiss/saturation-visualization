@@ -4,6 +4,7 @@ import { Dag } from '../model/dag';
 import { Literal } from '../model/literal';
 import { assert } from '../model/util';
 import { NodeDetailsWrapper } from './NodeDetailsWrapper';
+import {PassiveDagModal} from './PassiveDagModal';
 
 const icons = require('../resources/icons/all.svg') as string;
 
@@ -12,10 +13,14 @@ type Props = {
   dag: Dag,
   currentTime: number,
   nodeSelection: number[],
+  infoToggle: boolean,
+  editToggle: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
   onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
   onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
   onSelectButtonPressed: () => void,
+  onToggleInfo: () => void,
+  onToggleEdit: () => void
 };
 export class PassiveDagAside extends React.Component<Props, {}> {
 
@@ -39,8 +44,12 @@ export class PassiveDagAside extends React.Component<Props, {}> {
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
           currentTime={this.props.currentTime}
+          infoToggle={this.props.infoToggle}
+          editToggle={this.props.editToggle}
           onLiteralOrientationChange={this.props.onLiteralOrientationChange}
           onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
+          onToggleInfo={this.props.onToggleInfo}
+          onToggleEdit={this.props.onToggleEdit}
         />
       </aside>
     );

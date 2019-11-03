@@ -17,10 +17,14 @@ type Props = {
   currentTime: number,
 	
 	changedNodesEvent?: Set<number>,
+  infoToggle: boolean,
+  editToggle: boolean,
   onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
   onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
 
 	onDismissPassiveDag: (selectedId: number | null, positioningHint: [number, number] | null) => void,
+  onToggleInfo: () => void,
+  onToggleEdit: () => void
 };
 
 type State = {
@@ -79,10 +83,14 @@ export class PassiveDagModal extends React.Component<Props, State> {
 					dag={this.state.passiveDag!}
 					currentTime={this.props.currentTime}
 					nodeSelection={this.state.nodeSelectionPassiveDag}
+          infoToggle={this.props.infoToggle}
+          editToggle={this.props.editToggle}
 					onUpdateNodeSelection={this.nodeSelectionChange.bind(this)}
 					onLiteralOrientationChange={this.props.onLiteralOrientationChange}
 					onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
 					onSelectButtonPressed={this.selectButtonPressed.bind(this)}
+          onToggleInfo={this.props.onToggleInfo}
+          onToggleEdit={this.props.onToggleEdit}
 				/>
 			</ReactModal>
 		)

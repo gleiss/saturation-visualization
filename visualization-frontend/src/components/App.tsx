@@ -39,7 +39,9 @@ type State = {
   changedNodesEvent?: Set<number>, // update to trigger refresh of node in graph. Event is of the form [eventId, nodeId]
   message: string,
   showPassiveDag: boolean
-  nodeIdToActivate: number | null
+  nodeIdToActivate: number | null,
+  infoToggle: boolean,
+  editToggle: boolean
 }
 
 class App extends Component<Props, State> {
@@ -53,8 +55,10 @@ class App extends Component<Props, State> {
     changedNodesEvent: undefined,
     message: "",
     showPassiveDag: false,
-    nodeIdToActivate: null
-  }
+    nodeIdToActivate: null,
+    infoToggle: false,
+    editToggle: false,
+  };
 
   render() {
     const {
@@ -82,12 +86,16 @@ class App extends Component<Props, State> {
           historyLength={dags[0].maximalActiveTime()}
           currentTime={currentTime}
           animateDagChanges={animateDagChanges}
+          infoToggle={this.state.infoToggle}
+          editToggle={this.state.editToggle}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
           onUpdateNodePositions={this.updateNodePositions.bind(this)}
           onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
           onLiteralRepresentationChange={this.changeLiteralRepresentation.bind(this)}
+          onToggleInfo={this.toggleInfo.bind(this)}
+          onToggleEdit={this.toggleEdit.bind(this)}
         />
       );
     } else {
@@ -108,6 +116,8 @@ class App extends Component<Props, State> {
           currentTime={currentTime}
           nodeSelection={nodeSelection}
           multipleVersions={dags.length > 1}
+          infoToggle={this.state.infoToggle}
+          editToggle={this.state.editToggle}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}
@@ -118,6 +128,8 @@ class App extends Component<Props, State> {
           onSelectCommonConsequences={this.selectCommonConsequences.bind(this)}
           onLiteralOrientationChange={this.changeLiteralOrientation.bind(this)}
           onLiteralRepresentationChange={this.changeLiteralRepresentation.bind(this)}
+          onToggleInfo={this.toggleInfo.bind(this)}
+          onToggleEdit={this.toggleEdit.bind(this)}
         />
       </div>
     );
@@ -606,6 +618,16 @@ class App extends Component<Props, State> {
         }
       }
     }
+  }
+
+  // STATE TOGGLE //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  toggleInfo() {
+    this.setState({ infoToggle: !this.state.infoToggle });
+  }
+
+  toggleEdit() {
+    this.setState({ editToggle: !this.state.editToggle });
   }
 }
 

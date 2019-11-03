@@ -15,12 +15,16 @@ type Props = {
   historyLength: number,
   currentTime: number,
   animateDagChanges: boolean,
+  infoToggle: boolean,
+  editToggle: boolean,
   onNodeSelectionChange: (selection: number[]) => void,
   onCurrentTimeChange: (newState: number) => void,
   onDismissPassiveDag: (selectedId: number | null, positioningHint: [number, number] | null) => void,
   onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void,
   onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
-  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
+  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void,
+  onToggleInfo: () => void,
+  onToggleEdit: () => void
 };
 
 export default class Main extends React.Component<Props, {}> {
@@ -34,9 +38,13 @@ export default class Main extends React.Component<Props, {}> {
           nodeSelection={this.props.nodeSelection}
           currentTime={this.props.currentTime}
           changedNodesEvent={this.props.changedNodesEvent}
+          infoToggle={this.props.infoToggle}
+          editToggle={this.props.editToggle}
           onLiteralOrientationChange={this.props.onLiteralOrientationChange}
           onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
           onDismissPassiveDag={this.props.onDismissPassiveDag}
+          onToggleInfo={this.props.onToggleInfo}
+          onToggleEdit={this.props.onToggleEdit}
         />
     }
 

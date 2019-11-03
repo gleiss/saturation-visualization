@@ -13,6 +13,8 @@ type Props = {
   currentTime: number,
   nodeSelection: number[],
   multipleVersions: boolean,
+  infoToggle: boolean,
+  editToggle: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
@@ -22,7 +24,9 @@ type Props = {
   onSelectChildren: () => void,
   onSelectCommonConsequences: () => void,
   onLiteralOrientationChange: (nodeId: number, oldPosition: ["premise" | "conclusion" | "context", number], newPosition: ["premise" | "conclusion" | "context", number]) => void,
-  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void
+  onLiteralRepresentationChange: (nodeId: number, literal: Literal) => void,
+  onToggleInfo: () => void,
+  onToggleEdit: () => void
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -59,8 +63,12 @@ export default class Aside extends React.Component<Props, {}> {
           dag={this.props.dag}
           nodeSelection={this.props.nodeSelection}
           currentTime={this.props.currentTime}
+          infoToggle={this.props.infoToggle}
+          editToggle={this.props.editToggle}
           onLiteralOrientationChange={this.props.onLiteralOrientationChange}
           onLiteralRepresentationChange={this.props.onLiteralRepresentationChange}
+          onToggleInfo={this.props.onToggleInfo}
+          onToggleEdit={this.props.onToggleEdit}
         />
       </aside>
     );
