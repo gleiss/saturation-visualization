@@ -1,3 +1,11 @@
+.component-search {
+  margin: 1rem -0.5rem -0.5rem;
+  padding: 0 0.5rem;
+
+  background: #f8f9fb;
+  border-radius: 0 0 2px 2px;
+}
+
 .component-search input {
   height: 2rem;
   width: calc(100% - 10px);
@@ -9,23 +17,30 @@
 
   background: transparent;
   border: solid 1px #ddd;
-  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, .07);
   outline: none;
 
   line-height: 2rem;
+  text-overflow: ellipsis;
 }
 
 .component-search input:first-of-type {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .component-search input:last-of-type {
   margin-bottom: 1rem;
 }
 
+.component-search:hover input {
+  background: #fff;
+  box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, .07);
+}
+
+.component-search ul:hover,
 .component-search input:hover ~ ul,
 .component-search input:focus ~ ul,
 .component-search input:active ~ ul {
+  background: #fff;
   box-shadow: 1px 3px 30px 0 rgba(0, 0, 0, .25);
 }
 
@@ -34,7 +49,7 @@
 }
 
 .component-search ul {
-  background: #fff;
+  background: #f8f9fb;
   position: absolute;
   margin: calc(-8rem - 5px) 0 0;
   padding: calc(6.5rem + 10px) 0.5rem 0.5rem;

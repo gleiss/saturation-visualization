@@ -54,24 +54,37 @@
 }
 
 .ReactModal__Overlay {
-  background: transparent !important;
+  z-index: 100;
 }
 
 .ReactModal__Content {
-  width: calc(100% - 384px) !important;
-  padding: 1rem !important;
+  display: flex;
+  width: calc(100% - 102px) !important;
+  padding: 0 !important;
   inset: 5rem 3rem 6rem !important;
   top: 5rem !important;
   left: 3rem !important;
   bottom: 6rem !important;
   border: none !important;
   border-radius: 2px !important;
-  box-shadow: 5px 5px 50px 0 rgba(0,0,0,0.2) !important;
+  box-shadow: 5px 5px 50px 0 rgba(0, 0, 0, 0.2) !important;
   box-sizing: border-box !important;
 }
 
 .ReactModal__Content .component-graph {
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 1rem !important;
   box-shadow: none !important;
+}
+
+.component-passive-aside {
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding: 1rem 1.5rem !important;
+  width: 234px;
+  background: #f4f5f7;
+}
+
+.component-passive-aside .component-node-details.details {
+  background: #fff;
 }

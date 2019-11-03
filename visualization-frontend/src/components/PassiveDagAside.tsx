@@ -25,7 +25,7 @@ export class PassiveDagAside extends React.Component<Props, {}> {
     const selectClauseButtonEnabled = this.props.nodeSelection.length === 1 && this.props.dag.styleMap!.get(this.props.nodeSelection[0]) === "passive";
 
     return (
-      <aside>
+      <aside className="component-passive-aside">
         <section className="component-graph-menu">
           <button title="Select clauses"
                   disabled={!selectClauseButtonEnabled}

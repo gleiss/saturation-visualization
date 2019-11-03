@@ -1,5 +1,5 @@
 .component-node-details {
-  margin: 0.5rem -0.5rem 0;
+  margin: 1rem -0.5rem 0;
   padding: 0 0.5rem 0.5rem;
   overflow: hidden;
 
@@ -10,7 +10,7 @@
 }
 
 .component-node-details.details {
-  background: #f8f9fb;
+  background: #fff;
 }
 
 .component-node-details.overview {
@@ -50,9 +50,9 @@
 }
 
 .component-node-details .literal-wrapper {
-  margin: 0.5rem 0 0;
+  margin: 0.5rem -0.5rem 0;
   padding: 0.75rem;
-  background: #fff;
+  background: #f8f9fb;
 
   font-family: monospace;
   word-break: break-word;
