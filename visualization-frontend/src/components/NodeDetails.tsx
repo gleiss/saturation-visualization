@@ -29,6 +29,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
 
   render() {
     const statisticsStrings = new Array<string>();
+    statisticsStrings.push("Childs: " + this.props.numberOfTransitiveActivatedChildren.toString());
     for (const [key, value] of this.props.node.statistics) {
       if (!['nSel', 'inD'].includes(key)) {
         statisticsStrings.push(`${key}: ${value}`);
@@ -65,9 +66,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
           </div>
 
           <h3>
-            {this.props.node.inferenceRule},
-            <br/>
-            {this.props.numberOfTransitiveActivatedChildren} {this.props.numberOfTransitiveActivatedChildren === 1 ? 'child' : 'children'}
+            {this.props.node.inferenceRule}
           </h3>
           {
             this.props.infoToggle && <ul className="stats">{ statisticsStrings.map(string => <li>{string}</li>) }</ul>
