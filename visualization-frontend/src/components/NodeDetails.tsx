@@ -30,8 +30,13 @@ export default class NodeDetails extends React.Component<Props, {}> {
   render() {
     const statisticsStrings = new Array<string>();
     statisticsStrings.push("Childs: " + this.props.numberOfTransitiveActivatedChildren.toString());
-    for (const [key, value] of this.props.node.statistics) {
+    for (let [key, value] of this.props.node.statistics) {
       if (!['nSel', 'inD'].includes(key)) {
+        if (key === "a") {
+          key = "Age";
+        } else if (key === "w") {
+          key = "Weight";
+        }
         statisticsStrings.push(`${key}: ${value}`);
       }
     }
