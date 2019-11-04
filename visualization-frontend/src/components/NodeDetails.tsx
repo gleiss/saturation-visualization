@@ -74,7 +74,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
             {this.props.node.inferenceRule}
           </h3>
           {
-            this.props.infoToggle && <ul className="stats">{ statisticsStrings.map(string => <li>{string}</li>) }</ul>
+            this.props.infoToggle && <ul className="stats">{ statisticsStrings.map((string, key) => <li key={key}>{string}</li>) }</ul>
           }
 
           {
