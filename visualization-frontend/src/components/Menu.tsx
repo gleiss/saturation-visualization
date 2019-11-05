@@ -9,15 +9,16 @@ const icons = require('../resources/icons/all.svg') as string;
 type Props = {
   problem: string,
   problemName: string,
-  inputSyntax: 'smtlib' | 'tptp',
-  vampireUserOptions: string,
+    inputSyntax: 'smtlib' | 'tptp',
+
+  spacerUserOptions: string,
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean
   orientClauses: boolean,
   onChangeProblem: (problem: string) => void,
   onChangeProblemName: (problemName: string) => void,
   onChangeInputSyntax: (syntax: 'smtlib' | 'tptp') => void
-  onChangeVampireUserOptions: (vampireUserOptions: string) => void,
+  onChangeSpacerUserOptions: (spacerUserOptions: string) => void,
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
   onChangeOrientClauses: (newValue: boolean) => void
@@ -116,8 +117,8 @@ export class Menu extends React.Component<Props, {}> {
                   </li>
                   <li>
                     <label htmlFor="userOptions" className="form-label">Additional Vampire options</label>
-                    <input id="userOptions" type="text" onChange={this.changeVampireUserOptions.bind(this)}
-                           value={this.props.vampireUserOptions}>
+                    <input id="userOptions" type="text" onChange={this.changeSpacerUserOptions.bind(this)}
+                           value={this.props.spacerUserOptions}>
                     </input>
                   </li>
                 </ul>
@@ -196,9 +197,9 @@ export class Menu extends React.Component<Props, {}> {
     }
   }
 
-  changeVampireUserOptions(event: React.ChangeEvent<HTMLInputElement>) {
+  changeSpacerUserOptions(event: React.ChangeEvent<HTMLInputElement>) {
     const newValue = event.target.value;
-    this.props.onChangeVampireUserOptions(newValue);
+    this.props.onChangeSpacerUserOptions(newValue);
   }
 
   changeTextArea(event: React.ChangeEvent<HTMLTextAreaElement>) {

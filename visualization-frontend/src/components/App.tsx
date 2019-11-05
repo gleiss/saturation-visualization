@@ -16,7 +16,7 @@ import { computeClauseRepresentation, computeParentLiterals } from '../model/cla
 
 type Props = {
   problem: string,
-  vampireUserOptions: string,
+  spacerUserOptions: string,
   mode: "proof" | "saturation" | "manualcs"
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
@@ -122,7 +122,7 @@ class App extends Component<Props, State> {
   async componentDidMount() {
 
     // call Vampire on given input problem
-    await this.runVampire(this.props.problem, this.props.vampireUserOptions, this.props.mode);
+    await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
 
     if (this.state.state === "loaded select" && this.props.mode === "manualcs") {
       this.selectFinalPreprocessingClauses();
@@ -171,7 +171,7 @@ class App extends Component<Props, State> {
     return parsedLines;
   }
 
-  async runVampire(problem: string, vampireUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
+  async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
     this.setState({
       state: "waiting",
       message: "Waiting for Vampire...",
@@ -180,7 +180,7 @@ class App extends Component<Props, State> {
       currentTime: 0
     });
 
-    const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start', {
+    const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/spacer/startmanualcs' : 'http://localhost:5000/spacer/start', {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -189,7 +189,7 @@ class App extends Component<Props, State> {
       },
       body: JSON.stringify({
         file: problem, 
-        vampireUserOptions: vampireUserOptions
+        spacerUserOptions: spacerUserOptions
       })
     });
 
@@ -297,7 +297,7 @@ class App extends Component<Props, State> {
     assert(currentDag.mergeMap !== null);
 
     // ask server to select clause and await resulting saturation events
-    const fetchedJSON = await fetch('http://localhost:5000/vampire/select', {
+    const fetchedJSON = await fetch('http://localhost:5000/spacer/select', {
       method: 'POST',
       mode: 'cors',
       headers: {

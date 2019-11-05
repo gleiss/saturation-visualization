@@ -6,7 +6,7 @@ import './AppWrapper.css';
 type Props = {
 	name: string,
 	problem: string,
-	vampireUserOptions: string,
+	spacerUserOptions: string,
 	mode: "proof" | "saturation" | "manualcs"
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean, 
@@ -23,7 +23,7 @@ type Props = {
 				/>
 				<App 
 					problem={this.props.problem}
-					vampireUserOptions={this.props.vampireUserOptions}
+					spacerUserOptions={this.props.spacerUserOptions}
 					mode={this.props.mode}
 					hideBracketsAssoc={this.props.hideBracketsAssoc}
 					nonStrictForNegatedStrictInequalities={this.props.nonStrictForNegatedStrictInequalities}

@@ -7,7 +7,7 @@ type State = {
 	problem: string,
 	problemName: string,
 	inputSyntax: "smtlib" | "tptp",
-	vampireUserOptions: string,
+	spacerUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
 	orientClauses: boolean
@@ -19,7 +19,7 @@ export class AppRouter extends React.Component<{}, State> {
 		problem: "",
 		problemName: "",
 		inputSyntax: "smtlib",
-		vampireUserOptions: "",
+		spacerUserOptions: "",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
 		orientClauses: true
@@ -33,14 +33,14 @@ export class AppRouter extends React.Component<{}, State> {
 						problem={this.state.problem}
 						problemName={this.state.problemName}
 						inputSyntax={this.state.inputSyntax}
-						vampireUserOptions={this.state.vampireUserOptions}
+						spacerUserOptions={this.state.spacerUserOptions}
 						hideBracketsAssoc={this.state.hideBracketsAssoc}
 						nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 						orientClauses={this.state.orientClauses}
 						onChangeProblem={this.changeProblem.bind(this)}
 						onChangeProblemName={this.changeProblemName.bind(this)}
 						onChangeInputSyntax={this.changeInputSyntax.bind(this)}
-						onChangeVampireUserOptions={this.changeVampireUserOptions.bind(this)}
+						onChangeSpacerUserOptions={this.changeSpacerUserOptions.bind(this)}
 						onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
 						onChangeOrientClauses={this.changeOrientClauses.bind(this)}
@@ -61,13 +61,14 @@ export class AppRouter extends React.Component<{}, State> {
 
 	appComponent(mode: "proof" | "saturation" | "manualcs") {
 		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
-		const vampireUserOptions = `${this.state.vampireUserOptions} --input_syntax ${inputSyntax}`;
+		// const spacerUserOptions = `${this.state.spacerUserOptions} --input_syntax ${inputSyntax}`;
 
+		const spacerUserOptions = `${this.state.spacerUserOptions}`;
 		return <AppWrapper
 			name={this.state.problemName}
 			mode={mode}
 			problem={this.state.problem!}
-			vampireUserOptions={vampireUserOptions}
+			spacerUserOptions={spacerUserOptions}
 			hideBracketsAssoc={this.state.hideBracketsAssoc}
 			nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
 			orientClauses={this.state.orientClauses}
@@ -80,8 +81,8 @@ export class AppRouter extends React.Component<{}, State> {
 	changeProblemName(problemName: string) {
 		this.setState({problemName: problemName});
 	}
-	changeVampireUserOptions(vampireUserOptions: string) {
-		this.setState({vampireUserOptions: vampireUserOptions});
+	changeSpacerUserOptions(spacerUserOptions: string) {
+		this.setState({spacerUserOptions: spacerUserOptions});
 	}
 	changeHideBracketsAssoc(newValue: boolean) {
 		this.setState({hideBracketsAssoc: newValue});
