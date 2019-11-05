@@ -50,6 +50,11 @@
   cursor: default;
 }
 
+.component-node-details .toggle-button:active,
+.component-node-details .toggle-button:focus {
+  outline: none;
+}
+
 .component-node-details.overview {
   background: #fff;
 }
