@@ -197,16 +197,16 @@ class App extends Component<Props, State> {
 
         try {
             const json = await fetchedJSON.json();
-
+            console.log("backend response:", json)
             if (json.status === "success") {
-                assert(json.vampireState === "running" ||
-                       json.vampireState === "refutation" ||
-                       json.vampireState === "saturation" ||
-                       json.vampireState === "timeout");
-
+                assert(json.spacerState === "running" ||
+                       json.spacerState === "refutation" ||
+                       json.spacerState === "saturation" ||
+                       json.spacerState === "timeout");
+ 
                 if (mode === "proof") {
-                    assert(json.vampireState !== "running")
-                    if (json.vampireState === "saturation") {
+                    assert(json.spacerState !== "running")
+                    if (json.spacerState === "saturation") {
                         this.setState({
                             state: "error",
                             message: "Saturation: Vampire saturated, so there exists no proof!",
@@ -216,7 +216,7 @@ class App extends Component<Props, State> {
                         });
                         return;
                     }
-                    if (json.vampireState === "timeout") {
+                    if (json.spacerState === "timeout") {
                         this.setState({
                             state: "error",
                             message: "Timeout: Vampire could not find a proof in the given time!",
@@ -250,6 +250,7 @@ class App extends Component<Props, State> {
                     }
                 }
 
+                //after this function, all nodes will have additional x,y information
                 await VizWrapper.layoutDag(dag, true);
 
                 if (this.props.orientClauses) {
@@ -258,7 +259,7 @@ class App extends Component<Props, State> {
                 }
                 this.setLiteralOptions(dag);
 
-                const state = (mode == "manualcs" && json.vampireState === "running") ? "loaded select" : "loaded";
+                const state = (mode == "manualcs" && json.spacerState === "running") ? "loaded select" : "loaded";
                 this.setState({
                     state: state,
                     dags: [dag],
@@ -325,7 +326,7 @@ class App extends Component<Props, State> {
                         newNodes.set(nodeId, node);
                     }
                 }
-
+ 
                 if (newNodes.size > 0) {
                     await VizWrapper.layoutNodesAtPosition(newNodes, positioningHint);
                 }
@@ -336,7 +337,7 @@ class App extends Component<Props, State> {
                 }
                 this.setLiteralOptions(newDag);
 
-                const state = json.vampireState === "running" ? "loaded select" : "loaded";
+                const state = json.spacerState === "running" ? "loaded select" : "loaded";
                 const nodeSelection = new Array<number>();
                 for (const nodeId of newNodes.keys()) {
                     nodeSelection.push(nodeId);
