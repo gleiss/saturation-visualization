@@ -10,12 +10,7 @@ import SatNode from '../model/sat-node';
 const styleTemplates = require('../resources/styleTemplates');
 
 type Props = {
-    dag: Dag,
-    nodeSelection: number[],
-    changedNodesEvent?: Set<number>,
-    currentTime: number,
-    onNodeSelectionChange: (selection: number[]) => void,
-    onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void
+    tree: any,
 };
 
 type State = {
@@ -40,56 +35,52 @@ export default class Graph extends React.Component<Props, {}> {
         this.generateNetwork();
         this.updateNetwork(false);
         this.network!.fit();
-
-        window.addEventListener("keydown", this.keydownHandler.bind(this), false);
-        window.addEventListener("keyup", this.keyupHandler.bind(this), false);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("keydown", this.keydownHandler.bind(this), false);
-        window.removeEventListener("keyup", this.keyupHandler.bind(this), false);
     }
 
     componentDidUpdate(prevProps: Props) {
-        if (this.props.dag !== prevProps.dag) {
-            this.updateNetwork(false);
-            this.network!.selectNodes(this.props.nodeSelection);
-            if (this.props.nodeSelection.length > 0) {
-                // center the view to selected nodes
-                this.network!.fit({
-                    nodes: this.props.nodeSelection.map(nodeId => nodeId.toString()),
-                    animation: true
-                });
-            } else {
-                // set the view so that the whole graph is visible
-                this.network!.fit();
-            }
-        } else {
-            if (this.props.nodeSelection !== prevProps.nodeSelection) {
-                this.network!.selectNodes(this.props.nodeSelection);
-            }
-            if (this.props.currentTime !== prevProps.currentTime) {
-                this.updateNetwork(true);
-            }
-            const incomingEvent = this.props.changedNodesEvent;
-            if (incomingEvent !== prevProps.changedNodesEvent) {
-                assert(incomingEvent !== undefined);
-                if (incomingEvent !== this.cachedChangeNodesEvent) {
-                    this.cachedChangeNodesEvent = incomingEvent;
+        this.updateNetwork(false);
+        // if (this.props.dag !== prevProps.dag) {
+        //     this.updateNetwork(false);
+        //     this.network!.selectNodes(this.props.nodeSelection);
+        //     if (this.props.nodeSelection.length > 0) {
+        //         // center the view to selected nodes
+        //         this.network!.fit({
+        //             nodes: this.props.nodeSelection.map(nodeId => nodeId.toString()),
+        //             animation: true
+        //         });
+        //     } else {
+        //         // set the view so that the whole graph is visible
+        //         this.network!.fit();
+        //     }
+        // } else {
+        //     if (this.props.nodeSelection !== prevProps.nodeSelection) {
+        //         this.network!.selectNodes(this.props.nodeSelection);
+        //     }
+        //     if (this.props.currentTime !== prevProps.currentTime) {
+        //         this.updateNetwork(true);
+        //     }
+        //     const incomingEvent = this.props.changedNodesEvent;
+        //     if (incomingEvent !== prevProps.changedNodesEvent) {
+        //         assert(incomingEvent !== undefined);
+        //         if (incomingEvent !== this.cachedChangeNodesEvent) {
+        //             this.cachedChangeNodesEvent = incomingEvent;
 
-                    // update all nodes from event
-                    const visNodes = new Array<Node>();
-                    for (const nodeId of incomingEvent!) {
-                        const visNode = {
-                            id: nodeId,
-                            label: this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
-                        };
-                        visNodes.push(visNode);
-                    }
-                    this.networkNodes.update(visNodes);
-                }
-            }
-        }
+        //             // update all nodes from event
+        //             const visNodes = new Array<Node>();
+        //             for (const nodeId of incomingEvent!) {
+        //                 const visNode = {
+        //                     id: nodeId,
+        //                     label: this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
+        //                 };
+        //                 visNodes.push(visNode);
+        //             }
+        //             this.networkNodes.update(visNodes);
+        //         }
+        //     }
+        // }
     }
 
     render() {
@@ -104,6 +95,7 @@ export default class Graph extends React.Component<Props, {}> {
     // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     generateNetwork() {
+        console.log("I am Graph. I receive:", this.props)
         assert(this.graphContainer.current);
         assert(!this.network); // should only be called once
 
@@ -114,164 +106,134 @@ export default class Graph extends React.Component<Props, {}> {
             physics: false,
             interaction: {
                 multiselect: false
-            },
+            },layout: {
+                hierarchical: {
+                    direction: 'UD',
+                    sortMethod: 'directed',
+                },
+            }
+
         });
 
-        this.network.on('click', async (clickEvent) => {
-            if (clickEvent.nodes.length > 0) {
-                assert(clickEvent.nodes.length === 1);
-                const clickedNodeId = clickEvent.nodes[0];
-                if (this.state.metaPressed) {
-                    if (this.props.nodeSelection.find((nodeId: number) => nodeId === clickedNodeId) !== undefined) {
-                        this.props.onNodeSelectionChange(this.props.nodeSelection.filter((nodeId: number) => nodeId !== clickedNodeId));
-                    } else {
-                        this.props.onNodeSelectionChange(this.props.nodeSelection.concat(clickEvent.nodes));
-                    }
-                } else {
-                    this.props.onNodeSelectionChange(clickEvent.nodes);
-                }
-            } else {
-                this.props.onNodeSelectionChange([]);
-            }
-        });
+        // this.network.on('click', async (clickEvent) => {
+        //     if (clickEvent.nodes.length > 0) {
+        //         assert(clickEvent.nodes.length === 1);
+        //         const clickedNodeId = clickEvent.nodes[0];
+        //         if (this.state.metaPressed) {
+        //             if (this.props.nodeSelection.find((nodeId: number) => nodeId === clickedNodeId) !== undefined) {
+        //                 this.props.onNodeSelectionChange(this.props.nodeSelection.filter((nodeId: number) => nodeId !== clickedNodeId));
+        //             } else {
+        //                 this.props.onNodeSelectionChange(this.props.nodeSelection.concat(clickEvent.nodes));
+        //             }
+        //         } else {
+        //             this.props.onNodeSelectionChange(clickEvent.nodes);
+        //         }
+        //     } else {
+        //         this.props.onNodeSelectionChange([]);
+        //     }
+        // });
 
-        this.network.on('dragStart', (dragStartEvent) => {
-            assert(dragStartEvent !== undefined && dragStartEvent !== null);
-            assert(dragStartEvent.nodes !== undefined && dragStartEvent.nodes !== null);
-            this.dragStartEvent = dragStartEvent;
-            if (dragStartEvent.nodes.length > 0) {
-                this.props.onNodeSelectionChange(dragStartEvent.nodes);
-            }
-        });
+        // this.network.on('dragStart', (dragStartEvent) => {
+        //     assert(dragStartEvent !== undefined && dragStartEvent !== null);
+        //     assert(dragStartEvent.nodes !== undefined && dragStartEvent.nodes !== null);
+        //     this.dragStartEvent = dragStartEvent;
+        //     if (dragStartEvent.nodes.length > 0) {
+        //         this.props.onNodeSelectionChange(dragStartEvent.nodes);
+        //     }
+        // });
 
-        this.network.on('dragEnd', (dragEndEvent) => {
-            assert(this.dragStartEvent !== undefined && this.dragStartEvent !== null);
-            assert(this.dragStartEvent.nodes !== undefined && this.dragStartEvent.nodes !== null);
-            assert(dragEndEvent !== undefined && dragEndEvent !== null);
-            assert(dragEndEvent.nodes !== undefined && dragEndEvent.nodes !== null);
-            if (dragEndEvent.nodes.length > 0 && !this.props.dag.isPassiveDag) {
-                const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartEvent.pointer.canvas.x;
-                const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartEvent.pointer.canvas.y;
-                this.props.onUpdateNodePositions(dragEndEvent.nodes as Array<number>, [deltaX / (-70), deltaY / (-120)]);
-            }
-        });
+        // this.network.on('dragEnd', (dragEndEvent) => {
+        //     assert(this.dragStartEvent !== undefined && this.dragStartEvent !== null);
+        //     assert(this.dragStartEvent.nodes !== undefined && this.dragStartEvent.nodes !== null);
+        //     assert(dragEndEvent !== undefined && dragEndEvent !== null);
+        //     assert(dragEndEvent.nodes !== undefined && dragEndEvent.nodes !== null);
+        //     if (dragEndEvent.nodes.length > 0 && !this.props.dag.isPassiveDag) {
+        //         const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartEvent.pointer.canvas.x;
+        //         const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartEvent.pointer.canvas.y;
+        //         this.props.onUpdateNodePositions(dragEndEvent.nodes as Array<number>, [deltaX / (-70), deltaY / (-120)]);
+        //     }
+        // });
     }
 
     // updates the network displayed by Vis.js
     // if onlyUpdateStyles is false, all nodes and edges are newly generated.
     // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
     updateNetwork(onlyUpdateStyles: boolean) {
-        const { dag, currentTime } = this.props;
-
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
-        let edgeId = 0;
+        //TODO: update nodes
+        //TODO: update edges
 
-        // partition nodes:
-        // for standard dags, compute node partition
-        // for passive dags use style map cached in dag
-        const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, currentTime);
-
-        // update network nodes
-        for (const [satNodeId, satNode] of dag.nodes) {
-            const nodeStyle = nodePartition.get(satNodeId);
-            assert(nodeStyle !== undefined, "invar");
-            if (nodeStyle === "hidden") {
-                const visNode = { id: satNodeId, hidden: true };
-                visNodes.push(visNode);
-            } else {
-                const visNode = this.toVisNode(satNode, nodeStyle, satNode.getPosition());
-                visNodes.push(visNode);
-            }
-
-            for (const parentId of satNode.parents) {
-                const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
-                edgeId = edgeId + 1;
-                visEdges.push(visEdge);
-            }
+        let edgeId = 0
+        for (const node of this.props.tree){
+            console.log(node)
+            const visNode = this.toVisNode(node);
+            visNodes.push(visNode);
+            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
+            visEdges.push(visEdge);
+            edgeId++;
         }
 
-        if (onlyUpdateStyles) {
-            // QUESTION: it seems that using a single call to update is faster than separately updating each node. is this true?
-            this.networkNodes.update(visNodes);
-            this.networkEdges.update(visEdges);
-        } else {
-            // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
-            this.networkNodes.clear();
-            this.networkNodes.add(visNodes);
-            this.networkEdges.clear();
-            this.networkEdges.add(visEdges);
-        }
+
+        this.networkNodes.clear();
+        this.networkNodes.add(visNodes);
+        this.networkEdges.clear();
+        this.networkEdges.add(visEdges);
+
+        // const { dag, currentTime } = this.props;
+
+        // const visNodes = new Array<Node>();
+        // const visEdges = new Array<Edge>();
+        // let edgeId = 0;
+
+        // // partition nodes:
+        // // for standard dags, compute node partition
+        // // for passive dags use style map cached in dag
+        // const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, currentTime);
+
+        // // update network nodes
+        // for (const [satNodeId, satNode] of dag.nodes) {
+        //     const nodeStyle = nodePartition.get(satNodeId);
+        //     assert(nodeStyle !== undefined, "invar");
+        //     if (nodeStyle === "hidden") {
+        //         const visNode = { id: satNodeId, hidden: true };
+        //         visNodes.push(visNode);
+        //     } else {
+        //         const visNode = this.toVisNode(satNode, nodeStyle, satNode.getPosition());
+        //         visNodes.push(visNode);
+        //     }
+
+        //     for (const parentId of satNode.parents) {
+        //         const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
+        //         edgeId = edgeId + 1;
+        //         visEdges.push(visEdge);
+        //     }
+        // }
+
+        // if (onlyUpdateStyles) {
+        //     // QUESTION: it seems that using a single call to update is faster than separately updating each node. is this true?
+        //     this.networkNodes.update(visNodes);
+        //     this.networkEdges.update(visEdges);
+        // } else {
+        //     // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
+        //     this.networkNodes.clear();
+        //     this.networkNodes.add(visNodes);
+        //     this.networkEdges.clear();
+        //     this.networkEdges.add(visEdges);
+        // }
     }
 
-    computeNodePartition(dag: Dag, currentTime: number): Map<number, any> {
-
-        const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
-
-        const nodePartition = new Map<number, any>();
-        for (const [nodeId, node] of dag.nodes) {
-
-            const isDeleted = (node.deletionTime !== null && node.deletionTime <= currentTime);
-
-            if (dag.nodeIsTheoryAxiom(nodeId)) {
-                nodePartition.set(nodeId, isDeleted ? "theory-axiom-deleted" : "theory-axiom");
-                continue;
-            }
-            if (node.isFromPreprocessing) {
-                if (node.inferenceRule === "negated conjecture") {
-                    nodePartition.set(nodeId, "conjecture");
-                } else {
-                    nodePartition.set(nodeId, isDeleted ? "preprocessing-deleted" : "preprocessing");
-                }
-                continue;
-            }
-
-            const isActivated = (node.activeTime !== null && node.activeTime <= currentTime);
-            if (isActivated) {
-                nodePartition.set(nodeId, isDeleted ? "activated-deleted" : "activated");
-                continue;
-            }
-
-            if (nodesInActiveDag.has(nodeId)) {
-                nodePartition.set(nodeId, "deleted");
-                continue;
-            }
-
-            nodePartition.set(nodeId, "hidden");
-        }
-
-        return nodePartition;
-    }
-
-    toVisNode(node: SatNode, style: string, position: [number, number]): any {
-        const styleData = styleTemplates[style];
-        const isMarked = this.markers.has(node.id);
-
+    toVisNode(node: any ): any {
         return {
-            id: node.id,
-            label: node.toHTMLString(this.props.currentTime),
+            id: node.nodeId,
             labelHighlightBold: false,
             shape: "box",
-            color: {
-                border: isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
-                background: isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
-                highlight: {
-                    border: styleData.highlightStyle.border,
-                    background: styleData.highlightStyle.background
-                }
-            },
-            font: {
-                color: styleData.text,
-                multi: true
-            },
-            hidden: false,
-            x: Math.round(position[0] * -70),
-            y: Math.round(position[1] * -120)
         };
 
     }
 
     toVisEdge(edgeId: number, parentNodeId: number, nodeId: number, hidden: boolean) {
+        console.log(edgeId, parentNodeId, nodeId);
         return {
             id: edgeId,
             arrows: "to",
@@ -284,40 +246,6 @@ export default class Graph extends React.Component<Props, {}> {
             smooth: false,
             hidden: hidden
         }
-    }
-
-
-    // INTERACTION ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    findNodeAt(clickPosition: { layerX: number, layerY: number }): IdType {
-        return this.network!.getNodeAt({
-            x: clickPosition.layerX,
-            y: clickPosition.layerY
-        });
-    }
-
-    keydownHandler(event) {
-        if (event.key === "Meta") {
-            this.setState({ metaPressed: true });
-        }
-    }
-    keyupHandler(event) {
-        if (event.key === "Meta") {
-            this.setState({ metaPressed: false });
-        }
-    }
-
-    // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    toggleMarker(nodeId: number) {
-        assert(this.networkNodes);
-
-        if (this.markers.has(nodeId)) {
-            this.markers.delete(nodeId);
-        } else {
-            this.markers.add(nodeId);
-        }
-        this.updateNetwork(true);
     }
 
 }
