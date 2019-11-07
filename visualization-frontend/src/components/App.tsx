@@ -35,6 +35,7 @@ type State = {
     trees: any[],
     message: string,
     nodeSelection: number[],
+    currentTime: number,
 }
 
 class App extends Component<Props, State> {
@@ -44,6 +45,7 @@ class App extends Component<Props, State> {
         trees: [],
         message: "",
         nodeSelection: [],
+        currentTime: 0,
     }
 
     render() {
@@ -51,7 +53,8 @@ class App extends Component<Props, State> {
             state,
             trees,
             message,
-            nodeSelection
+            nodeSelection,
+            currentTime
         } = this.state;
         let tree;
         let main;
@@ -63,6 +66,9 @@ class App extends Component<Props, State> {
                 tree = {tree}
                 onNodeSelectionChange={this.updateNodeSelection.bind(this)}
                 nodeSelection={nodeSelection}
+                historyLength={tree.length}
+                currentTime={currentTime}
+                onCurrentTimeChange={this.updateCurrentTime.bind(this)}
                     />
             );
         } else {
@@ -148,9 +154,31 @@ class App extends Component<Props, State> {
     }
 
 
+    //NETWORK///////////////////////////////
+
     updateNodeSelection(nodeSelection: number[]) {
         this.setState({nodeSelection: nodeSelection});
     }
+
+
+    updateCurrentTime(currentTime: number) {
+        const trees = this.state.trees
+        assert(trees.length > 0);
+        const tree = trees[trees.length - 1];
+
+        // const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
+        // const nodeSelection = new Array<number>();
+        // for (const nodeId of this.state.nodeSelection) {
+        //     if (nodesInActiveDag.has(nodeId)) {
+        //         nodeSelection.push(nodeId);
+        //     }
+        // }
+        this.setState({
+            // nodeSelection: nodeSelection,
+            currentTime: currentTime
+        });
+    }
+   
 }
 
 export default App;

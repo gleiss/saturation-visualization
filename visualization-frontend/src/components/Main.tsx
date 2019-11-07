@@ -10,6 +10,9 @@ type Props = {
     tree: any,
     onNodeSelectionChange: (selection: number[]) => void,
     nodeSelection: number[],
+    historyLength: number,
+    currentTime: number,
+    onCurrentTimeChange: (newState: number) => void,
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -47,6 +50,13 @@ export default class Main extends React.Component<Props, {}> {
             tree= { this.props.tree }
             onNodeSelectionChange={this.props.onNodeSelectionChange}
             nodeSelection={this.props.nodeSelection}
+            currentTime = {this.props.currentTime}
+                />
+                <Slider
+            historyLength={this.props.historyLength}
+            currentTime={this.props.currentTime}
+            onCurrentTimeChange={this.props.onCurrentTimeChange}
+            enabled={true}
                 />
                 </main>
         );

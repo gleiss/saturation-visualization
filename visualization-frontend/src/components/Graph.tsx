@@ -13,6 +13,7 @@ type Props = {
     tree: any,
     onNodeSelectionChange: (selection: number[]) => void,
     nodeSelection: number[],
+    currentTime: number,
 };
 
 type State = {
