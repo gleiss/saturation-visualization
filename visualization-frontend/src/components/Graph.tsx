@@ -11,6 +11,8 @@ const styleTemplates = require('../resources/styleTemplates');
 
 type Props = {
     tree: any,
+    onNodeSelectionChange: (selection: number[]) => void,
+    nodeSelection: number[],
 };
 
 type State = {
@@ -115,23 +117,17 @@ export default class Graph extends React.Component<Props, {}> {
 
         });
 
-        // this.network.on('click', async (clickEvent) => {
-        //     if (clickEvent.nodes.length > 0) {
-        //         assert(clickEvent.nodes.length === 1);
-        //         const clickedNodeId = clickEvent.nodes[0];
-        //         if (this.state.metaPressed) {
-        //             if (this.props.nodeSelection.find((nodeId: number) => nodeId === clickedNodeId) !== undefined) {
-        //                 this.props.onNodeSelectionChange(this.props.nodeSelection.filter((nodeId: number) => nodeId !== clickedNodeId));
-        //             } else {
-        //                 this.props.onNodeSelectionChange(this.props.nodeSelection.concat(clickEvent.nodes));
-        //             }
-        //         } else {
-        //             this.props.onNodeSelectionChange(clickEvent.nodes);
-        //         }
-        //     } else {
-        //         this.props.onNodeSelectionChange([]);
-        //     }
-        // });
+        this.network.on('click', async (clickEvent) => {
+            if (clickEvent.nodes.length > 0) {
+
+                assert(clickEvent.nodes.length === 1);
+                const clickedNodeId = clickEvent.nodes[0];
+                console.log("clickedNodeId", clickedNodeId)
+                this.props.onNodeSelectionChange(clickEvent.nodes);
+            } else {
+                this.props.onNodeSelectionChange([]);
+            }
+        });
 
         // this.network.on('dragStart', (dragStartEvent) => {
         //     assert(dragStartEvent !== undefined && dragStartEvent !== null);
@@ -166,7 +162,6 @@ export default class Graph extends React.Component<Props, {}> {
 
         let edgeId = 0
         for (const node of this.props.tree){
-            console.log(node)
             const visNode = this.toVisNode(node);
             visNodes.push(visNode);
             const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
@@ -224,16 +219,22 @@ export default class Graph extends React.Component<Props, {}> {
     }
 
     toVisNode(node: any ): any {
+        const styleData = styleTemplates["activated"];
         return {
             id: node.nodeId,
             labelHighlightBold: false,
             shape: "box",
+            color : {
+                highlight : {
+                    border : styleData.highlightStyle.border,
+                    background : styleData.highlightStyle.background
+                }
+            },
         };
 
     }
 
     toVisEdge(edgeId: number, parentNodeId: number, nodeId: number, hidden: boolean) {
-        console.log(edgeId, parentNodeId, nodeId);
         return {
             id: edgeId,
             arrows: "to",

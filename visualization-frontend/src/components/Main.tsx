@@ -8,6 +8,8 @@ ReactModal.setAppElement('#root');
 
 type Props = {
     tree: any,
+    onNodeSelectionChange: (selection: number[]) => void,
+    nodeSelection: number[],
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -43,6 +45,8 @@ export default class Main extends React.Component<Props, {}> {
                 <main>
                 <Graph
             tree= { this.props.tree }
+            onNodeSelectionChange={this.props.onNodeSelectionChange}
+            nodeSelection={this.props.nodeSelection}
                 />
                 </main>
         );

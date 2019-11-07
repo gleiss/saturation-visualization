@@ -34,7 +34,8 @@ type State = {
     state: "loaded" | "loaded select" | "waiting" | "layouting" | "error",
     trees: any[],
     message: string,
-    }
+    nodeSelection: number[],
+}
 
 class App extends Component<Props, State> {
 
@@ -42,12 +43,15 @@ class App extends Component<Props, State> {
         state: "waiting",
         trees: [],
         message: "",
+        nodeSelection: [],
     }
 
     render() {
         const {
             state,
             trees,
+            message,
+            nodeSelection
         } = this.state;
         let tree;
         let main;
@@ -57,6 +61,8 @@ class App extends Component<Props, State> {
             main = (
                     <Main
                 tree = {tree}
+                onNodeSelectionChange={this.updateNodeSelection.bind(this)}
+                nodeSelection={nodeSelection}
                     />
             );
         } else {
@@ -70,7 +76,13 @@ class App extends Component<Props, State> {
         return (
                 <div className= "app" >
                 { main }
-            </div>
+
+                <Aside
+            tree={tree}
+            nodeSelection={nodeSelection}
+            onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
+                /> 
+                </div>
         );
 
     }
@@ -135,6 +147,10 @@ class App extends Component<Props, State> {
         }
     }
 
+
+    updateNodeSelection(nodeSelection: number[]) {
+        this.setState({nodeSelection: nodeSelection});
+    }
 }
 
 export default App;
