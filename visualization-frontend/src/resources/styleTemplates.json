@@ -1,206 +1,224 @@
 {
-  "boundary": {
-    "defaultStyle": {
-      "background": "#77aadd",
-      "border": "#4477aa"
+    "hidden": {
+        "hidden": true,
+        "markedStyle": {
+            "border": "#ffffff00",
+            "background": "#ffffff00"
+        },
+        "highlightStyle": {
+            "border": "#ffffff00",
+            "background": "#ffffff00"
+        },
+        "shape": "box",
+        "text": "#ffffff00",
+        "defaultStyle": {
+            "border": "#ffffff00",
+            "background": "#ffffff00"
+        }
     },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
+    "preprocessing-deleted": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#8cd1c9",
+            "background": "#abe0d1"
+        }
     },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
+    "preprocessing": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#8cd1c9",
+            "background": "#abe0d1"
+        }
     },
-    "hidden": false
-  },
-  "boundary-hidden": {
-    "defaultStyle": {
-      "background": "#77aadd",
-      "border": "#4477aa"
+    "conjecture": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#009988",
+            "background": "#44bb99"
+        }
     },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
+    "theory-axiom-deleted": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#f8adc8",
+            "background": "#ffdde3"
+        },
+        "highlightStyle": {
+            "border": "#f8cfc1",
+            "background": "#f8cfc1"
+        },
+        "shape": "box",
+        "text": "#999999",
+        "defaultStyle": {
+            "border": "#b4c8dd",
+            "background": "#c8ddf1"
+        }
     },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
+    "theory-axiom": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#4477aa",
+            "background": "#77aadd"
+        }
     },
-    "hidden": false
-  },
-  "activated": {
-    "defaultStyle": {
-      "background": "#dddddd",
-      "border": "#bbbbbb"
+    "deleted": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#f8adc8",
+            "background": "#ffdde3"
+        },
+        "highlightStyle": {
+            "border": "#f8cfc1",
+            "background": "#f8cfc1"
+        },
+        "shape": "box",
+        "text": "#999999",
+        "defaultStyle": {
+            "border": "#f1f1f1",
+            "background": "#f8f8f8"
+        }
     },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
+    "passive": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#f8adc8",
+            "background": "#ffdde3"
+        },
+        "highlightStyle": {
+            "border": "#f8cfc1",
+            "background": "#f8cfc1"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#FF3232",
+            "background": "#FF5959"
+        }
     },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
+    "activated-deleted": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#bbbbbb",
+            "background": "#dddddd"
+        }
     },
-    "hidden": false
-  },
-  "activated-deleted": {
-    "defaultStyle": {
-      "background": "#dddddd",
-      "border": "#bbbbbb"
+    "activated": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#bbbbbb",
+            "background": "#dddddd"
+        }
     },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
+    "boundary-hidden": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#4477aa",
+            "background": "#77aadd"
+        }
     },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
+    "boundary": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#4477aa",
+            "background": "#77aadd"
+        }
     },
-    "hidden": false
-  },
-  "passive": {
-    "defaultStyle": {
-      "background": "#FF5959",
-      "border": "#FF3232"
-    },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#f8cfc1",
-      "border": "#f8cfc1"
-    },
-    "markedStyle": {
-      "background": "#ffdde3",
-      "border": "#f8adc8"
-    },
-    "hidden": false
-  },
-  "deleted": {
-    "defaultStyle": {
-      "background": "#f8f8f8",
-      "border": "#f1f1f1"
-    },
-    "text": "#999999",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#f8cfc1",
-      "border": "#f8cfc1"
-    },
-    "markedStyle": {
-      "background": "#ffdde3",
-      "border": "#f8adc8"
-    },
-    "hidden": false
-  },
-  "theory-axiom": {
-    "defaultStyle": {
-      "background": "#77aadd",
-      "border": "#4477aa"
-    },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
-    },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
-    },
-    "hidden": false
-  },
-  "theory-axiom-deleted": {
-    "defaultStyle": {
-      "background": "#c8ddf1",
-      "border": "#b4c8dd"
-    },
-    "text": "#999999",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#f8cfc1",
-      "border": "#f8cfc1"
-    },
-    "markedStyle": {
-      "background": "#ffdde3",
-      "border": "#f8adc8"
-    },
-    "hidden": false
-  },
-  "conjecture": {
-    "defaultStyle": {
-      "background": "#44bb99",
-      "border": "#009988"
-    },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
-    },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
-    },
-    "hidden": false
-  },
-  "preprocessing": {
-    "defaultStyle": {
-      "background": "#abe0d1",
-      "border": "#8cd1c9"
-    },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
-    },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
-    },
-    "hidden": false
-  },
-  "preprocessing-deleted": {
-    "defaultStyle": {
-      "background": "#abe0d1",
-      "border": "#8cd1c9"
-    },
-    "text": "#000000",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ee8866",
-      "border": "#ee8866"
-    },
-    "markedStyle": {
-      "background": "#ffaabb",
-      "border": "#ee3377"
-    },
-    "hidden": false
-  },
-  "hidden": {
-    "defaultStyle": {
-      "background": "#ffffff00",
-      "border": "#ffffff00"
-    },
-    "text": "#ffffff00",
-    "shape": "box",
-    "highlightStyle": {
-      "background": "#ffffff00",
-      "border": "#ffffff00"
-    },
-    "markedStyle": {
-      "background": "#ffffff00",
-      "border": "#ffffff00"
-    },
-    "hidden": true
-  }
+    "sameExprID": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#ee3377",
+            "background": "#ffaabb"
+        },
+        "highlightStyle": {
+            "border": "#ee8866",
+            "background": "#ee8866"
+        },
+        "shape": "box",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#4477aa",
+            "background": "#77aadd"
+        }
+    }
+
 }

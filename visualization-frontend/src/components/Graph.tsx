@@ -156,20 +156,36 @@ export default class Graph extends React.Component<Props, {}> {
     // if onlyUpdateStyles is false, all nodes and edges are newly generated.
     // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
     updateNetwork(onlyUpdateStyles: boolean) {
+        let find_related_nodes = this.props.nodeSelection.length>0
+        let currentNodeExprID = -100
+        if(find_related_nodes){
+            for(const node of this.props.tree){
+                if(node.nodeId == this.props.nodeSelection[0]){
+                    currentNodeExprID = node.exprID
+                    break
+                }
+            }
+        }
+        console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
         //TODO: update nodes
         //TODO: update edges
-        console.log("Current Time: ", this.props.currentTime)
         let edgeId = 0
         for (const node of this.props.tree){
             let visNode;
-            if(node.nodeId>this.props.currentTime){
-                visNode = this.toVisNode(node, "activated");
+            //Prioritize related nodes
+            if (node.exprID == currentNodeExprID){
+                visNode = this.toVisNode(node, "sameExprID")
+            }else{
+                if(node.nodeId > this.props.currentTime){
+                    visNode = this.toVisNode(node, "activated");
+                }
+                else{
+                    visNode = this.toVisNode(node, "passive");
+                }
             }
-            else{
-                visNode = this.toVisNode(node, "passive");
-            }
+
             visNodes.push(visNode);
             const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
             visEdges.push(visEdge);
