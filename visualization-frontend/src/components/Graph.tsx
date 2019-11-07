@@ -160,10 +160,16 @@ export default class Graph extends React.Component<Props, {}> {
         const visEdges = new Array<Edge>();
         //TODO: update nodes
         //TODO: update edges
-
+        console.log("Current Time: ", this.props.currentTime)
         let edgeId = 0
         for (const node of this.props.tree){
-            const visNode = this.toVisNode(node);
+            let visNode;
+            if(node.nodeId>this.props.currentTime){
+                visNode = this.toVisNode(node, "activated");
+            }
+            else{
+                visNode = this.toVisNode(node, "passive");
+            }
             visNodes.push(visNode);
             const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
             visEdges.push(visEdge);
@@ -219,13 +225,16 @@ export default class Graph extends React.Component<Props, {}> {
         // }
     }
 
-    toVisNode(node: any ): any {
-        const styleData = styleTemplates["activated"];
+    toVisNode(node: any, style: string ): any {
+        const styleData = styleTemplates[style];
+        const isMarked = this.props.nodeSelection.includes(node.nodeId);
         return {
             id: node.nodeId,
             labelHighlightBold: false,
             shape: "box",
             color : {
+                border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
+                background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
                 highlight : {
                     border : styleData.highlightStyle.border,
                     background : styleData.highlightStyle.background
