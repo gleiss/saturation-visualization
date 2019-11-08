@@ -1,3 +1,7 @@
+# Requirements
+* nodejs
+* npm
+
 # How to run
 We need 3 components to run this:
 
