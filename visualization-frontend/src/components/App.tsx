@@ -70,12 +70,13 @@ class App extends Component<Props, State> {
         if (state === "loaded" || state === "loaded select") {
             assert(trees.length > 0);
             tree = trees[trees.length - 1];
+            const hL = Object.keys(tree).length
             main = (
                     <Main
                 tree = {tree}
                 onNodeSelectionChange={this.updateNodeSelection.bind(this)}
                 nodeSelection={nodeSelection}
-                historyLength={tree.length}
+                historyLength={hL}
                 currentTime={currentTime}
                 onCurrentTimeChange={this.updateCurrentTime.bind(this)}
                 layout = {layout}
@@ -248,6 +249,7 @@ class App extends Component<Props, State> {
         assert(trees.length > 0);
         const tree = trees[trees.length - 1];
 
+        console.log(currentTime)
         // const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
         // const nodeSelection = new Array<number>();
         // for (const nodeId of this.state.nodeSelection) {
