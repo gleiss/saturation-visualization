@@ -14,6 +14,9 @@ type Props = {
     onUpdateNodeSelection: (selection: number[]) => void,
     SatVisLayout: () => void,
     PobVisLayout: () => void,
+    PobLemmasMap: {},
+    ExprMap: {},
+    layout: string,
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -25,6 +28,9 @@ export default class Aside extends React.Component<Props, {}> {
             nodeDetails =
                 <NodeDetails
             node={ node }
+            PobLemmasMap = {this.props.PobLemmasMap}
+            ExprMap = {this.props.ExprMap}
+            layout = {this.props.layout}
                 />;
         } else {
             nodeDetails =

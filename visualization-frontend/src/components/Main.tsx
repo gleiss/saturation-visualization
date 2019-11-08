@@ -14,6 +14,7 @@ type Props = {
     currentTime: number,
     onCurrentTimeChange: (newState: number) => void,
     layout: string,
+    PobLemmasMap: any,
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -53,6 +54,7 @@ export default class Main extends React.Component<Props, {}> {
             nodeSelection={this.props.nodeSelection}
             currentTime = {this.props.currentTime}
             layout = {this.props.layout}
+            PobLemmasMap = {this.props.PobLemmasMap}
                 />
                 <Slider
             historyLength={this.props.historyLength}

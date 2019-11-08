@@ -15,6 +15,7 @@ type Props = {
     nodeSelection: number[],
     currentTime: number,
     layout: string,
+    PobLemmasMap: any,
 };
 
 type State = {
@@ -174,52 +175,6 @@ export default class Graph extends React.Component<Props, {}> {
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
         let edgeId = 0
-
-        // construct exprID->expr map
-        let ExprMap = new Map<number, string>();
-        for (const nodeID in this.props.tree){
-            const node = this.props.tree[nodeID]
-            ExprMap[node.exprID] = node.expr
-        }
-
-        // construct PobExprID->a dict of lemms
-        let PobLemmasMap = {}
-        for (const nodeID in this.props.tree){
-            let node = this.props.tree[nodeID]
-            if(node.event_type!="EType.ADD_LEM"){
-                continue
-            }
-            const lemmaExprID = node.exprID
-            const level = node.level
-            const pobID = node.pobID
-            if (!(pobID in PobLemmasMap)){
-                PobLemmasMap[pobID] = new Array<{}>();
-            }
-
-            //traverse the list, if lemmaExprID is already in the list, update its min max
-            let existPrevLemma = false
-            for(const lemma of PobLemmasMap[pobID]){
-                if(lemma[0] == lemmaExprID){
-                    existPrevLemma = true
-                    let prev_min = lemma[1]
-                    let prev_max = lemma[2]
-
-                    if(level > prev_max || level == "oo"){
-                        lemma[2] = level
-                    }
-                    if(level < prev_min){
-                        lemma[1] = level
-                    }
-                    break
-                }
-            }
-
-            if(!existPrevLemma){
-                PobLemmasMap[node.pobID].push([lemmaExprID, level, level])
-            }
-        }
-        console.log(PobLemmasMap)
-
 
         for (const nodeID in this.props.tree){
             let node = this.props.tree[nodeID]
