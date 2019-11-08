@@ -46,45 +46,6 @@ export default class Graph extends React.Component<Props, {}> {
 
     componentDidUpdate(prevProps: Props) {
         this.updateNetwork(false, this.props.layout);
-        // if (this.props.dag !== prevProps.dag) {
-        //     this.updateNetwork(false);
-        //     this.network!.selectNodes(this.props.nodeSelection);
-        //     if (this.props.nodeSelection.length > 0) {
-        //         // center the view to selected nodes
-        //         this.network!.fit({
-        //             nodes: this.props.nodeSelection.map(nodeID => nodeID.toString()),
-        //             animation: true
-        //         });
-        //     } else {
-        //         // set the view so that the whole graph is visible
-        //         this.network!.fit();
-        //     }
-        // } else {
-        //     if (this.props.nodeSelection !== prevProps.nodeSelection) {
-        //         this.network!.selectNodes(this.props.nodeSelection);
-        //     }
-        //     if (this.props.currentTime !== prevProps.currentTime) {
-        //         this.updateNetwork(true);
-        //     }
-        //     const incomingEvent = this.props.changedNodesEvent;
-        //     if (incomingEvent !== prevProps.changedNodesEvent) {
-        //         assert(incomingEvent !== undefined);
-        //         if (incomingEvent !== this.cachedChangeNodesEvent) {
-        //             this.cachedChangeNodesEvent = incomingEvent;
-
-        //             // update all nodes from event
-        //             const visNodes = new Array<Node>();
-        //             for (const nodeID of incomingEvent!) {
-        //                 const visNode = {
-        //                     id: nodeID,
-        //                     label: this.props.dag.get(nodeID).toHTMLString(this.props.currentTime)
-        //                 };
-        //                 visNodes.push(visNode);
-        //             }
-        //             this.networkNodes.update(visNodes);
-        //         }
-        //     }
-        // }
     }
 
     render() {
@@ -131,32 +92,10 @@ export default class Graph extends React.Component<Props, {}> {
             }
         });
 
-        // this.network.on('dragStart', (dragStartEvent) => {
-        //     assert(dragStartEvent !== undefined && dragStartEvent !== null);
-        //     assert(dragStartEvent.nodes !== undefined && dragStartEvent.nodes !== null);
-        //     this.dragStartEvent = dragStartEvent;
-        //     if (dragStartEvent.nodes.length > 0) {
-        //         this.props.onNodeSelectionChange(dragStartEvent.nodes);
-        //     }
-        // });
-
-        // this.network.on('dragEnd', (dragEndEvent) => {
-        //     assert(this.dragStartEvent !== undefined && this.dragStartEvent !== null);
-        //     assert(this.dragStartEvent.nodes !== undefined && this.dragStartEvent.nodes !== null);
-        //     assert(dragEndEvent !== undefined && dragEndEvent !== null);
-        //     assert(dragEndEvent.nodes !== undefined && dragEndEvent.nodes !== null);
-        //     if (dragEndEvent.nodes.length > 0 && !this.props.dag.isPassiveDag) {
-        //         const deltaX = dragEndEvent.pointer.canvas.x - this.dragStartEvent.pointer.canvas.x;
-        //         const deltaY = dragEndEvent.pointer.canvas.y - this.dragStartEvent.pointer.canvas.y;
-        //         this.props.onUpdateNodePositions(dragEndEvent.nodes as Array<number>, [deltaX / (-70), deltaY / (-120)]);
-        //     }
-        // });
     }
 
 
     // updates the network displayed by Vis.js
-    // if onlyUpdateStyles is false, all nodes and edges are newly generated.
-    // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
         if(layout=="SatVis"){
             this.visLayout(this.props.tree);
