@@ -16,12 +16,12 @@ export default class NodeDetails extends React.Component<Props, {}> {
 
 
     render() {
-        let additional_info = "level:" + this.props.node.level
+        let additional_info ="type:" + this.props.node.event_type + " level:" + this.props.node.level
 
         return (
             <section className= { 'component-node-details details'} >
             <article>
-                <h2>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
+                <h2>Node <strong>{this.props.node.nodeID}, </strong>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
                 <h3>{additional_info}</h3>
                 <pre>{this.props.node.expr}</pre>
             </article>

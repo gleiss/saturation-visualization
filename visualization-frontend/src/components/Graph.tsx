@@ -51,7 +51,7 @@ export default class Graph extends React.Component<Props, {}> {
         //     if (this.props.nodeSelection.length > 0) {
         //         // center the view to selected nodes
         //         this.network!.fit({
-        //             nodes: this.props.nodeSelection.map(nodeId => nodeId.toString()),
+        //             nodes: this.props.nodeSelection.map(nodeID => nodeID.toString()),
         //             animation: true
         //         });
         //     } else {
@@ -73,10 +73,10 @@ export default class Graph extends React.Component<Props, {}> {
 
         //             // update all nodes from event
         //             const visNodes = new Array<Node>();
-        //             for (const nodeId of incomingEvent!) {
+        //             for (const nodeID of incomingEvent!) {
         //                 const visNode = {
-        //                     id: nodeId,
-        //                     label: this.props.dag.get(nodeId).toHTMLString(this.props.currentTime)
+        //                     id: nodeID,
+        //                     label: this.props.dag.get(nodeID).toHTMLString(this.props.currentTime)
         //                 };
         //                 visNodes.push(visNode);
         //             }
@@ -123,7 +123,7 @@ export default class Graph extends React.Component<Props, {}> {
 
                 assert(clickEvent.nodes.length === 1);
                 const clickedNodeId = clickEvent.nodes[0];
-                console.log("clickedNodeId", clickedNodeId)
+                console.log("clickedNodeId", this.props.tree[clickedNodeId])
                 this.props.onNodeSelectionChange(clickEvent.nodes);
             } else {
                 this.props.onNodeSelectionChange([]);
@@ -163,66 +163,86 @@ export default class Graph extends React.Component<Props, {}> {
             this.PobVisLayout()
         }
     }
-    PobVisLayout(){}
+
+    PobVisLayout(){
+        let find_related_nodes = this.props.nodeSelection.length>0
+        let currentNodeExprID = -100
+        if(find_related_nodes){
+            currentNodeExprID = this.props.tree[this.props.nodeSelection[0]].exprID
+        }
+        console.log("currentNodeExprID:", currentNodeExprID)
+        const visNodes = new Array<Node>();
+        const visEdges = new Array<Edge>();
+        let edgeId = 0
+
+        for (const nodeID in this.props.tree){
+            let node = this.props.tree[nodeID]
+
+            let visNode;
+            if(node.event_type!="EType.EXP_POB"){
+                continue
+            }
+
+            let parent = this.props.tree[node.parent]
+            let siblings = parent.children
+            let same_as_sibl = false
+            let identical_sibl
+            for(const siblID of siblings){
+
+                const sibl = this.props.tree[siblID]
+                if(sibl.nodeID!=node.nodeID && sibl.exprID == node.exprID){
+                    same_as_sibl = true
+                    identical_sibl = sibl
+                    break
+                }
+
+            }
+            if(same_as_sibl){
+                // point all my children to my sibling
+                for(const childID of node.children){
+                    // console.log("b4", this.props.tree[childID].parent)
+                    this.props.tree[childID].parent = identical_sibl.nodeID
+                    // console.log("after", this.props.tree[childID].parent)
+                    identical_sibl.children.push(childID)
 
 
-    // PobVisLayout(){
-        
-    //     mergeChildren(node){
-    //         children_list = []
-    //         for 
-    //     }
+                }
 
+                //change my parent's children
+                let new_children = new Array<number>();
+                for (const childID of siblings){
+                    if(childID != node.nodeID){
+                        new_children.push(childID)
+                    }
+                }
+                parent.children = new_children
+                continue
+            }
 
-    //     let treeLists  = []
-    //     for(const node of this.props.tree){
-    //         if node.eventType=="EType."
-    //     }
+            //Prioritize related nodes
+            if (node.exprID == currentNodeExprID){
+                visNode = this.toVisNode(node, "sameExprID")
+            }else{
+                if(node.nodeID > this.props.currentTime){
+                    visNode = this.toVisNode(node, "activated");
+                }
+                else{
+                    visNode = this.toVisNode(node, "passive");
+                }
+            }
 
+            visNodes.push(visNode);
+            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeID, false);
+            visEdges.push(visEdge);
+            edgeId++;
+        }
 
+        this.networkNodes.clear();
+        this.networkNodes.add(visNodes);
+        this.networkEdges.clear();
+        this.networkEdges.add(visEdges);
+    }
 
-
-    //     console.log("PobVisNodes:", PobVisNodes);
-    //     // let find_related_nodes = this.props.nodeSelection.length>0
-    //     // let currentNodeExprID = -100
-    //     // let existingNodes = new Set()
-    //     // if(find_related_nodes){
-    //     //     currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
-    //     // }
-    //     // console.log("currentNodeExprID:", currentNodeExprID)
-    //     const visNodes = new Array<Node>();
-    //     const visEdges = new Array<Edge>();
-    //     let edgeId = 0
-
-    //     for (const node of this.props.tree){
-    //         let visNode;
-
-    //         //Prioritize related nodes
-    //         if (node.exprID == currentNodeExprID){
-    //             visNode = this.toVisNode(node, "sameExprID")
-    //         }else{
-    //             if(node.nodeId > this.props.currentTime){
-    //                 visNode = this.toVisNode(node, "activated");
-    //             }
-    //             else{
-    //                 visNode = this.toVisNode(node, "passive");
-    //             }
-    //         }
-
-    //         visNodes.push(visNode);
-    //         existingNodes.push(node.exprID);
-    //         let parentNode;
-    //         const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
-    //         visEdges.push(visEdge);
-    //         edgeId++;
-    //     }
-
-
-    //     this.networkNodes.clear();
-    //     this.networkNodes.add(visNodes);
-    //     this.networkEdges.clear();
-    //     this.networkEdges.add(visEdges);
-    // }
 
     SatVisLayout(){
         let find_related_nodes = this.props.nodeSelection.length>0
@@ -243,7 +263,7 @@ export default class Graph extends React.Component<Props, {}> {
             if (node.exprID == currentNodeExprID){
                 visNode = this.toVisNode(node, "sameExprID")
             }else{
-                if(node.nodeId > this.props.currentTime){
+                if(node.nodeID > this.props.currentTime){
                     visNode = this.toVisNode(node, "activated");
                 }
                 else{
@@ -252,7 +272,7 @@ export default class Graph extends React.Component<Props, {}> {
             }
 
             visNodes.push(visNode);
-            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
+            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeID, false);
             visEdges.push(visEdge);
             edgeId++;
         }
@@ -264,12 +284,15 @@ export default class Graph extends React.Component<Props, {}> {
         this.networkEdges.add(visEdges);
     }
 
+    mergeChildren(){
+        
+    }
 
     toVisNode(node: any, style: string ): any {
         const styleData = styleTemplates[style];
-        const isMarked = this.props.nodeSelection.includes(node.nodeId);
+        const isMarked = this.props.nodeSelection.includes(node.nodeID);
         return {
-            id: node.nodeId,
+            id: node.nodeID,
             labelHighlightBold: false,
             shape: "box",
             color : {
@@ -284,7 +307,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     }
 
-    toVisEdge(edgeId: number, parentNodeId: number, nodeId: number, hidden: boolean) {
+    toVisEdge(edgeId: number, parentNodeId: number, nodeID: number, hidden: boolean) {
         return {
             id: edgeId,
             arrows: "to",
@@ -293,7 +316,7 @@ export default class Graph extends React.Component<Props, {}> {
                 highlight: "#f8cfc1",
             },
             from: parentNodeId,
-            to: nodeId,
+            to: nodeID,
             smooth: false,
             hidden: hidden
         }

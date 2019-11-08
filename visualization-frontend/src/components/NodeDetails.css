@@ -18,7 +18,8 @@
 }
 
 .component-node-details article {
-  padding: 0.5rem 0;
+    padding: 0.5rem 0;
+    overflow: auto;
 }
 
 .component-node-details article h2 {
