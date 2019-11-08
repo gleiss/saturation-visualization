@@ -2,9 +2,13 @@
 We need 3 components to run this:
 
 * A customed Z3 version (to dump the trace in the format the Backend expects)
+
 [https://github.com/nhamlv-55/z3/tree/vis](https://github.com/nhamlv-55/z3/tree/vis)
-* The Backend
+
+* The Backend (the included script will clone the Backend for you)
+
 [https://github.com/nhamlv-55/deepSpacer](https://github.com/nhamlv-55/deepSpacer)
+
 * The Frontend (this repo)
 
 ## Setup and run the frontend
@@ -16,15 +20,5 @@ Running this script will serve the frontend at [http://localhost:3000](http://lo
 Edit the `start_backend.sh` to use your correct `$Z3_PATH` and `$Z3_BIN`. Then run 
 `./start_backend.sh`
 
-
-
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Running this script will serve the backend at localhost:5000. The frontend should point to this backend.
 
