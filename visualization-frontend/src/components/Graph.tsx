@@ -36,7 +36,7 @@ export default class Graph extends React.Component<Props, {}> {
 
     componentDidMount() {
         this.generateNetwork();
-        this.updateNetwork(false);
+        this.updateNetwork(false, "SatVis");
         this.network!.fit();
     }
 
@@ -44,7 +44,7 @@ export default class Graph extends React.Component<Props, {}> {
     }
 
     componentDidUpdate(prevProps: Props) {
-        this.updateNetwork(false);
+        this.updateNetwork(false, "SatVis");
         // if (this.props.dag !== prevProps.dag) {
         //     this.updateNetwork(false);
         //     this.network!.selectNodes(this.props.nodeSelection);
@@ -152,26 +152,37 @@ export default class Graph extends React.Component<Props, {}> {
         // });
     }
 
+    find_node(nodeId: number): any {
+        for(const node of this.props.tree){
+            if(node.nodeId == nodeId){
+                return node
+            }
+        }
+    }
+
     // updates the network displayed by Vis.js
     // if onlyUpdateStyles is false, all nodes and edges are newly generated.
     // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
-    updateNetwork(onlyUpdateStyles: boolean) {
+    updateNetwork(onlyUpdateStyles: boolean, layout: string) {
+        if(layout=="SatVis"){
+            this.SatVisLayout()
+        }else if(layout=="PobVis"){
+            this.PobVisLayout()
+        }
+    }
+
+    PobVisLayout(){
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
-            for(const node of this.props.tree){
-                if(node.nodeId == this.props.nodeSelection[0]){
-                    currentNodeExprID = node.exprID
-                    break
-                }
-            }
+            currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
         }
         console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
-        //TODO: update nodes
-        //TODO: update edges
         let edgeId = 0
+
+
         for (const node of this.props.tree){
             let visNode;
             //Prioritize related nodes
@@ -197,49 +208,47 @@ export default class Graph extends React.Component<Props, {}> {
         this.networkNodes.add(visNodes);
         this.networkEdges.clear();
         this.networkEdges.add(visEdges);
-
-        // const { dag, currentTime } = this.props;
-
-        // const visNodes = new Array<Node>();
-        // const visEdges = new Array<Edge>();
-        // let edgeId = 0;
-
-        // // partition nodes:
-        // // for standard dags, compute node partition
-        // // for passive dags use style map cached in dag
-        // const nodePartition = dag.isPassiveDag ? (dag.styleMap as Map<number, string>) : this.computeNodePartition(dag, currentTime);
-
-        // // update network nodes
-        // for (const [satNodeId, satNode] of dag.nodes) {
-        //     const nodeStyle = nodePartition.get(satNodeId);
-        //     assert(nodeStyle !== undefined, "invar");
-        //     if (nodeStyle === "hidden") {
-        //         const visNode = { id: satNodeId, hidden: true };
-        //         visNodes.push(visNode);
-        //     } else {
-        //         const visNode = this.toVisNode(satNode, nodeStyle, satNode.getPosition());
-        //         visNodes.push(visNode);
-        //     }
-
-        //     for (const parentId of satNode.parents) {
-        //         const visEdge = this.toVisEdge(edgeId, parentId, satNode.id, nodeStyle === "hidden");
-        //         edgeId = edgeId + 1;
-        //         visEdges.push(visEdge);
-        //     }
-        // }
-
-        // if (onlyUpdateStyles) {
-        //     // QUESTION: it seems that using a single call to update is faster than separately updating each node. is this true?
-        //     this.networkNodes.update(visNodes);
-        //     this.networkEdges.update(visEdges);
-        // } else {
-        //     // QUESTION: it seems that using a single call to add is faster than separately adding each node. is this true?
-        //     this.networkNodes.clear();
-        //     this.networkNodes.add(visNodes);
-        //     this.networkEdges.clear();
-        //     this.networkEdges.add(visEdges);
-        // }
     }
+
+    SatVisLayout(){
+        let find_related_nodes = this.props.nodeSelection.length>0
+        let currentNodeExprID = -100
+        if(find_related_nodes){
+            currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
+        }
+        console.log("currentNodeExprID:", currentNodeExprID)
+        const visNodes = new Array<Node>();
+        const visEdges = new Array<Edge>();
+        let edgeId = 0
+
+
+        for (const node of this.props.tree){
+            let visNode;
+            //Prioritize related nodes
+            if (node.exprID == currentNodeExprID){
+                visNode = this.toVisNode(node, "sameExprID")
+            }else{
+                if(node.nodeId > this.props.currentTime){
+                    visNode = this.toVisNode(node, "activated");
+                }
+                else{
+                    visNode = this.toVisNode(node, "passive");
+                }
+            }
+
+            visNodes.push(visNode);
+            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
+            visEdges.push(visEdge);
+            edgeId++;
+        }
+
+
+        this.networkNodes.clear();
+        this.networkNodes.add(visNodes);
+        this.networkEdges.clear();
+        this.networkEdges.add(visEdges);
+    }
+
 
     toVisNode(node: any, style: string ): any {
         const styleData = styleTemplates[style];
