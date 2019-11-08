@@ -13,6 +13,7 @@ We need 3 components to run this:
 Running this script will serve the frontend at [http://localhost:3000](http://localhost:3000) 
 
 ## Setup and run the backend
+Edit the `start_backend.sh` to use your correct `$Z3_PATH` and `$Z3_BIN`. Then run 
 `./start_backend.sh`
 
 
