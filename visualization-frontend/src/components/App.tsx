@@ -36,6 +36,7 @@ type State = {
     message: string,
     nodeSelection: number[],
     currentTime: number,
+    layout: string,
 }
 
 class App extends Component<Props, State> {
@@ -46,6 +47,7 @@ class App extends Component<Props, State> {
         message: "",
         nodeSelection: [],
         currentTime: 0,
+        layout: "SatVis"
     }
 
     render() {
@@ -54,7 +56,8 @@ class App extends Component<Props, State> {
             trees,
             message,
             nodeSelection,
-            currentTime
+            currentTime,
+            layout,
         } = this.state;
         let tree;
         let main;
@@ -69,6 +72,7 @@ class App extends Component<Props, State> {
                 historyLength={tree.length}
                 currentTime={currentTime}
                 onCurrentTimeChange={this.updateCurrentTime.bind(this)}
+                layout = {layout}
                     />
             );
         } else {
@@ -87,6 +91,8 @@ class App extends Component<Props, State> {
             tree={tree}
             nodeSelection={nodeSelection}
             onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
+            SatVisLayout = {this.setSatVisLayout.bind(this)}
+            PobVisLayout = {this.setPobVisLayout.bind(this)}
                 /> 
                 </div>
         );
@@ -178,7 +184,13 @@ class App extends Component<Props, State> {
             currentTime: currentTime
         });
     }
-   
+
+    setPobVisLayout(){
+        this.setState({layout: "PobVis"})
+    }
+    setSatVisLayout(){
+        this.setState({layout: "SatVis"})
+    }
 }
 
 export default App;

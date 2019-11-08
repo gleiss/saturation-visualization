@@ -13,6 +13,7 @@ type Props = {
     historyLength: number,
     currentTime: number,
     onCurrentTimeChange: (newState: number) => void,
+    layout: string,
 };
 export default class Main extends React.Component<Props, {}> {
 
@@ -51,6 +52,7 @@ export default class Main extends React.Component<Props, {}> {
             onNodeSelectionChange={this.props.onNodeSelectionChange}
             nodeSelection={this.props.nodeSelection}
             currentTime = {this.props.currentTime}
+            layout = {this.props.layout}
                 />
                 <Slider
             historyLength={this.props.historyLength}
