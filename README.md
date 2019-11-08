@@ -15,6 +15,12 @@ We need 3 components to run this:
 
 * The Frontend (this repo)
 
+## Using the prebuilt frontend
+You can download the prebuilt from here
+[https://github.com/nhamlv-55/SatVisPreBuild](https://github.com/nhamlv-55/SatVisPreBuild)
+Then you can serve it using
+`python3 -m http.server 2112`
+
 ## Setup and run the frontend
 `./start_frontend.sh`
 
