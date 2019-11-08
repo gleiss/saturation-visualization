@@ -14,11 +14,17 @@ We need 3 components to run this:
 ## Setup and run the frontend
 `./start_frontend.sh`
 
-Running this script will serve the frontend at [http://localhost:3000](http://localhost:3000) 
+Running this script will serve the frontend at [http://localhost:3000](http://localhost:3000).
+
+Note that even if the browser is popped up, the compilation process is still running, so it will take a while.
 
 ## Setup and run the backend
 Edit the `start_backend.sh` to use your correct `$Z3_PATH` and `$Z3_BIN`. Then run 
 `./start_backend.sh`
 
 Running this script will serve the backend at localhost:5000. The frontend should point to this backend.
+
+If using other port, change this line in `visualization-frontend/src/components/App.tsx`
+
+`        const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/spacer/startmanualcs' : 'http://localhost:5000/spacer/start', {`
 
