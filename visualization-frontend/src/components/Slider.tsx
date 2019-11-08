@@ -17,7 +17,7 @@ export default class Slider extends React.Component<Props, {}> {
 
   render() {
     const {historyLength, currentTime, onCurrentTimeChange} = this.props;
-
+      console.log("historyLength", historyLength)
     return (
       <section className="component-slider">
 

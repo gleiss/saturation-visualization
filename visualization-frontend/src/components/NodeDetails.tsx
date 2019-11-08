@@ -20,7 +20,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
     render() {
         let additional_info ="type:" + this.props.node.event_type + " level:" + this.props.node.level
         let lemma_list = new Array();
-        if(this.props.layout == "PobVis" && this.props.node.event_type == "EType.EXP_POB"){
+        if(this.props.node.event_type == "EType.EXP_POB"){
             lemma_list.push(<h2 key ="lemma-title"> Lemmas summerization </h2>)
             let lemmas = this.props.PobLemmasMap[this.props.node.exprID]
             for (const lemma of lemmas){

@@ -80,7 +80,7 @@ export class Menu extends React.Component<Props, {}> {
 
     return (
       <section className="component-menu">
-        <h1>Vampire Saturation Visualization</h1>
+        <h1>Spacer Visualization</h1>
 
         <section className="editor">
           <div className="editor-spacer">
@@ -105,18 +105,10 @@ export class Menu extends React.Component<Props, {}> {
 
             <aside>
               <fieldset className="options-card">
-                <h3>Vampire Options</h3>
+                <h3>Z3 Options</h3>
                 <ul>
                   <li>
-                    <label htmlFor="inputSyntax" className="form-label">Input language</label>
-                    <select id="inputSyntax" onChange={this.changeInputSyntax.bind(this)}
-                            value={this.props.inputSyntax}>
-                      <option value="smtlib">SMTLIB</option>
-                      <option value="tptp">TPTP</option>
-                    </select>
-                  </li>
-                  <li>
-                    <label htmlFor="userOptions" className="form-label">Additional Vampire options</label>
+                    <label htmlFor="userOptions" className="form-label">Additional Spacer options</label>
                     <input id="userOptions" type="text" onChange={this.changeSpacerUserOptions.bind(this)}
                            value={this.props.spacerUserOptions}>
                     </input>
@@ -124,46 +116,12 @@ export class Menu extends React.Component<Props, {}> {
                 </ul>
               </fieldset>
 
-              <fieldset className="options-card">
-                <h3>Visualization Options</h3>
-                <ul>
-                  <li>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={this.props.hideBracketsAssoc}
-                        onChange={this.changeHideBracketsAssoc.bind(this)}/>
-                      Hide brackets for associative operators
-                    </label>
-                  </li>
-                  <li>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={this.props.nonStrictForNegatedStrictInequalities}
-                        onChange={this.changeNonStrictForNegatedStrictInequalities.bind(this)}/>
-                      Show negated strict inequalities as (positive) nonstrict inequalities
-                    </label>
-                  </li>
-                  <li>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={this.props.orientClauses}
-                        onChange={this.changeOrientClauses.bind(this)}/>
-                      Heuristically orient clauses
-                    </label>
-                  </li>
-                </ul>
-              </fieldset>
             </aside>
           </div>
         </section>
 
         <section className="run-menu">
-          <Link to="/proof/" className="fake-button">Find proof</Link>
-          <Link to="/saturation/" className="fake-button">Find saturation</Link>
-          <Link to="/manualcs/" className="fake-button">Start manual clause selection</Link>
+          <Link to="/proof/" className="fake-button">Solve</Link>
         </section>
       </section>
     );
