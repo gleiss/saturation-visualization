@@ -18,14 +18,8 @@ export default class Aside extends React.Component<Props, {}> {
     render() {
         let nodeDetails;
         if (this.props.nodeSelection.length === 1) {
-            let node
-            for (const n of this.props.tree){
-                if (n.nodeId==this.props.nodeSelection[0]){
-                    node = n;
-                    break;
-                }
-            }
-            // const node = this.props.tree[this.props.nodeSelection[0]];
+            let node = this.props.tree[this.props.nodeSelection[0]]
+           // const node = this.props.tree[this.props.nodeSelection[0]];
             nodeDetails =
                 <NodeDetails
             node={ node }

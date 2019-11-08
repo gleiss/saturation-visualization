@@ -33,10 +33,10 @@ export default class Graph extends React.Component<Props, {}> {
     graphContainer = React.createRef<HTMLDivElement>();
     dragStartEvent: any = null;
     cachedChangeNodesEvent?: Set<number> = undefined;
-
+    layout = "SatVis"
     componentDidMount() {
         this.generateNetwork();
-        this.updateNetwork(false, "SatVis");
+        this.updateNetwork(false, this.layout);
         this.network!.fit();
     }
 
@@ -44,7 +44,7 @@ export default class Graph extends React.Component<Props, {}> {
     }
 
     componentDidUpdate(prevProps: Props) {
-        this.updateNetwork(false, "SatVis");
+        this.updateNetwork(false, this.layout);
         // if (this.props.dag !== prevProps.dag) {
         //     this.updateNetwork(false);
         //     this.network!.selectNodes(this.props.nodeSelection);
@@ -152,13 +152,6 @@ export default class Graph extends React.Component<Props, {}> {
         // });
     }
 
-    find_node(nodeId: number): any {
-        for(const node of this.props.tree){
-            if(node.nodeId == nodeId){
-                return node
-            }
-        }
-    }
 
     // updates the network displayed by Vis.js
     // if onlyUpdateStyles is false, all nodes and edges are newly generated.
@@ -170,51 +163,72 @@ export default class Graph extends React.Component<Props, {}> {
             this.PobVisLayout()
         }
     }
-
-    PobVisLayout(){
-        let find_related_nodes = this.props.nodeSelection.length>0
-        let currentNodeExprID = -100
-        if(find_related_nodes){
-            currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
-        }
-        console.log("currentNodeExprID:", currentNodeExprID)
-        const visNodes = new Array<Node>();
-        const visEdges = new Array<Edge>();
-        let edgeId = 0
+    PobVisLayout(){}
 
 
-        for (const node of this.props.tree){
-            let visNode;
-            //Prioritize related nodes
-            if (node.exprID == currentNodeExprID){
-                visNode = this.toVisNode(node, "sameExprID")
-            }else{
-                if(node.nodeId > this.props.currentTime){
-                    visNode = this.toVisNode(node, "activated");
-                }
-                else{
-                    visNode = this.toVisNode(node, "passive");
-                }
-            }
-
-            visNodes.push(visNode);
-            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
-            visEdges.push(visEdge);
-            edgeId++;
-        }
+    // PobVisLayout(){
+        
+    //     mergeChildren(node){
+    //         children_list = []
+    //         for 
+    //     }
 
 
-        this.networkNodes.clear();
-        this.networkNodes.add(visNodes);
-        this.networkEdges.clear();
-        this.networkEdges.add(visEdges);
-    }
+    //     let treeLists  = []
+    //     for(const node of this.props.tree){
+    //         if node.eventType=="EType."
+    //     }
+
+
+
+
+    //     console.log("PobVisNodes:", PobVisNodes);
+    //     // let find_related_nodes = this.props.nodeSelection.length>0
+    //     // let currentNodeExprID = -100
+    //     // let existingNodes = new Set()
+    //     // if(find_related_nodes){
+    //     //     currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
+    //     // }
+    //     // console.log("currentNodeExprID:", currentNodeExprID)
+    //     const visNodes = new Array<Node>();
+    //     const visEdges = new Array<Edge>();
+    //     let edgeId = 0
+
+    //     for (const node of this.props.tree){
+    //         let visNode;
+
+    //         //Prioritize related nodes
+    //         if (node.exprID == currentNodeExprID){
+    //             visNode = this.toVisNode(node, "sameExprID")
+    //         }else{
+    //             if(node.nodeId > this.props.currentTime){
+    //                 visNode = this.toVisNode(node, "activated");
+    //             }
+    //             else{
+    //                 visNode = this.toVisNode(node, "passive");
+    //             }
+    //         }
+
+    //         visNodes.push(visNode);
+    //         existingNodes.push(node.exprID);
+    //         let parentNode;
+    //         const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeId, false);
+    //         visEdges.push(visEdge);
+    //         edgeId++;
+    //     }
+
+
+    //     this.networkNodes.clear();
+    //     this.networkNodes.add(visNodes);
+    //     this.networkEdges.clear();
+    //     this.networkEdges.add(visEdges);
+    // }
 
     SatVisLayout(){
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
-            currentNodeExprID = this.find_node(this.props.nodeSelection[0]).exprID
+            currentNodeExprID = this.props.tree[this.props.nodeSelection[0]].exprID
         }
         console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
@@ -222,7 +236,8 @@ export default class Graph extends React.Component<Props, {}> {
         let edgeId = 0
 
 
-        for (const node of this.props.tree){
+        for (const nodeID in this.props.tree){
+            let node = this.props.tree[nodeID]
             let visNode;
             //Prioritize related nodes
             if (node.exprID == currentNodeExprID){
