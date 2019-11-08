@@ -1,28 +1,29 @@
-#  Saturation Visualization for Vampire
+# How to run
+We need 3 components to run this:
 
-This tool visualizes Saturation Runs of Vampire, with the main aim to let a user **quickly** answer the following questions:
-* Which consequences are derived?
-  * Which of the consequences we anticipated were derived?
-  * Which other interesting consequences were derived?
-  * Which proof was found by Vampire?
-* Why didn’t we derive a certain clause?
-  * Forgot to add some trivial fact to the encoding
-  * Ordering doesn’t allow inference
-  * Weight is to big for clause to be selected
-  * ...
-  
-There are three modes:
-* **Proof:** Run Vampire on the problem. If a proof is found, visualize it.
-* **Saturation:** Run Vampire on the problem. Visualize the whole saturation attempt.
-* **Manual Clause Selection:** Run Vampire on the problem, but interactively decide in each step which clause Vampire should explore next.
+* A customed Z3 version (to dump the trace in the format the Backend expects)
+[https://github.com/nhamlv-55/z3/tree/vis](https://github.com/nhamlv-55/z3/tree/vis)
+* The Backend
+[https://github.com/nhamlv-55/deepSpacer](https://github.com/nhamlv-55/deepSpacer)
+* The Frontend (this repo)
 
-## Running the visualization
-### Step 1: Install and run a Vampire Server
-Described at https://github.com/gleiss/server-vampire
+## Setup and run the frontend
+`./start_frontend.sh`
 
-The Vampire Server is used as backend by the Saturation Visualization.
+Running this script will serve the frontend at [http://localhost:3000](http://localhost:3000) 
 
-### Step 2: Access the Saturation Visualization
-https://gleiss.github.io/saturation-visualization/
+## Setup and run the backend
+`./start_backend.sh`
 
-The Saturation Visualization communicates with the Vampire Server on localhost:5000.
+
+
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm start`
+
+Runs the app in the development mode.<br>
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
