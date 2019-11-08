@@ -1,7 +1,7 @@
 {
   "name": "visualization-frontend",
   "version": "0.1.0",
-  "homepage": "https://gleiss.github.io/saturation-visualization",
+  "homepage": "http://localhost:2112/",
   "private": true,
   "dependencies": {
     "@types/jest": "^24.0.15",
