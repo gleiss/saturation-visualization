@@ -7,6 +7,7 @@
 
   border-radius: 2px;
   transition: all ease-in 330ms;
+  overflow: auto;
 }
 
 .component-node-details.details {
@@ -20,6 +21,7 @@
 .component-node-details article {
     padding: 0.5rem 0;
     overflow: auto;
+    resize: vertical;
 }
 
 .component-node-details article h2 {

@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
+import './NodeMenu.css';
 import NodeDetails from './NodeDetails';
 import { Dag } from '../model/dag';
 import { Literal } from '../model/literal';
@@ -41,8 +42,9 @@ export default class Aside extends React.Component<Props, {}> {
         }
         return(
                 <aside>
+                <article>
                 <section className="component-node-menu">
-
+                
                 <button
             title="SatVis"
             onClick={this.props.SatVisLayout}
@@ -62,6 +64,7 @@ export default class Aside extends React.Component<Props, {}> {
                 </button>
 
                 </section>
+                </article>
                 { nodeDetails }
             </aside>
         );

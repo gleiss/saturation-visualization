@@ -36,6 +36,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
                 <h3>{additional_info}</h3>
                 <pre>{this.props.node.expr}</pre>
                 </article>
+
                 <article>
                 {lemma_list}
             </article>
