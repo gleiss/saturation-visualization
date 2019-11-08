@@ -159,38 +159,40 @@ export default class Graph extends React.Component<Props, {}> {
     // if onlyUpdateStyles is true, only the attributes of the nodes and edges are updated
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
         if(layout=="SatVis"){
-            this.SatVisLayout()
+            this.visLayout(this.props.tree);
         }else if(layout=="PobVis"){
-            this.PobVisLayout()
+            const PobVisTree =  this.PobVisLayout()
+            this.visLayout(PobVisTree);
         }
     }
 
-    PobVisLayout(){
+    PobVisLayout(): any{
+        let treeCloned = JSON.parse(JSON.stringify(this.props.tree)); 
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
-            currentNodeExprID = this.props.tree[this.props.nodeSelection[0]].exprID
+            currentNodeExprID = treeCloned[this.props.nodeSelection[0]].exprID
         }
         console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
         let edgeId = 0
 
-        for (const nodeID in this.props.tree){
-            let node = this.props.tree[nodeID]
-
+        for (const nodeID in treeCloned){
+            let node = treeCloned[nodeID]
             let visNode;
             if(node.event_type!="EType.EXP_POB"){
+                node.to_be_vis = false
                 continue
             }
 
-            let parent = this.props.tree[node.parent]
+            let parent = treeCloned[node.parent]
             let siblings = parent.children
             let same_as_sibl = false
             let identical_sibl
             for(const siblID of siblings){
 
-                const sibl = this.props.tree[siblID]
+                const sibl = treeCloned[siblID]
                 if(sibl.nodeID!=node.nodeID && sibl.exprID == node.exprID){
                     same_as_sibl = true
                     identical_sibl = sibl
@@ -199,16 +201,16 @@ export default class Graph extends React.Component<Props, {}> {
 
             }
             if(same_as_sibl){
+                // I will disappear
+                node.to_be_vis = false
+
                 // point all my children to my sibling
                 for(const childID of node.children){
-                    // console.log("b4", this.props.tree[childID].parent)
-                    this.props.tree[childID].parent = identical_sibl.nodeID
-                    // console.log("after", this.props.tree[childID].parent)
+                    // console.log("b4", treeCloned[childID].parent)
+                    treeCloned[childID].parent = identical_sibl.nodeID
+                    // console.log("after", treeCloned[childID].parent)
                     identical_sibl.children.push(childID)
-
-
                 }
-
                 //change my parent's children
                 let new_children = new Array<number>();
                 for (const childID of siblings){
@@ -217,39 +219,18 @@ export default class Graph extends React.Component<Props, {}> {
                     }
                 }
                 parent.children = new_children
-                continue
             }
-
-            //Prioritize related nodes
-            if (node.exprID == currentNodeExprID){
-                visNode = this.toVisNode(node, "sameExprID")
-            }else{
-                if(node.nodeID > this.props.currentTime){
-                    visNode = this.toVisNode(node, "activated");
-                }
-                else{
-                    visNode = this.toVisNode(node, "passive");
-                }
-            }
-
-            visNodes.push(visNode);
-            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeID, false);
-            visEdges.push(visEdge);
-            edgeId++;
         }
 
-        this.networkNodes.clear();
-        this.networkNodes.add(visNodes);
-        this.networkEdges.clear();
-        this.networkEdges.add(visEdges);
+        return treeCloned
     }
 
 
-    SatVisLayout(){
+    visLayout(ATree){
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
-            currentNodeExprID = this.props.tree[this.props.nodeSelection[0]].exprID
+            currentNodeExprID = ATree[this.props.nodeSelection[0]].exprID
         }
         console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
@@ -257,8 +238,9 @@ export default class Graph extends React.Component<Props, {}> {
         let edgeId = 0
 
 
-        for (const nodeID in this.props.tree){
-            let node = this.props.tree[nodeID]
+        for (const nodeID in ATree){
+            let node = ATree[nodeID]
+            if(!node.to_be_vis) continue
             let visNode;
             //Prioritize related nodes
             if (node.exprID == currentNodeExprID){
@@ -283,10 +265,6 @@ export default class Graph extends React.Component<Props, {}> {
         this.networkNodes.add(visNodes);
         this.networkEdges.clear();
         this.networkEdges.add(visEdges);
-    }
-
-    mergeChildren(){
-        
     }
 
     toVisNode(node: any, style: string ): any {
