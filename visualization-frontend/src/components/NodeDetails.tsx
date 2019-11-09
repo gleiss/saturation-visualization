@@ -22,10 +22,12 @@ export default class NodeDetails extends React.Component<Props, {}> {
         let lemma_list = new Array();
         if(this.props.node.event_type == "EType.EXP_POB"){
             lemma_list.push(<h2 key ="lemma-title"> Lemmas summerization </h2>)
-            let lemmas = this.props.PobLemmasMap[this.props.node.exprID]
-            for (const lemma of lemmas){
-                lemma_list.push(<h2 key={"lemma-header-"+ lemma[0]}>ExprID: {lemma[0]}, From: {lemma[1]} to {lemma[2]}</h2>)
-                lemma_list.push(<pre key={"lemma-expr-"+lemma[0]}>{this.props.ExprMap[lemma[0]]}</pre>)
+            if(this.props.node.exprID in this.props.PobLemmasMap){
+                let lemmas = this.props.PobLemmasMap[this.props.node.exprID]
+                for (const lemma of lemmas){
+                    lemma_list.push(<h2 key={"lemma-header-"+ lemma[0]}>ExprID: {lemma[0]}, From: {lemma[1]} to {lemma[2]}</h2>)
+                    lemma_list.push(<pre key={"lemma-expr-"+lemma[0]}>{this.props.ExprMap[lemma[0]]}</pre>)
+                }
             }
         }
 
