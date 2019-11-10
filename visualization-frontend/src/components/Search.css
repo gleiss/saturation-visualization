@@ -1,6 +1,7 @@
 .component-search {
   margin: 1rem -0.5rem -0.5rem;
   padding: 0 0.5rem;
+  position: relative;
 
   background: #f8f9fb;
   border-radius: 0 0 2px 2px;

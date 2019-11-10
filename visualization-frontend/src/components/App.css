@@ -43,6 +43,10 @@
   border-radius: 2px;
 }
 
+.app .scroll {
+  overflow-y: auto;
+}
+
 .app aside {
   flex-grow: 0;
   flex-shrink: 0;
