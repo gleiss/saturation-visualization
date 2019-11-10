@@ -1,6 +1,14 @@
 .component-graph-menu {
+  margin: 0 -0.5rem 1rem;
+  padding: 0.5rem;
+  background: #fff;
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+  border-radius: 2px;
+}
+
+.component-graph-menu-content {
   display: flex;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .component-graph-menu input[type=file] {
