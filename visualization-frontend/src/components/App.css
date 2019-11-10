@@ -81,6 +81,14 @@
   box-shadow: none !important;
 }
 
+.ReactModal__Content button {
+  width: calc(100% - 10px);
+}
+
+.ReactModal__Content button svg {
+  height: 80%;
+}
+
 .component-passive-aside {
   flex-grow: 0;
   flex-shrink: 0;
