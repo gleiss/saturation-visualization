@@ -148,8 +148,6 @@ export class PassiveDagModal extends React.Component<Props, State> {
 		const positioningHint = this.props.dag.get(this.state.passiveDag!.activeNodeId as number).position;
 		assert(positioningHint !== null);
 
-		console.log(selectedId);
-		console.log(positioningHint);
 		this.props.onDismissPassiveDag(selectedId, positioningHint!);
 	}
 
