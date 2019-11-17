@@ -6,7 +6,17 @@ Then you can serve it using
 `python3 -m http.server 2112`
 
 ## Setup and run the backend
-Edit the `start_backend.sh` to use your correct `$Z3_PATH` and `$Z3_BIN`. Then run 
+You will need a customized version of Z3
+
+[https://github.com/agurfinkel/z3/tree/vis](https://github.com/agurfinkel/z3/tree/vis)
+
+and a customed Z3 Wrapper for the backend
+
+(the included script will clone the Backend for you)
+
+[https://github.com/nhamlv-55/deepSpacer](https://github.com/nhamlv-55/deepSpacer)
+
+Edit the `start_backend.sh` to point to `$Z3_PATH` and `$Z3_BIN`. Then run 
 `./start_backend.sh`
 
 Running this script will serve the backend at localhost:5000. The frontend should point to this backend.
