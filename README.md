@@ -3,7 +3,10 @@
 You can download the prebuilt from here
 [https://github.com/nhamlv-55/SatVisPreBuild](https://github.com/nhamlv-55/SatVisPreBuild)
 Then you can serve it using
+
 `python3 -m http.server 2112`
+
+The Visualizer will be served at `localhost:2112`. But you also need to setup your backend.
 
 ## Setup and run the backend
 You will need a customized version of Z3
@@ -12,12 +15,10 @@ You will need a customized version of Z3
 
 and a customed Z3 Wrapper for the backend
 
-(the included script will clone the Backend for you)
-
 [https://github.com/nhamlv-55/deepSpacer](https://github.com/nhamlv-55/deepSpacer)
 
 Edit the `start_backend.sh` to point to `$Z3_PATH` and `$Z3_BIN`. Then run 
-`./start_backend.sh`
+`./start_backend.sh`. If you don't have `deepSpacer`, the script will clone it for you.
 
 Running this script will serve the backend at localhost:5000. The frontend should point to this backend.
 
