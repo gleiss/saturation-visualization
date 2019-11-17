@@ -1,7 +1,7 @@
 # How to run
 ## Using the prebuilt frontend
 You can download the prebuilt from here
-[https://github.com/nhamlv-55/SatVisPreBuild](https://github.com/nhamlv-55/SatVisPreBuild)
+[https://github.com/nhamlv-55/SatVisPreBuild/tree/iterative_mode](https://github.com/nhamlv-55/SatVisPreBuild/tree/iterative_mode)
 Then you can serve it using
 `python3 -m http.server 2112`
 
