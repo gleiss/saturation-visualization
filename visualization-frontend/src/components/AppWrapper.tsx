@@ -7,7 +7,7 @@ type Props = {
 	name: string,
 	problem: string,
 	spacerUserOptions: string,
-	mode: "proof" | "saturation" | "manualcs"
+	mode: "proof" | "saturation" | "iterative"
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean, 
 	orientClauses: boolean,

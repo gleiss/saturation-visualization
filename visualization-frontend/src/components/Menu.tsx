@@ -122,6 +122,7 @@ export class Menu extends React.Component<Props, {}> {
 
         <section className="run-menu">
           <Link to="/proof/" className="fake-button">Solve</Link>
+          <Link to="/iterative/" className="fake-button">Hit and Run</Link>
         </section>
       </section>
     );

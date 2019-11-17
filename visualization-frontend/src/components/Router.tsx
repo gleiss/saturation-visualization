@@ -52,14 +52,14 @@ export class AppRouter extends React.Component<{}, State> {
 				<Route path="/saturation/" render={() => 
 					this.appComponent("saturation")
 				}/>
-				<Route path="/manualcs/" render={() => 
-					this.appComponent("manualcs")
+				<Route path="/iterative/" render={() => 
+					this.appComponent("iterative")
 				}/>
 			</HashRouter>
 		);
 	}
 
-	appComponent(mode: "proof" | "saturation" | "manualcs") {
+	appComponent(mode: "proof" | "saturation" | "iterative") {
 		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
 		// const spacerUserOptions = `${this.state.spacerUserOptions} --input_syntax ${inputSyntax}`;
 
