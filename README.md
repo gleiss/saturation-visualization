@@ -29,9 +29,9 @@ We need 3 components to run this:
 
 [https://github.com/nhamlv-55/z3/tree/vis](https://github.com/nhamlv-55/z3/tree/vis)
 
-* The Backend (the included script will clone the Backend for you)
+* The Backend
 
-[https://github.com/nhamlv-55/deepSpacer](https://github.com/nhamlv-55/deepSpacer)
+[https://github.com/nhamlv-55/deepSpacer/tree/iterative_mode](https://github.com/nhamlv-55/deepSpacer/tree/iterative_mode)
 
 * The Frontend (this repo)
 
