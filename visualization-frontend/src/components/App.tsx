@@ -17,7 +17,7 @@ import { computeClauseRepresentation, computeParentLiterals } from '../model/cla
 type Props = {
     problem: string,
     spacerUserOptions: string,
-    mode: "proof" | "saturation" | "manualcs"
+    mode: "proof" | "saturation" | "iterative",
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean,
@@ -67,44 +67,46 @@ class App extends Component<Props, State> {
         } = this.state;
         let tree;
         let main;
-        if (state === "loaded" || state === "loaded select") {
+        if (state === "loaded") {
             assert(trees.length > 0);
             tree = trees[trees.length - 1];
             const hL = Object.keys(tree).length
             main = (
                     <Main
-                tree = {tree}
-                onNodeSelectionChange={this.updateNodeSelection.bind(this)}
-                nodeSelection={nodeSelection}
-                historyLength={hL}
-                currentTime={currentTime}
-                onCurrentTimeChange={this.updateCurrentTime.bind(this)}
-                layout = {layout}
-                PobLemmasMap = {PobLemmasMap}
+                mode = { this.props.mode }
+                tree = { tree }
+                onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
+                nodeSelection = { nodeSelection }
+                historyLength = { hL }
+                currentTime = { currentTime }
+                onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
+                layout = { layout }
+                PobLemmasMap = { PobLemmasMap }
                     />
             );
         } else {
             main = (
                     <main>
-                    <section className="slider-placeholder"/>
+                    <section className= "slider-placeholder" />
                     </main>
             );
         }
-
         return (
                 <div className= "app" >
                 { main }
 
-                <Aside
-            tree={tree}
-            nodeSelection={nodeSelection}
-            onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
-            SatVisLayout = {this.setSatVisLayout.bind(this)}
-            PobVisLayout = {this.setPobVisLayout.bind(this)}
-            PobLemmasMap = {PobLemmasMap}
-            ExprMap = {ExprMap}
-            layout = {layout}
-                /> 
+                < Aside
+            mode = { this.props.mode }
+            tree = { tree }
+            nodeSelection = { nodeSelection }
+            onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
+            onPoke = {this.poke.bind(this)}
+            SatVisLayout = { this.setSatVisLayout.bind(this) }
+            PobVisLayout = { this.setPobVisLayout.bind(this) }
+            PobLemmasMap = { PobLemmasMap }
+            ExprMap = { ExprMap }
+            layout = { layout }
+                />
                 </div>
         );
 
@@ -117,14 +119,66 @@ class App extends Component<Props, State> {
 
     }
 
-
-    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
+    async poke() {
+        console.log("poking...")
         this.setState({
             state: "waiting",
             message: "Waiting for Vampire...",
         });
 
-        const fetchedJSON = await fetch(mode === "manualcs" ? 'http://localhost:5000/spacer/startmanualcs' : 'http://localhost:5000/spacer/start', {
+        const fetchedJSON = await fetch('http://localhost:5000/spacer/poke', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }, body : ""
+        });
+
+        try {
+            const json = await fetchedJSON.json();
+            console.log("backend response:", json)
+            if (json.status === "success") {
+                // await VizWrapper.layoutDag(dag, true);
+                let tree = json.nodes_list
+                const state = "loaded";
+                const PobLemmasMap = this.buildPobLemmasMap(tree)
+                const ExprMap = this.buildExprMap(tree)
+                this.setState({
+                    trees: [tree],
+                    message: "blah",
+                    state: state,
+                    PobLemmasMap: PobLemmasMap,
+                    ExprMap: ExprMap,
+                });
+                console.log("state is set")
+            } else {
+                assert(json.status === "error");
+                const errorMessage = json.message;
+                assert(errorMessage !== undefined && errorMessage !== null);
+                this.setState({
+                    state: "error",
+                    message: errorMessage,
+                });
+            }
+        } catch (error) {
+            if (error.name === "SatVisAssertionError") {
+                throw error;
+            }
+            this.setState({
+                state: "error",
+                message: `Error: ${error["message"]}`,
+            });
+        }
+    }
+
+    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "iterative") {
+        this.setState({
+            state: "waiting",
+            message: "Waiting for Vampire...",
+        });
+
+        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/start', {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -141,10 +195,9 @@ class App extends Component<Props, State> {
             const json = await fetchedJSON.json();
             console.log("backend response:", json)
             if (json.status === "success") {
-                //after this function, all nodes will have additional x,y information
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
-                const state = (mode == "manualcs" && json.spacerState === "running") ? "loaded select" : "loaded";
+                const state = (mode == "iterative" && json.spacerState === "running") ? "loaded select" : "loaded";
                 const PobLemmasMap = this.buildPobLemmasMap(tree)
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
@@ -179,44 +232,44 @@ class App extends Component<Props, State> {
     buildPobLemmasMap(tree: any): any{
         // construct exprID->expr map
         let ExprMap = new Map<number, string>();
-        for (const nodeID in tree){
+        for (const nodeID in tree) {
             const node = tree[nodeID]
             ExprMap[node.exprID] = node.expr
         }
 
         // construct PobExprID->a list of lemmas
         let PobLemmasMap = {}
-        for (const nodeID in tree){
+        for (const nodeID in tree) {
             let node = tree[nodeID]
-            if(node.event_type!="EType.ADD_LEM"){
+            if (node.event_type != "EType.ADD_LEM") {
                 continue
             }
             const lemmaExprID = node.exprID
             const level = node.level
             const pobID = node.pobID
-            if (!(pobID in PobLemmasMap)){
+            if (!(pobID in PobLemmasMap)) {
                 PobLemmasMap[pobID] = new Array<{}>();
             }
 
             //traverse the list, if lemmaExprID is already in the list, update its min max
             let existPrevLemma = false
-            for(const lemma of PobLemmasMap[pobID]){
-                if(lemma[0] == lemmaExprID){
+            for (const lemma of PobLemmasMap[pobID]) {
+                if (lemma[0] == lemmaExprID) {
                     existPrevLemma = true
                     let prev_min = lemma[1]
                     let prev_max = lemma[2]
 
-                    if(level > prev_max || level == "oo"){
+                    if (level > prev_max || level == "oo") {
                         lemma[2] = level
                     }
-                    if(level < prev_min){
+                    if (level < prev_min) {
                         lemma[1] = level
                     }
                     break
                 }
             }
 
-            if(!existPrevLemma){
+            if (!existPrevLemma) {
                 PobLemmasMap[node.pobID].push([lemmaExprID, level, level])
             }
         }
@@ -227,12 +280,12 @@ class App extends Component<Props, State> {
     // construct exprID->expr map
     buildExprMap(tree: any): any{
         let ExprMap = new Map<number, string>();
-        for (const nodeID in tree){
+        for (const nodeID in tree) {
             const node = tree[nodeID]
             ExprMap[node.exprID] = node.expr
         }
         return ExprMap
-       
+
     }
 
 
@@ -240,7 +293,7 @@ class App extends Component<Props, State> {
     //NETWORK///////////////////////////////
 
     updateNodeSelection(nodeSelection: number[]) {
-        this.setState({nodeSelection: nodeSelection});
+        this.setState({ nodeSelection: nodeSelection });
     }
 
 
@@ -264,10 +317,10 @@ class App extends Component<Props, State> {
     }
 
     setPobVisLayout(){
-        this.setState({layout: "PobVis"})
+        this.setState({ layout: "PobVis" })
     }
     setSatVisLayout(){
-        this.setState({layout: "SatVis"})
+        this.setState({ layout: "SatVis" })
     }
 }
 
