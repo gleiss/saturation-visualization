@@ -27,7 +27,7 @@ We need 3 components to run this:
 
 * A customed Z3 version (to dump the trace in the format the Backend expects)
 
-[https://github.com/nhamlv-55/z3/tree/vis](https://github.com/nhamlv-55/z3/tree/vis)
+[https://github.com/agurfinkel/z3/tree/vis](https://github.com/agurfinkel/z3/tree/vis)
 
 * The Backend (the included script will clone the Backend for you)
 
