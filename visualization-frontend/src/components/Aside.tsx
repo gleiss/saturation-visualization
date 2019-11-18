@@ -39,7 +39,7 @@ export default class Aside extends React.Component<Props, {}> {
                 </button>
         }
 
-        if (this.props.nodeSelection.length === 1) {
+        if (this.props.nodeSelection.length === 1  && this.props.tree!=null) {
             let node = this.props.tree[this.props.nodeSelection[0]]
             // const node = this.props.tree[this.props.nodeSelection[0]];
             nodeDetails =
