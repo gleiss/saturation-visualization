@@ -10,6 +10,7 @@ import { assert } from '../model/util';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
+    message: string,
     mode: "proof" | "saturation" | "iterative",
     tree: any | null,
     nodeSelection: number[],
@@ -30,7 +31,7 @@ export default class Aside extends React.Component<Props, {}> {
         if (this.props.mode === "iterative") {
             refresh_button =
                 <button
-                    title="Refresh"
+                    title="Poke"
                     onClick = { this.props.onPoke }
                 >
                     <svg viewBox="0 0 24 24" className = "icon big" >
@@ -59,6 +60,7 @@ export default class Aside extends React.Component<Props, {}> {
         return(
             <aside>
                 <article>
+                <section className="graph-placeholder">{this.props.message}</section>
                     <section className="component-node-menu" >
                         { refresh_button }
                         < button

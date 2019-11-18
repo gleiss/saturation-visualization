@@ -31,7 +31,7 @@ type Props = {
  *    "error": Some error occured. message holds a meaningful value.
  */
 type State = {
-    state: "loaded" | "loaded select" | "waiting" | "layouting" | "error",
+    state: "loaded" | "loaded iterative" | "waiting" | "layouting" | "error",
     trees: any[],
     message: string,
     nodeSelection: number[],
@@ -96,6 +96,7 @@ class App extends Component<Props, State> {
                 { main }
 
                 < Aside
+            message = {message}
             mode = { this.props.mode }
             tree = { tree }
             nodeSelection = { nodeSelection }
@@ -123,7 +124,7 @@ class App extends Component<Props, State> {
         console.log("poking...")
         this.setState({
             state: "waiting",
-            message: "Waiting for Vampire...",
+            message: "Poking Spacer...",
         });
 
         const fetchedJSON = await fetch('http://localhost:5000/spacer/poke', {
@@ -146,7 +147,7 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
                     trees: [tree],
-                    message: "blah",
+                    message: "Spacer is "+json.spacerState,
                     state: state,
                     PobLemmasMap: PobLemmasMap,
                     ExprMap: ExprMap,
@@ -175,7 +176,7 @@ class App extends Component<Props, State> {
     async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "iterative") {
         this.setState({
             state: "waiting",
-            message: "Waiting for Vampire...",
+            message: "Waiting for Spacer...",
         });
 
         const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/start', {
@@ -197,12 +198,13 @@ class App extends Component<Props, State> {
             if (json.status === "success") {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
-                const state = (mode == "iterative" && json.spacerState === "running") ? "loaded select" : "loaded";
+                const state = (mode == "iterative" && json.spacerState === "running") ? "loaded iterative" : "loaded";
                 const PobLemmasMap = this.buildPobLemmasMap(tree)
                 const ExprMap = this.buildExprMap(tree)
+                const message = (mode == "iterative")? "Hit Poke to update graph": "";
                 this.setState({
                     trees: [tree],
-                    message: "blah",
+                    message: message,
                     state: state,
                     PobLemmasMap: PobLemmasMap,
                     ExprMap: ExprMap,
