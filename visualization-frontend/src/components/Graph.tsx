@@ -33,15 +33,22 @@ export default class Graph extends React.Component<Props, {}> {
     networkNodes = new DataSet<Node>([]);
     networkEdges = new DataSet<Edge>([]);
     graphContainer = React.createRef<HTMLDivElement>();
-    dragStartEvent: any = null;
-    cachedChangeNodesEvent?: Set<number> = undefined;
+    boundKeydownHandler = this.keydownHandler.bind(this);
+    boundKeyupHandler =  this.keyupHandler.bind(this);
+    X_ordered_nodes = [];
+    Y_ordered_nodes = [];
+   
     componentDidMount() {
         this.generateNetwork();
         this.updateNetwork(false, this.props.layout);
         this.network!.fit();
+        window.addEventListener("keydown", this.boundKeydownHandler, false);
+        window.addEventListener("keyup", this.boundKeyupHandler, false);
     }
 
     componentWillUnmount() {
+        window.removeEventListener("keydown", this.boundKeydownHandler, false);
+        window.removeEventListener("keyup", this.boundKeyupHandler, false);
     }
 
     componentDidUpdate(prevProps: Props) {
@@ -56,7 +63,12 @@ export default class Graph extends React.Component<Props, {}> {
     );
     }
 
-
+    handleKeyPress(event) {
+        console.log(event.key)
+        if(event.key === 'Enter'){
+            console.log('enter press here! ')
+        }
+    }
     // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     generateNetwork() {
@@ -85,6 +97,7 @@ export default class Graph extends React.Component<Props, {}> {
 
                 assert(clickEvent.nodes.length === 1);
                 const clickedNodeId = clickEvent.nodes[0];
+                console.log("clickEvent.nodes", clickEvent.nodes)
                 console.log("clickedNodeId", this.props.tree[clickedNodeId])
                 this.props.onNodeSelectionChange(clickEvent.nodes);
             } else {
@@ -97,12 +110,14 @@ export default class Graph extends React.Component<Props, {}> {
 
     // updates the network displayed by Vis.js
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
+        console.log("call Update Network")
         if(layout=="SatVis"){
             this.visLayout(this.props.tree);
         }else if(layout=="PobVis"){
             const PobVisTree =  this.PobVisLayout()
             this.visLayout(PobVisTree);
         }
+
     }
 
     PobVisLayout(): any{
@@ -113,13 +128,9 @@ export default class Graph extends React.Component<Props, {}> {
             currentNodeExprID = treeCloned[this.props.nodeSelection[0]].exprID
         }
         console.log("currentNodeExprID:", currentNodeExprID)
-        const visNodes = new Array<Node>();
-        const visEdges = new Array<Edge>();
-        let edgeId = 0
 
         for (const nodeID in treeCloned){
             let node = treeCloned[nodeID]
-            let visNode;
             if(node.event_type!="EType.EXP_POB"){
                 node.to_be_vis = false
                 continue
@@ -204,6 +215,7 @@ export default class Graph extends React.Component<Props, {}> {
         this.networkNodes.add(visNodes);
         this.networkEdges.clear();
         this.networkEdges.add(visEdges);
+
     }
 
     toVisNode(node: any, style: string ): any {
@@ -240,4 +252,56 @@ export default class Graph extends React.Component<Props, {}> {
         }
     }
 
+    findClosestNode(nodeId: number, direction: "u"|"d"|"l"|"r"){
+        assert(this.network) 
+        assert("body" in this.network!)
+        const currentNode = this.network!["body"]["nodes"][nodeId]
+        let closestNode = currentNode
+        let min_distance = 99999
+
+        if(direction=="l"){
+            for(const idx in this.network!["body"]["nodes"]){
+                const node = this.network!["body"]["nodes"][idx]
+                if (node["y"]!=currentNode["y"]) {continue}
+                if (currentNode["x"] <= node["x"]) {continue} // node is on the right of the selection
+                if( currentNode["x"] - node["x"] < min_distance){
+                    closestNode = node
+                    min_distance = currentNode["x"] - node["x"]
+                }
+            }
+            return closestNode.id
+
+        }
+        if(direction=="r"){
+            for(const idx in this.network!["body"]["nodes"]){
+                const node = this.network!["body"]["nodes"][idx]
+                if (node["y"]!=currentNode["y"]) {continue}
+                if (node["x"] <= currentNode["x"]) {continue} // node is on the left of the selection
+                if( node["x"] - currentNode["x"] < min_distance){
+                    closestNode = node
+                    min_distance = node["x"] - currentNode["x"]
+                }
+            }
+            return closestNode.id
+
+        } 
+        return -1
+
+    }
+
+
+    keydownHandler(event) {
+    }
+    keyupHandler(event) {
+        if(this.props.nodeSelection.length==0) return
+        const selected_node = this.props.nodeSelection[0]
+        let closest_node = selected_node
+        if(event.key=="ArrowLeft"){
+            closest_node = this.findClosestNode(selected_node, "l")
+        }
+        if(event.key=="ArrowRight"){
+            closest_node = this.findClosestNode(selected_node, "r")
+        }
+        this.props.onNodeSelectionChange([closest_node]);
+    }
 }
