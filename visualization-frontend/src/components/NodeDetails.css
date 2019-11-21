@@ -22,6 +22,7 @@
     padding: 0.5rem 0;
     overflow: auto;
     resize: vertical;
+    height: 500px;
 }
 
 .component-node-details article h2 {
