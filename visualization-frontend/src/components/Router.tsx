@@ -19,7 +19,7 @@ export class AppRouter extends React.Component<{}, State> {
 		problem: "",
 		problemName: "",
 		inputSyntax: "smtlib",
-		spacerUserOptions: "fp.spacer.max_level=4",
+		spacerUserOptions: "fp.spacer.max_level=4 fp.spacer.dump_benchmarks=true",
 		hideBracketsAssoc: true,
 		nonStrictForNegatedStrictInequalities: true,
 		orientClauses: true

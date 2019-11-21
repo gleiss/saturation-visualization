@@ -1,6 +1,7 @@
 .app main {
   flex-direction: column;
-  flex-grow: 1;
+  flex-grow: 2;
+  width: 1000px;
   padding: 1.5rem 1rem;
 
   background: #f8f9fb;
@@ -44,7 +45,7 @@
 }
 
 .app aside {
-  flex-grow: 0;
+  flex-grow: 1;
   flex-shrink: 0;
   flex-direction: column;
   margin: 1rem 0;
