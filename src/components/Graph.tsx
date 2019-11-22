@@ -19,15 +19,7 @@ type Props = {
   onUpdateNodePositions: (nodeIds: Array<number>, delta: [number, number]) => void
 };
 
-type State = {
-  metaPressed: boolean,
-}
-
 export default class Graph extends React.Component<Props, {}> {
-
-  state: State = {
-    metaPressed: false,
-  }
 
   markers = new Set<number>();
   network: Network | null = null;
@@ -37,22 +29,11 @@ export default class Graph extends React.Component<Props, {}> {
   dragStartEvent: any = null;
   cachedChangeNodesEvent?: Set<number> = undefined;
 
-  boundKeydownHandler = this.keydownHandler.bind(this);
-  boundKeyupHandler =  this.keyupHandler.bind(this);
-
   componentDidMount() {
     this.generateNetwork();
     this.updateNetwork(false);
     this.network!.selectNodes(this.props.nodeSelection);
     this.network!.fit();
-
-    window.addEventListener("keydown", this.boundKeydownHandler, false);
-    window.addEventListener("keyup", this.boundKeyupHandler, false);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this.boundKeydownHandler, false);
-    window.removeEventListener("keyup", this.boundKeyupHandler, false);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -128,7 +109,18 @@ export default class Graph extends React.Component<Props, {}> {
       if (clickEvent.nodes.length > 0) {
         assert(clickEvent.nodes.length === 1);
         const clickedNodeId = clickEvent.nodes[0];
-        if (this.state.metaPressed) {
+        
+        const originalEvent = clickEvent.event.srcEvent;
+        assert(originalEvent !== undefined && originalEvent !== null);
+
+        if (originalEvent.metaKey || originalEvent.ctrlKey) {
+          // note standard conventions:
+          // - on macOS, the command key (which maps on macOS to metaKey) is used for selecting multiple elements
+          // - on windows and linux, the ctrl key is used for selecting multiple elements
+          // we therefore check whether any of these keys is pressed
+          // this has the following side-effects, which we don't care about, at least for now: 
+          // - one can use the ctrl key on macOS too for selecting multiple elements
+          // - one can use the windows key (which maps on windows to metaKey) too for selecting multiple elements
           if (this.props.nodeSelection.find((nodeId: number) => nodeId === clickedNodeId) !== undefined) {
             this.props.onNodeSelectionChange(this.props.nodeSelection.filter((nodeId: number) => nodeId !== clickedNodeId));
           } else {
@@ -301,17 +293,6 @@ export default class Graph extends React.Component<Props, {}> {
       x: clickPosition.layerX,
       y: clickPosition.layerY
     });
-  }
-
-  keydownHandler(event) {
-    if (event.key === "Meta") {
-      this.setState({metaPressed: true});
-    }
-  }
-  keyupHandler(event) {
-    if (event.key === "Meta") {
-      this.setState({metaPressed: false});
-    }
   }
 
   // MARKERS ///////////////////////////////////////////////////////////////////////////////////////////////////////////
