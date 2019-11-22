@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/saturation-visualization/precache-manifest.a918b8bec3421a9a6a7673038baef71d.js"
+  "/saturation-visualization/precache-manifest.3e49cd3890b73af54e57e0d691675174.js"
 );
 
 workbox.clientsClaim();
