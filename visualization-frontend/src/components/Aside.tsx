@@ -18,9 +18,12 @@ type Props = {
     onPoke: () => void,
     SatVisLayout: () => void,
     PobVisLayout: () => void,
+    SMTLayout: () => void,
+    JSONLayout:() => void,
     PobLemmasMap: {},
     ExprMap: {},
     layout: string,
+    expr_layout: "SMT"|"JSON"
 };
 export default class Aside extends React.Component<Props, {}> {
 
@@ -36,7 +39,7 @@ export default class Aside extends React.Component<Props, {}> {
                 >
                     <svg viewBox="0 0 24 24" className = "icon big" >
                         <use xlinkHref={ `${icons}#graph-undo` } />
-                        </svg>
+                    </svg>
                 </button>
         }
 
@@ -49,6 +52,7 @@ export default class Aside extends React.Component<Props, {}> {
                     PobLemmasMap = { this.props.PobLemmasMap }
                     ExprMap = { this.props.ExprMap }
                     layout = { this.props.layout }
+                    expr_layout ={this.props.expr_layout}
                 />;
         } else {
             nodeDetails =
@@ -60,27 +64,42 @@ export default class Aside extends React.Component<Props, {}> {
         return(
             <aside>
                 <article>
-                <section className="graph-placeholder">{this.props.message}</section>
+                    <section className="graph-placeholder">{this.props.message}</section>
                     <section className="component-node-menu" >
                         { refresh_button }
-                        < button
+                        <button
                         title = "SatVis"
                         onClick = { this.props.SatVisLayout }
                         >
                         <svg viewBox="0 0 24 24" className = "icon big" >
                             <use xlinkHref={ `${icons}#node-parents` } />
                         </svg>
-                </button>
+                        </button>
 
-                <button
-                    title = "PobVis"
-                    onClick = { this.props.PobVisLayout }
-                >
-                    <svg viewBox="0 0 24 24" className = "icon big" >
-                        <use xlinkHref={ `${icons}#node-children` } />
-                    </svg>
-                </button>
-
+                        <button
+                            title = "PobVis"
+                            onClick = { this.props.PobVisLayout }
+                        >
+                            <svg viewBox="0 0 24 24" className = "icon big" >
+                                <use xlinkHref={ `${icons}#node-children` } />
+                            </svg>
+                        </button>
+                        <button
+                            title = "SMT"
+                            onClick = { this.props.SMTLayout }
+                        >
+                            <svg viewBox="0 0 24 24" className = "icon big" >
+                                <use xlinkHref={ `${icons}#node-children` } />
+                            </svg>
+                        </button>
+                        <button
+                            title = "JSON"
+                            onClick = { this.props.JSONLayout }
+                        >
+                            <svg viewBox="0 0 24 24" className = "icon big" >
+                                <use xlinkHref={ `${icons}#node-children` } />
+                            </svg>
+                        </button>
                     </section>
                 </article>
                 { nodeDetails }

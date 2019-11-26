@@ -37,6 +37,7 @@ type State = {
     nodeSelection: number[],
     currentTime: number,
     layout: string,
+    expr_layout: "SMT" | "JSON",
     PobLemmasMap: {},
     ExprMap: {}
 }
@@ -50,6 +51,7 @@ class App extends Component<Props, State> {
         nodeSelection: [],
         currentTime: 0,
         layout: "SatVis",
+        expr_layout: "SMT",
         PobLemmasMap: {},
         ExprMap: {},
     }
@@ -62,6 +64,7 @@ class App extends Component<Props, State> {
             nodeSelection,
             currentTime,
             layout,
+            expr_layout,
             PobLemmasMap,
             ExprMap,
         } = this.state;
@@ -95,19 +98,22 @@ class App extends Component<Props, State> {
                 <div className= "app" >
                 { main }
 
-                < Aside
-            message = {message}
-            mode = { this.props.mode }
-            tree = { tree }
-            nodeSelection = { nodeSelection }
-            onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
-            onPoke = {this.poke.bind(this)}
-            SatVisLayout = { this.setSatVisLayout.bind(this) }
-            PobVisLayout = { this.setPobVisLayout.bind(this) }
-            PobLemmasMap = { PobLemmasMap }
-            ExprMap = { ExprMap }
-            layout = { layout }
-                />
+                    <Aside
+                        message = {message}
+                        mode = { this.props.mode }
+                        tree = { tree }
+                        nodeSelection = { nodeSelection }
+                        onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
+                        onPoke = {this.poke.bind(this)}
+                        SatVisLayout = { this.setSatVisLayout.bind(this) }
+                        PobVisLayout = { this.setPobVisLayout.bind(this) }
+                        SMTLayout = { this.setSMTLayout.bind(this) }
+                        JSONLayout = { this.setJSONLayout.bind(this) }
+                        PobLemmasMap = { PobLemmasMap }
+                        ExprMap = { ExprMap }
+                        layout = { layout }
+                        expr_layout ={expr_layout}
+                    />
                 </div>
         );
 
@@ -295,6 +301,7 @@ class App extends Component<Props, State> {
     //NETWORK///////////////////////////////
 
     updateNodeSelection(nodeSelection: number[]) {
+        console.log(nodeSelection)
         this.setState({ nodeSelection: nodeSelection });
     }
 
@@ -323,6 +330,12 @@ class App extends Component<Props, State> {
     }
     setSatVisLayout(){
         this.setState({ layout: "SatVis" })
+    }
+    setSMTLayout(){
+        this.setState({ expr_layout: "SMT" })
+    }
+    setJSONLayout(){
+        this.setState({ expr_layout: "JSON" })
     }
 }
 

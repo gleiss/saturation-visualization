@@ -25,7 +25,8 @@ type Props = {
 }
 
 export class Menu extends React.Component<Props, {}> {
-  private isChromeOrFirefox = navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Firefox') > -1;
+  // private isChromeOrFirefox = navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Firefox') > -1;
+    private isChromeOrFirefox = true;
   private fileUpload = React.createRef<HTMLInputElement>();
   monacoDiv = React.createRef<HTMLDivElement>();
   monaco: Monaco.editor.IStandaloneCodeEditor | null = null

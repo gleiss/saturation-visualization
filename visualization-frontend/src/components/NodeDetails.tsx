@@ -11,6 +11,7 @@ type Props = {
     PobLemmasMap: {},
     ExprMap: {},
     layout: string,
+    expr_layout: "SMT"|"JSON"
 };
 
 export default class NodeDetails extends React.Component<Props, {}> {
@@ -31,13 +32,20 @@ export default class NodeDetails extends React.Component<Props, {}> {
             }
         }
 
+        let expr
+        if(this.props.expr_layout=="SMT"){
+            expr = this.props.node.expr
+        }else{
+            expr = JSON.stringify(this.props.node.ast_json, null, 2)
+        }
+
         return (
             <div >
                 <section className= { 'component-node-details details'} >
                 <article>
                 <h2>Node <strong>{this.props.node.nodeID}, </strong>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
                 <h3>{additional_info}</h3>
-                <pre>{this.props.node.expr}</pre>
+                <pre>{expr}</pre>
                 </article>
                 </section>
                 <section className= { 'component-node-details details'} >
