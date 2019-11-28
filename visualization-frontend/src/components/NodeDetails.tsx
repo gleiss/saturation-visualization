@@ -39,18 +39,16 @@ export default class NodeDetails extends React.Component<Props, {}> {
         const nl = is_root?"\n":""
         //build args 
         if (Array.isArray(n["content"])){
-            args+="("
             for(const arg of n["content"]){
                 args+=this.node_to_string(arg, false)+nl
             }
-            args+=")"
         }else{
             args+=n["content"]
         }
         //build node
         if (n["type"] in this.type_map){
             if(this.type_map[n["type"]]==""){
-                result = args + " "
+                result = " "+ args
             }else{
                 result = "(" + this.type_map[n["type"]] + " " + args + ")"
             }
