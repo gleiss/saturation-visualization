@@ -21,16 +21,20 @@ export class UnitParser {
 
 	static parseClause(string: string): Clause {
 		if(string === "$false") {
-			return new Clause([]); // empty clause
+			return new Clause([], [], [], []); // empty clause
 		}
-		const literalStrings = string.split(" | ")
 
+		const literals = this.parseLiterals(string);
+		return new Clause(literals, [], Array.from(literals), []);
+	}
+
+	static parseLiterals(string: string): Array<Literal> {
+		const literalStrings = string.split(" | ");
 		const literals = new Array<Literal>();
 		for (let i = 0; i < literalStrings.length; i++) {
 			literals.push(UnitParser.parseLiteral(literalStrings[i]));
 		}
-		
-		return new Clause(literals);
+		return literals;
 	}
 
 	static parseLiteral(string: string): Literal {

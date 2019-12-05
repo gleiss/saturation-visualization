@@ -27,22 +27,25 @@ export class Formula {
 
 export class Clause {
   readonly type: "Formula" | "Clause";
+  readonly literalsNewEvent: Literal[];
+
+  // literalsNewEvent is partitioned into premiseLiterals, conclusionLiterals and contextLiterals
+  // the referenced literals are not only equal, but the same as the literals in literalsNewEvent
   premiseLiterals: Literal[];
   conclusionLiterals: Literal[];
   contextLiterals: Literal[];
   
   // in order to compute literal flows we need to save the order in which literals occured in the clause
-  // at the timepoints of the new-event and the active-event
-  // the referenced literals are not only equal, but the same as the literals in premiseLiterals and conclusionLiterals
-  literalsNewEvent: Literal[] | null;
+  // not only at the timepoints of the new-event but also at the timepoint of the active-event.
+  // the referenced literals are not only equal, but the same as the literals in literalsNewEvent
   literalsActiveEvent: Literal[] | null;
 
-  constructor(conclusionLiterals: Array<Literal>){
+  constructor(literalsNewEvent: Array<Literal>, premiseLiterals: Array<Literal>, conclusionLiterals: Array<Literal>, contextLiterals: Array<Literal>){
     this.type = "Clause";
-    this.premiseLiterals = [];
+    this.literalsNewEvent = literalsNewEvent;
+    this.premiseLiterals = premiseLiterals;
     this.conclusionLiterals = conclusionLiterals;
-    this.contextLiterals = [];
-    this.literalsNewEvent = null;
+    this.contextLiterals = contextLiterals;
     this.literalsActiveEvent = null;
   }
 

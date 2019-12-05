@@ -254,7 +254,6 @@ export class Dag {
           
           // create new node
           const unit = UnitParser.parseClause(line.unitString);
-          unit.literalsNewEvent = unit.conclusionLiterals;
           currentNode = new SatNode(line.id, unit, line.inferenceRule, line.parents, line.statistics, false, currentTime, null, null, [], false);
           nodes.set(currentNode.id, currentNode);
 
@@ -268,7 +267,6 @@ export class Dag {
           assert(currentNode.isFromPreprocessing, "a newly added clause can only already exist if it was generated during preprocessing");
           assert(line.inferenceRule === currentNode.inferenceRule, "inference rule differs between line and existing node");
           const unit = UnitParser.parseClause(line.unitString);
-          unit.literalsNewEvent = unit.conclusionLiterals;
           currentNode.unit = unit;
           currentNode.newTime = currentTime;
         }
@@ -294,10 +292,9 @@ export class Dag {
         const clause = currentNode.unit as Clause;
         assert(clause.literalsNewEvent !== null);
 
-        // note that the literals in clauseAfterActivation potentially occur in a different order than in clause,
-        // since clauseAfterActivation satisfies the invariant that the selected literals occur first.
-        const clauseAfterActivation = UnitParser.parseClause(line.unitString);
-        assert(clauseAfterActivation.premiseLiterals.length === 0);
+        // note that the literals in literalsAfterActivation potentially occur in a different order than in clause,
+        // since literalsAfterActivation satisfies the invariant that the selected literals occur first.
+        const literalsAfterActivation = UnitParser.parseLiterals(line.unitString);
 
         // mpa each literal to a literal in the existing clause
         // for each selected literal also mark the literal in the existing clause as selected.
@@ -305,8 +302,8 @@ export class Dag {
         assert(nSel !== undefined && nSel !== null);
 
         const existingLiteralsActiveOrder = new Array<Literal>();
-        for (let i = 0; i < clauseAfterActivation.conclusionLiterals.length; i++) {
-          const literal = clauseAfterActivation.conclusionLiterals[i];
+        for (let i = 0; i < literalsAfterActivation.length; i++) {
+          const literal = literalsAfterActivation[i];
           let foundMatch = false;
           for (const existingLiteral of clause.literalsNewEvent!) {
             if (literalsMatch(literal, existingLiteral, false)) {
