@@ -13,6 +13,7 @@ import { VizWrapper } from '../model/viz-wrapper';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';
 import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
+import { Serializer } from '../model/serialization';
 
 type Props = {
   problem: string,
@@ -147,6 +148,14 @@ class App extends Component<Props, State> {
     }
   }
 
+  // LOAD AND SAVE /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  serialize(): string {
+    assert(this.state.state === "loaded" || this.state.state === "loaded select");
+    assert(this.state.dags.length > 0);
+
+    return Serializer.serializeAppState(this.props.problem, this.props.vampireUserOptions, this.state.dags[0]);
+  }
 
   // NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 

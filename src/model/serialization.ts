@@ -5,9 +5,18 @@ import { Dag, SatNodeStyle } from './dag'
 import SatNode from './sat-node';
 import { computeParentLiterals } from './clause-orientation';
 
-export class DagSerializer {
-	static serializeDag(dag: Dag): string {
+export class Serializer {
+	readonly version = 1 // the version number of the Serializer. The version number will be added to the generated json.
+
+	static serializeAppState(problem: string, vampireUserOptions: string, dag: Dag): string {
 		assert(!dag.isPassiveDag);
+
+		const obj = {
+      "version": 1,
+      "problem": problem,
+      "vampireUserOptions": vampireUserOptions,
+      "dag": dag
+		};
 
 		const replacer = (key, value) => {
 			// ignore several properties
@@ -65,20 +74,26 @@ export class DagSerializer {
 			return value;
 		};
 
-		console.log(JSON.stringify(dag, replacer, 3));
-		return JSON.stringify(dag, replacer);
+		return JSON.stringify(obj, replacer);
 	}
 
-	static deserializeDag(json: string): Dag {
+	static deserializeAppState(json: string): [number, string, string, Dag] {
 		const res = JSON.parse(json);
-		return DagSerializer.reconstructDag(res);
+		assert(res.version !== undefined);
+		assert(res.problem !== undefined);
+		assert(res.vampireUserOptions !== undefined);
+		assert(res.dag !== undefined);
+
+		const dag = this.reconstructDag(res.dag);
+
+		return [res.version, res.problem, res.vampireUserOptions, dag];
 	}
 
 	static reconstructDag(obj): Dag {
 		assert(obj.nodes !== undefined);
 		const nodes = new Map<number,SatNode>();
 		for (const pairIdNode of obj.nodes) {
-			nodes.set(pairIdNode[0], DagSerializer.reconstructSatNode(pairIdNode[1]));
+			nodes.set(pairIdNode[0], Serializer.reconstructSatNode(pairIdNode[1]));
 		}
 		const dag = new Dag(nodes);
 		computeParentLiterals(dag); // TODO: hack.
@@ -86,7 +101,6 @@ export class DagSerializer {
 		return dag;
 	}
 	
-
 	static reconstructSatNode(obj): SatNode {
 		assert(obj.id !== undefined);
 		assert(obj.unit !== undefined);
@@ -101,7 +115,7 @@ export class DagSerializer {
 		assert(obj.position !== undefined);
 		assert(obj.isBoundary !== undefined);
 
-		const unit = DagSerializer.reconstructUnit(obj.unit);
+		const unit = Serializer.reconstructUnit(obj.unit);
 		const statistics = new Map<string,number>();
 		for (const pair of obj.statistics) {
 			statistics.set(pair[0], pair[1]);
@@ -125,7 +139,7 @@ export class DagSerializer {
 			assert(obj.contextLiterals !== undefined);
 			assert(obj.literalsActiveEvent !== undefined);
 			
-			const literalsNewEvent = obj.literalsNewEvent.map(literal => DagSerializer.reconstructLiteral(literal));
+			const literalsNewEvent = obj.literalsNewEvent.map(literal => Serializer.reconstructLiteral(literal));
 			
 			// reconstruct encoded literal-arrays
 			const premiseLiterals = obj.premiseLiterals.map(n => literalsNewEvent[n]);
@@ -149,7 +163,7 @@ export class DagSerializer {
 		assert(obj.nonStrictForNegatedStrictInequalities !== undefined);
 		assert(obj.orientationReason !== undefined);
 
-		const args = obj.args.map(term => DagSerializer.reconstructTerm(term));
+		const args = obj.args.map(term => Serializer.reconstructTerm(term));
 		
 		const literal = new Literal(obj.name, args, obj.negated);
 		literal.isSelected = obj.isSelected;
@@ -165,7 +179,7 @@ export class DagSerializer {
 		assert(obj.name !== undefined);
 		assert(obj.args !== undefined);
 
-		const args = obj.args.map(term => DagSerializer.reconstructTerm(term));
+		const args = obj.args.map(term => Serializer.reconstructTerm(term));
 
 		return new Term(obj.name, args);
 	}
