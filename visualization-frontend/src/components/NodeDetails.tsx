@@ -20,15 +20,13 @@ export default class NodeDetails extends React.Component<Props, {}> {
 
 
     type_map = {
-        "EQUALS": "=",
-        "NOT": "not",
-        "PLUS": "+",
-        "TIMES": "*",
-        "LT": "<",
-        "LE": "<=",
-        "GT": ">",
-        "GE": ">=",
-        "OR": "or",
+        "EQUALS": "= ",
+        "PLUS": "+ ",
+        "TIMES": "* ",
+        "LT": "< ",
+        "LE": "<= ",
+        "GT": "> ",
+        "GE": ">= ",
         "SYMBOL": "",
         "0_REAL_CONSTANT": ""
     }
@@ -50,10 +48,10 @@ export default class NodeDetails extends React.Component<Props, {}> {
             if(this.type_map[n["type"]]==""){
                 result = " "+ args
             }else{
-                result = "(" + this.type_map[n["type"]] + " " + args + ")"
+                result = "(" + this.type_map[n["type"]] + args + ")"
             }
         }else{
-            result = "(" + n["type"] + " " + args + ")"
+            result = "(" + n["type"] + nl + args + ")"
         }
         return result
     }
