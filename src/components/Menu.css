@@ -197,8 +197,11 @@
   margin-right: 0.5rem;
 }
 
+.component-menu .run-options {
+  margin-top: 2rem;
+}
 
-/* RUN SECTION */
+/* BOTTOM */
 
 .component-menu .run-menu {
   padding: 2rem 2rem 3rem;
@@ -218,9 +221,21 @@
   font-size: 0.8rem;
 }
 
+.component-menu .fake-button svg {
+  position: relative;
+  top: 0.2rem;
+  left: -0.2rem;
+  width: 15px;
+  stroke: #f8f9fb;
+}
+
 .component-menu .fake-button:hover {
   color: #d4d8d9;
   box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-menu .fake-button:hover svg {
+  stroke: #d4d8d9;
 }
 
 .component-menu .fake-button:active {

@@ -40,6 +40,10 @@
   color: #f8f9fb;
 }
 
+#navigationBar button:hover {
+  cursor: pointer;
+}
+
 #navigationBar button:hover svg {
   stroke: #d4d8d9;
 }

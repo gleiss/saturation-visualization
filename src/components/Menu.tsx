@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Link} from 'react-router-dom';
 import './Menu.css';
 import * as Monaco from 'monaco-editor'
-import { assert } from '../model/util';
+import {assert} from '../model/util';
 
 const icons = require('../resources/icons/all.svg') as string;
 
@@ -71,10 +71,10 @@ export class Menu extends React.Component<Props, {}> {
     if (!this.isChromeOrFirefox) {
       return (
         <section className="unsupported-message">
-            <svg viewBox="0 0 24 24" className="icon">
-              <use xlinkHref={`${icons}#alert-triangle`}/>
-            </svg>
-            <span>Your current browser is not supported. Please use Chrome or Firefox!</span>
+          <svg viewBox="0 0 24 24" className="icon">
+            <use xlinkHref={`${icons}#alert-triangle`}/>
+          </svg>
+          <span>Your current browser is not supported. Please use Chrome or Firefox!</span>
         </section>
       );
     }
@@ -166,14 +166,23 @@ export class Menu extends React.Component<Props, {}> {
                   </li>
                 </ul>
               </fieldset>
+
+              <div className="run-options">
+                <Link to="/proof/" className="fake-button">Find proof</Link>
+                <Link to="/saturation/" className="fake-button">Find saturation</Link>
+                <Link to="/manualcs/" className="fake-button">Start manual clause selection</Link>
+              </div>
             </aside>
           </div>
         </section>
 
         <section className="run-menu">
-          <Link to="/proof/" className="fake-button">Find proof</Link>
-          <Link to="/saturation/" className="fake-button">Find saturation</Link>
-          <Link to="/manualcs/" className="fake-button">Start manual clause selection</Link>
+          <Link className="fake-button">
+            <svg viewBox="0 0 24 24" className="icon">
+              <use xlinkHref={`${icons}#save-upload`}/>
+            </svg>
+            <span>Load saved proof</span>
+          </Link>
         </section>
       </section>
     );

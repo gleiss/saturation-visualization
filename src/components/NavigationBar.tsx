@@ -19,7 +19,12 @@ export class NavigationBar extends React.Component<Props, {}> {
 					<span>Back</span>
         </button>
         <small>{this.props.name}</small>
-        <div className="hidden"></div>
+        <button id="saveButton">
+          <svg viewBox="0 0 24 24" className="icon">
+            <use xlinkHref={`${icons}#save-download`}/>
+          </svg>
+					<span>Save</span>
+        </button>
       </nav>
     )
   }
