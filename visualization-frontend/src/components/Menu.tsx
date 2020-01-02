@@ -9,7 +9,7 @@ const icons = require('../resources/icons/all.svg') as string;
 type Props = {
   problem: string,
   problemName: string,
-    inputSyntax: 'smtlib' | 'tptp',
+    inputSyntax: 'smtlib' | 'log',
 
   spacerUserOptions: string,
   hideBracketsAssoc: boolean,
@@ -17,7 +17,7 @@ type Props = {
   orientClauses: boolean,
   onChangeProblem: (problem: string) => void,
   onChangeProblemName: (problemName: string) => void,
-  onChangeInputSyntax: (syntax: 'smtlib' | 'tptp') => void
+  onChangeInputSyntax: (syntax: 'smtlib' | 'log') => void
   onChangeSpacerUserOptions: (spacerUserOptions: string) => void,
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
@@ -122,7 +122,7 @@ export class Menu extends React.Component<Props, {}> {
         </section>
 
         <section className="run-menu">
-          <Link to="/proof/" className="fake-button">Solve</Link>
+          <Link to="/replay/" className="fake-button">Replay</Link>
           <Link to="/iterative/" className="fake-button">Hit and Run</Link>
         </section>
       </section>
@@ -138,20 +138,19 @@ export class Menu extends React.Component<Props, {}> {
   uploadEncoding(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files !== null && event.target.files.length > 0) {
       const file = event.target.files[0];
-      console.log(file);
+
       const reader = new FileReader();
       // callback which will be executed when readAsText is called
       reader.onloadend = () => {
+        const text = (reader.result ? reader.result : '') as string;
+        this.props.onChangeProblem(text);
+        this.props.onChangeProblemName(file.name);
+
         // guess inputSyntax from file extension:
         if (file.name.endsWith('.smt') || file.name.endsWith('.smtlib') || file.name.endsWith('.smt2') || file.name.endsWith('.smtlib2')) {
-            const text = (reader.result ? reader.result : '') as string;
-            this.props.onChangeProblem(text);
-            this.props.onChangeProblemName(file.name);
-
+          this.props.onChangeInputSyntax('smtlib');
         } else if (file.name.endsWith('.log')) {
-            const text = "LOG FILE:" + file.name;
-            this.props.onChangeProblem(text);
-            this.props.onChangeProblemName(file.name);
+          this.props.onChangeInputSyntax('log');
         }
       };
       reader.readAsText(file);
@@ -179,7 +178,7 @@ export class Menu extends React.Component<Props, {}> {
   }
 
   changeInputSyntax(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newValue = event.target.value as 'smtlib' | 'tptp';
+    const newValue = event.target.value as 'smtlib' | 'log';
     this.props.onChangeInputSyntax(newValue);
   }
 

@@ -6,7 +6,7 @@ import { Menu } from './Menu'
 type State = {
 	problem: string,
 	problemName: string,
-	inputSyntax: "smtlib" | "tptp",
+	inputSyntax: "smtlib" | "log",
 	spacerUserOptions: string,
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
@@ -90,7 +90,7 @@ export class AppRouter extends React.Component<{}, State> {
 	changeNonStrictForNegatedStrictInequalities(newValue: boolean) {
 		this.setState({nonStrictForNegatedStrictInequalities: newValue});
 	}
-	changeInputSyntax(inputSyntax: "smtlib" | "tptp") {
+	changeInputSyntax(inputSyntax: "smtlib" | "log") {
 		this.setState({inputSyntax: inputSyntax});
 	}
 	changeOrientClauses(newValue: boolean) {
