@@ -7,7 +7,7 @@ import ReactModal from 'react-modal';
 ReactModal.setAppElement('#root');
 
 type Props = {
-    mode: "proof" | "saturation" | "iterative",
+    mode: "proof" | "replay" | "iterative",
     tree: any,
     onNodeSelectionChange: (selection: number[]) => void,
     nodeSelection: number[],

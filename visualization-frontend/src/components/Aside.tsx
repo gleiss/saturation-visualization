@@ -11,7 +11,7 @@ const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
     message: string,
-    mode: "proof" | "saturation" | "iterative",
+    mode: "proof" | "replay" | "iterative",
     tree: any | null,
     nodeSelection: number[],
     onUpdateNodeSelection: (selection: number[]) => void,

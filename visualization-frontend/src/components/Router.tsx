@@ -49,8 +49,8 @@ export class AppRouter extends React.Component<{}, State> {
 				<Route path="/proof/" render={() => 
 					this.appComponent("proof")
 				}/>
-				<Route path="/saturation/" render={() => 
-					this.appComponent("saturation")
+				<Route path="/replay/" render={() => 
+					this.appComponent("replay")
 				}/>
 				<Route path="/iterative/" render={() => 
 					this.appComponent("iterative")
@@ -59,7 +59,7 @@ export class AppRouter extends React.Component<{}, State> {
 		);
 	}
 
-	appComponent(mode: "proof" | "saturation" | "iterative") {
+	appComponent(mode: "proof" | "replay" | "iterative") {
 		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
 		// const spacerUserOptions = `${this.state.spacerUserOptions} --input_syntax ${inputSyntax}`;
 

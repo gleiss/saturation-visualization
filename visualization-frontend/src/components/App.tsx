@@ -17,7 +17,7 @@ import { computeClauseRepresentation, computeParentLiterals } from '../model/cla
 type Props = {
     problem: string,
     spacerUserOptions: string,
-    mode: "proof" | "saturation" | "iterative",
+    mode: "proof" | "replay" | "iterative",
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean,
@@ -179,13 +179,13 @@ class App extends Component<Props, State> {
         }
     }
 
-    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "iterative") {
+    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
             state: "waiting",
             message: "Waiting for Spacer...",
         });
 
-        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/start', {
+        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/replay', {
             method: 'POST',
             mode: 'cors',
             headers: {
