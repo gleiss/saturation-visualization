@@ -4,7 +4,8 @@ import './NavigationBar.css';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
-  name: string
+  name: string,
+  onSave: () => void
 }
 
 export class NavigationBar extends React.Component<Props, {}> {
@@ -16,14 +17,14 @@ export class NavigationBar extends React.Component<Props, {}> {
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#nav-back`}/>
           </svg>
-					<span>Back</span>
+          <span>Back</span>
         </button>
         <small>{this.props.name}</small>
-        <button id="saveButton">
+        <button id="saveButton" onClick={() => this.props.onSave()}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#save-download`}/>
           </svg>
-					<span>Save</span>
+          <span>Save</span>
         </button>
       </nav>
     )
