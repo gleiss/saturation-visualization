@@ -22,7 +22,7 @@
 
 .component-menu h1 {
   margin: 0;
-  padding: 2.5rem 1rem 2rem;
+  padding: 1.75rem 1rem 1.5rem;
   text-align: center;
   color: #64656e;
 }
@@ -31,6 +31,8 @@
   display: flex;
   flex-grow: 1;
   background: #f8f9fb;
+  box-shadow: 0 1px 7px 0 rgba(0, 0, 0, .03);
+  z-index: 10;
 }
 
 .component-menu .editor-spacer {
@@ -38,7 +40,7 @@
   max-width: 1500px;
   margin-left: auto;
   margin-right: auto;
-  padding: 1.5rem 2rem;
+  padding: 3rem 2rem 3.5rem;
   display: flex;
   flex-grow: 1;
   justify-content: space-evenly;
@@ -198,21 +200,13 @@
 }
 
 .component-menu .run-options {
+  display: flex;
   margin-top: 2rem;
 }
 
-/* BOTTOM */
-
-.component-menu .load-component {
-  padding: 2rem 2rem 3rem;
-  text-align: center;
-  background: #f4f5f7;
-}
-
-.component-menu .load-button,
 .component-menu .fake-button {
   margin: 0 5px;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.15rem;
   border: none;
   border-radius: 2px;
 
@@ -222,31 +216,54 @@
   font-size: 0.8rem;
 }
 
+.component-menu .run-options .fake-button:first-child {
+  margin-left: 0;
+}
+
+.component-menu .fake-button:hover {
+  color: #d4d8d9;
+  box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
+}
+
+.component-menu .fake-button:active {
+  box-shadow: inset 1px 3px 8px 2px rgba(0, 0, 0, .1);
+}
+
+/* BOTTOM */
+
+.component-menu .load-component {
+  padding: 1.25rem 2rem 2rem;
+  text-align: center;
+  background: #f4f5f7;
+}
+
 .component-menu .load-button {
-  padding-top: 0.3rem;
+  margin: 0 5px;
+  padding: 0.3rem 1rem 0.5rem;
+  border: none;
+  border-radius: 2px;
+
+  background: #d4d8d9;
+  color: #343539;
+  text-decoration: none;
+  font-size: 0.8rem;
+
   outline: none;
   cursor: pointer;
 }
 
 .component-menu .load-button svg {
   position: relative;
-  top: 0.1rem;
+  top: 0.15rem;
   left: -0.2rem;
   width: 15px;
-  stroke: #f8f9fb;
+  stroke: #343539;
 }
 
-.component-menu .load-button:hover,
-.component-menu .fake-button:hover {
-  color: #d4d8d9;
+.component-menu .load-button:hover {
   box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
 }
 
-.component-menu .load-button:hover svg {
-  stroke: #d4d8d9;
-}
-
-.component-menu .load-button:active,
-.component-menu .fake-button:active {
+.component-menu .load-button:active {
   box-shadow: inset 1px 3px 8px 2px rgba(0, 0, 0, .1);
 }
