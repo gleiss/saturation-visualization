@@ -177,7 +177,7 @@ export class Menu extends React.Component<Props, {}> {
         </section>
 
         <section className="run-menu">
-          <Link className="fake-button">
+          <Link className="fake-button" onClick={() => alert('Not implemented yet')}>
             <svg viewBox="0 0 24 24" className="icon">
               <use xlinkHref={`${icons}#save-upload`}/>
             </svg>
