@@ -1,13 +1,14 @@
 import * as React from 'react';
 import {NavigationBar} from './NavigationBar';
-import App from './App';
+import App, {AppMode} from './App';
 import './AppWrapper.css';
 
 type Props = {
   name: string,
   problem: string,
+  loadedProblem?: string,
   vampireUserOptions: string,
-  mode: 'proof' | 'saturation' | 'manualcs'
+  mode: AppMode,
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean,
   orientClauses: boolean,
@@ -27,6 +28,7 @@ export class AppWrapper extends React.Component<Props, {}> {
         />
         <App ref={this.app}
              problem={this.props.problem}
+             loadedProblem={this.props.loadedProblem}
              vampireUserOptions={this.props.vampireUserOptions}
              mode={this.props.mode}
              hideBracketsAssoc={this.props.hideBracketsAssoc}

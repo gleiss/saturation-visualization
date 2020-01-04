@@ -15,7 +15,7 @@
     "react": "^16.8.5",
     "react-dom": "^16.8.5",
     "react-modal": "^3.10.1",
-    "react-router-dom": "^5.0.1",
+    "react-router-dom": "^5.1",
     "react-scripts": "2.1.8",
     "react-sortablejs": "^1.5.1",
     "sortablejs": "1.6.1",

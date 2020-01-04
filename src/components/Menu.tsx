@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import './Menu.css';
 import * as Monaco from 'monaco-editor'
 import {assert} from '../model/util';
+import LoadSavedProblemButton from './LoadSavedProblemButton';
 
 const icons = require('../resources/icons/all.svg') as string;
 
@@ -22,7 +23,8 @@ type Props = {
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
   onChangeOrientClauses: (newValue: boolean) => void,
-  onChangeLogging: (newValue: boolean) => void
+  onChangeLogging: (newValue: boolean) => void,
+  onLoadSavedProblemData: (problemData: string) => void
 }
 
 export class Menu extends React.Component<Props, {}> {
@@ -176,14 +178,7 @@ export class Menu extends React.Component<Props, {}> {
           </div>
         </section>
 
-        <section className="run-menu">
-          <Link className="fake-button" onClick={() => alert('Not implemented yet')}>
-            <svg viewBox="0 0 24 24" className="icon">
-              <use xlinkHref={`${icons}#save-upload`}/>
-            </svg>
-            <span>Load saved proof</span>
-          </Link>
-        </section>
+        <LoadSavedProblemButton onLoadSavedProblemData={this.props.onLoadSavedProblemData}/>
       </section>
     );
   }

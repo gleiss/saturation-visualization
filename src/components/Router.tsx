@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { HashRouter as HashRouter, Route, Link } from "react-router-dom";
-import { AppWrapper } from './AppWrapper'
-import { Menu } from './Menu'
+import {HashRouter as HashRouter, Route} from 'react-router-dom';
+import {AppWrapper} from './AppWrapper'
+import {Menu} from './Menu'
+import {AppMode} from './App';
 
 type State = {
 	problem: string,
@@ -11,7 +12,8 @@ type State = {
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean,
 	orientClauses: boolean,
-	logging: boolean
+	logging: boolean,
+	loadedProblem?: string
 }
 
 export class AppRouter extends React.Component<{}, State> {
@@ -48,29 +50,34 @@ export class AppRouter extends React.Component<{}, State> {
 						onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
 						onChangeOrientClauses={this.changeOrientClauses.bind(this)}
 						onChangeLogging={this.changeLogging.bind(this)}
+						onLoadSavedProblemData={this.loadSavedProblem.bind(this)}
 					/>
 				}/>
 				<Route path="/proof/" render={() => 
-					this.appComponent("proof")
+					this.appComponent(AppMode.proof)
 				}/>
 				<Route path="/saturation/" render={() => 
-					this.appComponent("saturation")
+					this.appComponent(AppMode.saturation)
 				}/>
 				<Route path="/manualcs/" render={() => 
-					this.appComponent("manualcs")
+					this.appComponent(AppMode.manualcs)
 				}/>
+        <Route path="/saved/" render={() =>
+          this.appComponent(AppMode.saved)
+        }/>
 			</HashRouter>
 		);
 	}
 
-	appComponent(mode: "proof" | "saturation" | "manualcs") {
+	appComponent(mode: AppMode) {
 		const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
 		const vampireUserOptions = `${this.state.vampireUserOptions} --input_syntax ${inputSyntax}`;
 
 		return <AppWrapper
 			name={this.state.problemName}
 			mode={mode}
-			problem={this.state.problem!}
+			problem={this.state.problem}
+			loadedProblem={this.state.loadedProblem}
 			vampireUserOptions={vampireUserOptions}
 			hideBracketsAssoc={this.state.hideBracketsAssoc}
 			nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
@@ -102,5 +109,9 @@ export class AppRouter extends React.Component<{}, State> {
 	}
 	changeLogging(newValue: boolean) {
 		this.setState({logging: newValue});
+	}
+
+	loadSavedProblem(problemData: string) {
+		this.setState({loadedProblem: problemData})
 	}
 }

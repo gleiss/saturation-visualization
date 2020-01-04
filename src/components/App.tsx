@@ -3,22 +3,30 @@ import {Component} from 'react';
 
 import Main from './Main';
 import Aside from './Aside';
-import { Dag, ParsedLine } from '../model/dag';
+import {Dag, ParsedLine} from '../model/dag';
 import SatNode from '../model/sat-node';
 import './App.css';
-import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences, mergePreprocessing } from '../model/transformations';
-import { findCommonConsequences } from '../model/find-node';
-import { VizWrapper } from '../model/viz-wrapper';
-import { Clause } from '../model/unit';
-import { Literal } from '../model/literal';
-import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
-import { Serializer } from '../model/serialization';
+import {assert} from '../model/util';
+import {filterNonConsequences, filterNonParents, mergePreprocessing} from '../model/transformations';
+import {findCommonConsequences} from '../model/find-node';
+import {VizWrapper} from '../model/viz-wrapper';
+import {Clause} from '../model/unit';
+import {Literal} from '../model/literal';
+import {computeClauseRepresentation, computeParentLiterals} from '../model/clause-orientation';
+import {Serializer} from '../model/serialization';
+
+export enum AppMode {
+  'proof',
+  'saturation',
+  'manualcs',
+  'saved'
+}
 
 type Props = {
   problem: string,
+  loadedProblem?: string,
   vampireUserOptions: string,
-  mode: "proof" | "saturation" | "manualcs",
+  mode: AppMode,
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean, 
   orientClauses: boolean,
@@ -139,12 +147,23 @@ class App extends Component<Props, State> {
   }
 
   async componentDidMount() {
+    if (this.props.mode === AppMode.saved) {
+      // render 'read-only' mode
+      const [, , , dag] = Serializer.deserializeAppState(this.props.loadedProblem || '{}');
+      this.setState({
+        state: 'loaded',
+        dags: [dag],
+        nodeSelection: [],
+        currentTime: dag.maximalActiveTime(),
+        animateDagChanges: false
+      });
+    } else {
+      // call Vampire on given input problem
+      await this.runVampire(this.props.problem, this.props.vampireUserOptions, this.props.mode);
 
-    // call Vampire on given input problem
-    await this.runVampire(this.props.problem, this.props.vampireUserOptions, this.props.mode);
-
-    if (this.state.state === "loaded select" && this.props.mode === "manualcs") {
-      this.selectFinalPreprocessingClauses();
+      if (this.state.state === 'loaded select' && this.props.mode === AppMode.manualcs) {
+        this.selectFinalPreprocessingClauses();
+      }
     }
   }
 
@@ -204,7 +223,9 @@ class App extends Component<Props, State> {
     return parsedLines;
   }
 
-  async runVampire(problem: string, vampireUserOptions: string, mode: "proof" | "saturation" | "manualcs") {
+  async runVampire(problem: string, vampireUserOptions: string, mode: AppMode) {
+    assert(mode !== AppMode.saved, 'Saved mode does not require vampire.');
+
     this.setState({
       state: "waiting",
       message: "Waiting for Vampire...",
@@ -213,7 +234,7 @@ class App extends Component<Props, State> {
       currentTime: 0
     });
 
-    const url = mode === "manualcs" ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start';
+    const url = mode === AppMode.manualcs ? 'http://localhost:5000/vampire/startmanualcs' : 'http://localhost:5000/vampire/start';
     if (this.props.logging) {
       console.log(`Starting request to url '${url}' with Vampire-user-options '${vampireUserOptions}'.`);
     }
@@ -225,7 +246,7 @@ class App extends Component<Props, State> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        file: problem, 
+        file: problem,
         vampireUserOptions: vampireUserOptions
       })
     });
@@ -242,7 +263,7 @@ class App extends Component<Props, State> {
           json.vampireState === "saturation" ||
           json.vampireState === "timeout");
 
-        if (mode === "proof") {
+        if (mode === AppMode.proof) {
           assert(json.vampireState !== "running")
           if (json.vampireState === "saturation") {
             this.setState({
@@ -291,7 +312,7 @@ class App extends Component<Props, State> {
         }
         dag = mergePreprocessing(dag);
 
-        if (mode === "proof") {
+        if (mode === AppMode.proof) {
           assert(dag.isRefutation);
           // find empty clause
           for (const node of dag.nodes.values()) {
@@ -325,7 +346,7 @@ class App extends Component<Props, State> {
         }
         this.setLiteralOptions(dag);
 
-        const state = (mode == "manualcs" && json.vampireState === "running") ? "loaded select" : "loaded";
+        const state = (mode == AppMode.manualcs && json.vampireState === "running") ? "loaded select" : "loaded";
 
         this.setState({
           state: state,
