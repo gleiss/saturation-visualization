@@ -24,7 +24,7 @@ type Props = {
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
   onChangeOrientClauses: (newValue: boolean) => void,
   onChangeLogging: (newValue: boolean) => void,
-  onLoadSavedProblemData: (problemData: string) => void
+  onLoadSavedProblemData: (problemData: string, filename: string) => void
 }
 
 export class Menu extends React.Component<Props, {}> {

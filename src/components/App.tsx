@@ -98,6 +98,7 @@ class App extends Component<Props, State> {
           animateDagChanges={animateDagChanges}
           infoToggle={this.state.infoToggle}
           editToggle={this.state.editToggle}
+          readOnly={this.props.mode === AppMode.saved}
           onNodeSelectionChange={this.updateNodeSelection.bind(this)}
           onCurrentTimeChange={this.updateCurrentTime.bind(this)}
           onDismissPassiveDag={this.dismissPassiveDag.bind(this)}
@@ -128,6 +129,7 @@ class App extends Component<Props, State> {
           multipleVersions={dags.length > 1}
           infoToggle={this.state.infoToggle}
           editToggle={this.state.editToggle}
+          readOnly={this.props.mode === AppMode.saved}
           onUpdateNodeSelection={this.updateNodeSelection.bind(this)}
           onUndo={this.undoLastStep.bind(this)}
           onRenderParentsOnly={this.renderParentsOnly.bind(this)}

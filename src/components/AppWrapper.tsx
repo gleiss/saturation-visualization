@@ -7,6 +7,7 @@ type Props = {
   name: string,
   problem: string,
   loadedProblem?: string,
+  loadedProblemName?: string,
   vampireUserOptions: string,
   mode: AppMode,
   hideBracketsAssoc: boolean,
@@ -23,7 +24,7 @@ export class AppWrapper extends React.Component<Props, {}> {
     return (
       <div id="appWrapper">
         <NavigationBar
-          name={this.props.name}
+          name={this.props.mode === AppMode.saved ? `${this.props.loadedProblemName} (read-only)` : this.props.name}
           onSave={() => this.save()}
         />
         <App ref={this.app}

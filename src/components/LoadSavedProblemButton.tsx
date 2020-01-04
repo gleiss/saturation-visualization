@@ -14,7 +14,7 @@ export default function LoadSavedProblemButton(props) {
       // callback which will be executed when readAsText is called
       reader.onloadend = () => {
         const text = (reader.result ? reader.result : '') as string;
-        props.onLoadSavedProblemData(text);
+        props.onLoadSavedProblemData(text, file.name);
         history.push('/saved/');
       };
       reader.readAsText(file);

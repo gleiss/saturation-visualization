@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { Dag } from '../model/dag';
+import {Dag} from '../model/dag';
 import {Literal} from '../model/literal'
 import Slider from './Slider';
 import Graph from './Graph';
-import { PassiveDagModal } from './PassiveDagModal';
+import {PassiveDagModal} from './PassiveDagModal';
 
 
 type Props = {
@@ -17,6 +17,7 @@ type Props = {
   animateDagChanges: boolean,
   infoToggle: boolean,
   editToggle: boolean,
+  readOnly: boolean,
   onNodeSelectionChange: (selection: number[]) => void,
   onCurrentTimeChange: (newState: number) => void,
   onDismissPassiveDag: (selectedId: number | null, positioningHint: [number, number] | null) => void,
@@ -48,6 +49,16 @@ export default class Main extends React.Component<Props, {}> {
         />
     }
 
+    const slider = this.props.readOnly ? (
+      <section className="slider-placeholder"/>
+    ) : (
+      <Slider
+        historyLength={this.props.historyLength}
+        currentTime={this.props.currentTime}
+        onCurrentTimeChange={this.props.onCurrentTimeChange}
+      />
+    );
+
     return (
       <main>
         <Graph
@@ -60,11 +71,7 @@ export default class Main extends React.Component<Props, {}> {
           onUpdateNodePositions={this.props.onUpdateNodePositions}
         />
         {modal}
-        <Slider
-          historyLength={this.props.historyLength}
-          currentTime={this.props.currentTime}
-          onCurrentTimeChange={this.props.onCurrentTimeChange}
-        />
+        {slider}
       </main>
     );
   }

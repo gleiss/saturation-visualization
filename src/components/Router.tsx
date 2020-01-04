@@ -13,7 +13,8 @@ type State = {
 	nonStrictForNegatedStrictInequalities: boolean,
 	orientClauses: boolean,
 	logging: boolean,
-	loadedProblem?: string
+	loadedProblem?: string,
+	loadedProblemName?: string
 }
 
 export class AppRouter extends React.Component<{}, State> {
@@ -78,6 +79,7 @@ export class AppRouter extends React.Component<{}, State> {
 			mode={mode}
 			problem={this.state.problem}
 			loadedProblem={this.state.loadedProblem}
+			loadedProblemName={this.state.loadedProblemName}
 			vampireUserOptions={vampireUserOptions}
 			hideBracketsAssoc={this.state.hideBracketsAssoc}
 			nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
@@ -111,7 +113,7 @@ export class AppRouter extends React.Component<{}, State> {
 		this.setState({logging: newValue});
 	}
 
-	loadSavedProblem(problemData: string) {
-		this.setState({loadedProblem: problemData})
+	loadSavedProblem(problemData: string, filename: string) {
+		this.setState({loadedProblem: problemData, loadedProblemName: filename})
 	}
 }

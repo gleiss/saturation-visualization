@@ -15,6 +15,7 @@ type Props = {
   multipleVersions: boolean,
   infoToggle: boolean,
   editToggle: boolean,
+  readOnly: boolean,
   onUpdateNodeSelection: (selection: number[]) => void,
   onUndo: () => void,
   onRenderParentsOnly: () => void,
@@ -36,15 +37,18 @@ export default class Aside extends React.Component<Props, {}> {
       assert(!this.props.multipleVersions);
     }
 
-    const passiveDagButtonEnabled = this.props.dag !== null && this.props.nodeSelection.length > 0;
+    const graphMenuEnabled = !this.props.readOnly && this.props.dag !== null;
+    const undoEnabled = graphMenuEnabled && this.props.multipleVersions;
+    const filtersEnabled = graphMenuEnabled && this.props.nodeSelection.length > 0 && !this.props.dag!.isPassiveDag;
+    const passiveDagButtonEnabled = graphMenuEnabled && this.props.nodeSelection.length > 0;
 
     return (
       <div className="scroll">
         <aside>
           <GraphMenu
-            undoEnabled={this.props.dag !== null && this.props.multipleVersions}
-            filterUpEnabled={this.props.dag !== null && this.props.nodeSelection.length > 0 && !this.props.dag!.isPassiveDag}
-            filterDownEnabled={this.props.dag !== null && this.props.nodeSelection.length > 0 && !this.props.dag!.isPassiveDag}
+            undoEnabled={undoEnabled}
+            filterUpEnabled={filtersEnabled}
+            filterDownEnabled={filtersEnabled}
             passiveDagButtonEnabled={passiveDagButtonEnabled}
             onUndo={this.props.onUndo}
             onRenderParentsOnly={this.props.onRenderParentsOnly}
