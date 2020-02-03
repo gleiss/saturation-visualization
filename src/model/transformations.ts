@@ -275,33 +275,3 @@ export function passiveDagForSelection(dag: Dag, selectionIds: Array<number>, cu
 	const passiveDag = new Dag(passiveDagNodes, null, true, nodePartition, selectionIds[0]);
 	return passiveDag;
 }
-
-  // returns null if node was not derived using simplification
-  // returns id of original node if node was derived using simplification
-  // TODO: we don't know the complete set of simplifying inference rules, since the current set could be extended in the future. Nonetheless we know the standard simplifying and generating inference rules, so we could use that knowledge to speed up the computation of this function.
-  function nodeWasDerivedUsingSimplification(dag: Dag, node: SatNode): SatNode | null {
-    // one of the parents p of node n needs to satisfy the following four properties (independently from the currentTime):
-    for (const parentId of node.parents) {
-      const parent = dag.get(parentId);
-      // 1) n has been added to saturation and p has been deleted
-      // 2) the deletionTime of p matches the newTime of n.
-      // 3) the first deletion parent of p is n
-      // 4) let P be the set of parents of n other than p. Then the deletion parents of p are n and P.
-      if (node.newTime !== null && parent.deletionTime !== null && parent.deletionTime === node.newTime && parent.deletionParents[0] === node.id && node.parents.length === parent.deletionParents.length) {
-        const set1 = new Set<number>(node.parents);
-        set1.delete(parentId);
-        const set2 = new Set<number>(parent.deletionParents);
-        set2.delete(parent.deletionParents[0]);
-        let otherParentsMatch = true;
-        for (const e of set1) {
-          if (!set2.has(e)) {
-            otherParentsMatch = false;
-          }
-        }
-        if (otherParentsMatch) {
-          return parent;
-        }
-      }
-    }
-    return null;
-  }

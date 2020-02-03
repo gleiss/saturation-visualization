@@ -1,7 +1,7 @@
 import {assert} from './util'
 import {Unit, Formula, Clause} from './unit'
 import {Literal, Term} from './literal'
-import { Dag, SatNodeStyle } from './dag'
+import { Dag } from './dag'
 import SatNode from './sat-node';
 import { computeParentLiterals } from './clause-orientation';
 
@@ -31,7 +31,7 @@ export class Serializer {
 				return undefined; 
 			}
 			// encode premise-, conclusion-, and context-literals of Clauses
-			if (key == "unit") {
+			if (key === "unit") {
 				const unit = (value as Unit);
 				if (unit.type === "Clause") {
 					const clause = (value as Clause);

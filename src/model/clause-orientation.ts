@@ -96,13 +96,13 @@ export function computeParentLiterals(dag: Dag) {
 
 			if (node.inferenceRule === "evaluation" ||
 				node.inferenceRule === "forward subsumption demodulation" ||
-				(node.inferenceRule === "term algebras injectivity" && node.parents.length == 1) ||
+				(node.inferenceRule === "term algebras injectivity" && node.parents.length === 1) ||
 				node.inferenceRule === "subsumption resolution" ||
 				node.inferenceRule === "equality resolution" ||
 				node.inferenceRule === "trivial inequality removal" ||
 				node.inferenceRule === "factoring" ||
 				node.inferenceRule === "duplicate literal removal" ||
-				(node.inferenceRule === "term algebras distinctness" && node.parents.length == 1) ||
+				(node.inferenceRule === "term algebras distinctness" && node.parents.length === 1) ||
 				node.inferenceRule === "forward demodulation" ||
 				node.inferenceRule === "backward demodulation" ||
 				node.inferenceRule === "equality factoring") {
@@ -158,7 +158,7 @@ export function computeParentLiterals(dag: Dag) {
 				}
 			} else if (node.inferenceRule === "resolution" ||
 				node.inferenceRule === "superposition") {
-				assert(node.parents.length == 2);
+				assert(node.parents.length === 2);
 				const leftNode = dag.get(node.parents[0]);
 				const rightNode = dag.get(node.parents[1]);
 
@@ -262,8 +262,8 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 				node.inferenceRule === "duplicate literal removal" ||
 				node.inferenceRule === "evaluation" ||
 				node.inferenceRule === "trivial inequality removal" ||
-				(node.inferenceRule === "term algebras injectivity" && node.parents.length == 1) ||
-				(node.inferenceRule === "term algebras distinctness" && node.parents.length == 1);
+				(node.inferenceRule === "term algebras injectivity" && node.parents.length === 1) ||
+				(node.inferenceRule === "term algebras distinctness" && node.parents.length === 1);
 			const propagateTwoParents = node.inferenceRule === "resolution" ||
 				node.inferenceRule === "superposition";
 
@@ -297,7 +297,7 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 							}
 						}
 					} else if (propagateTwoParents) {
-						assert(node.parents.length == 2);
+						assert(node.parents.length === 2);
 						const leftNode = dag.get(node.parents[0]);
 						const rightNode = dag.get(node.parents[1]);
 						if (leftNode.unit.type === "Clause" && rightNode.unit.type === "Clause") {
@@ -418,7 +418,7 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 					});
 				}
 			} else if (!existsUserOrientedLiteral && propagateTwoParents) {
-				assert(node.parents.length == 2);
+				assert(node.parents.length === 2);
 				const leftNode = dag.get(node.parents[0]);
 				const rightNode = dag.get(node.parents[1]);
 				if (leftNode.unit.type === "Clause" && rightNode.unit.type === "Clause") {

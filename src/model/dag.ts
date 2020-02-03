@@ -394,9 +394,9 @@ export class Dag {
 
   isRefutation(): boolean {
     for (const node of this.nodes.values()) {
-      if(node.unit.type == "Clause" && 
-          (node.unit as Clause).premiseLiterals.length == 0 && 
-          (node.unit as Clause).conclusionLiterals.length == 0) {
+      if(node.unit.type === "Clause" && 
+          (node.unit as Clause).premiseLiterals.length === 0 && 
+          (node.unit as Clause).conclusionLiterals.length === 0) {
             return true;
           }
     }

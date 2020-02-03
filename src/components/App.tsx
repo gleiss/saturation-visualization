@@ -348,7 +348,7 @@ class App extends Component<Props, State> {
         }
         this.setLiteralOptions(dag);
 
-        const state = (mode == AppMode.manualcs && json.vampireState === "running") ? "loaded select" : "loaded";
+        const state = (mode === AppMode.manualcs && json.vampireState === "running") ? "loaded select" : "loaded";
 
         this.setState({
           state: state,
@@ -660,7 +660,6 @@ class App extends Component<Props, State> {
     const dags = this.state.dags;
     assert(dags.length > 0);
     const dag = dags[0];
-    const currentDag = dags[dags.length - 1];
     const node = dag.nodes.get(nodeId);
     assert(node !== undefined);
     assert(node!.unit.type === "Clause");

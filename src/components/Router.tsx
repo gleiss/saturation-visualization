@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {HashRouter as HashRouter, Route} from 'react-router-dom';
+import {HashRouter, Route} from 'react-router-dom';
 import {AppWrapper} from './AppWrapper'
 import {Menu} from './Menu'
 import {AppMode} from './App';

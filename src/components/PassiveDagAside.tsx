@@ -4,7 +4,6 @@ import { Dag } from '../model/dag';
 import { Literal } from '../model/literal';
 import { assert } from '../model/util';
 import { NodeDetailsWrapper } from './NodeDetailsWrapper';
-import {PassiveDagModal} from './PassiveDagModal';
 
 const icons = require('../resources/icons/all.svg') as string;
 

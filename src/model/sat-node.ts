@@ -1,6 +1,5 @@
 import { assert } from './util'
 import { Unit } from './unit'
-import { UnitParser } from './unit-parser';
 
 export default class SatNode {
 

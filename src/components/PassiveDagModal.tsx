@@ -1,6 +1,5 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
-ReactModal.setAppElement('#root');
 
 import Graph from './Graph'
 import { Dag } from '../model/dag';
@@ -10,6 +9,8 @@ import { Literal } from '../model/literal';
 
 import { passiveDagForSelection } from '../model/transformations';
 import { VizWrapper } from '../model/viz-wrapper';
+
+ReactModal.setAppElement('#root');
 
 type Props = {
 	dag: Dag,
@@ -121,7 +122,7 @@ export class PassiveDagModal extends React.Component<Props, State> {
 		const [posPassiveX, posPassiveY] = passiveDag.get(this.props.nodeSelection[0]).getPosition();
 		const deltaX = posCurrentX-posPassiveX;
 		const deltaY = posCurrentY-posPassiveY;
-		for (const [nodeId, node] of passiveDag.nodes) {
+		for (const node of passiveDag.nodes.values()) {
 			assert(node.position != null);
 			const position = node.position as [number, number];
 			node.position = [position[0] + deltaX, position[1] + deltaY];

@@ -13,7 +13,7 @@ export class NavigationBar extends React.Component<Props, {}> {
   render() {
     return (
       <nav id="navigationBar">
-        <button onClick={() => history.back()}>
+        <button onClick={() => window.history.back()}>
           <svg viewBox="0 0 24 24" className="icon">
             <use xlinkHref={`${icons}#nav-back`}/>
           </svg>

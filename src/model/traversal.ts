@@ -19,7 +19,7 @@ export class DFPostOrderTraversal {
 
 	hasNext(): boolean {
 		while (this.todo.length > 0) {
-			const last = this.todo[length - 1];
+			const last = this.todo[this.todo.length - 1];
 			if (this.visited.has(last)) {
 				this.todo.pop();
 			} else {
