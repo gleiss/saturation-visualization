@@ -16,10 +16,10 @@ import { computeClauseRepresentation, computeParentLiterals } from '../model/cla
 
 type Props = {
     name: string,
-    problem: string,
     exp_path: string,
-    spacerUserOptions: string,
     mode: "proof" | "replay" | "iterative",
+    problem: string,
+    spacerUserOptions: string,
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean,
@@ -122,13 +122,12 @@ class App extends Component<Props, State> {
     }
 
     async componentDidMount() {
-
         if(this.props.mode === "iterative"){
             // call Vampire on given input problem
-            await this.runVampire(this.props.problem, this.props.name, this.props.spacerUserOptions, this.props.mode);
+            await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
         }
         else{
-            await this.poke();
+            this.poke();
         }
     }
 
@@ -187,7 +186,7 @@ class App extends Component<Props, State> {
         }
     }
 
-    async runVampire(problem: string, name: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
+    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
             state: "waiting",
             message: "Waiting for Spacer...",
@@ -201,7 +200,7 @@ class App extends Component<Props, State> {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: name,
+                name: this.props.name,
                 file: problem,
                 spacerUserOptions: spacerUserOptions
             })
