@@ -1,44 +1,45 @@
 {
-  "name": "visualization-frontend",
-  "version": "0.1.0",
-  "homepage": "http://localhost:2112/",
-  "private": true,
-  "dependencies": {
-    "@types/jest": "^24.0.15",
-    "@types/node": "^12.6.8",
-    "@types/react": "^16.8.23",
-    "@types/react-dom": "^16.8.5",
-    "@types/vis": "^4.21.18",
-    "gh-pages": "^2.1.1",
-    "github-pages": "^3.0.2",
-    "monaco-editor": "0.18.1",
-    "react": "^16.8.5",
-    "react-dom": "^16.8.5",
-    "react-modal": "^3.10.1",
-    "react-router-dom": "^5.0.1",
-    "react-scripts": "2.1.8",
-    "react-sortablejs": "^1.5.1",
-    "sortablejs": "1.6.1",
-    "typescript": "^3.5.3",
-    "vis": "^4.21.0",
-    "vis-react": "^0.4.5",
-    "viz.js": "^2.1.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "yarn run build",
-    "deploy": "gh-pages -d build"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+    "name": "visualization-frontend",
+    "version": "0.1.0",
+    "homepage": "http://localhost:2112/",
+    "private": true,
+    "dependencies": {
+        "@types/jest": "^24.0.15",
+        "@types/node": "^12.6.8",
+        "@types/react": "^16.8.23",
+        "@types/react-dom": "^16.8.5",
+        "@types/vis": "^4.21.18",
+        "gh-pages": "^2.1.1",
+        "github-pages": "^3.0.2",
+        "monaco-editor": "0.18.1",
+        "react": "^16.8.5",
+        "react-dom": "^16.8.5",
+        "react-modal": "^3.10.1",
+        "react-router-dom": "^5.0.1",
+        "react-scripts": "2.1.8",
+        "react-sortablejs": "^1.5.1",
+        "sortablejs": "1.6.1",
+        "react-bootstrap bootstrap": "^4.3.1",
+        "typescript": "^3.5.3",
+        "vis": "^4.21.0",
+        "vis-react": "^0.4.5",
+        "viz.js": "^2.1.2"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "predeploy": "yarn run build",
+        "deploy": "gh-pages -d build"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ]
 }
