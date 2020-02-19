@@ -127,7 +127,7 @@ class App extends Component<Props, State> {
             await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
         }
         else{
-            this.poke();
+            await this.poke();
         }
     }
 
