@@ -15,7 +15,9 @@ import { Literal } from '../model/literal';
 import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
 
 type Props = {
+    name: string,
     problem: string,
+    exp_path: string,
     spacerUserOptions: string,
     mode: "proof" | "replay" | "iterative",
     hideBracketsAssoc: boolean,
@@ -121,9 +123,13 @@ class App extends Component<Props, State> {
 
     async componentDidMount() {
 
-        // call Vampire on given input problem
-        await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
-
+        if(this.props.mode === "iterative"){
+            // call Vampire on given input problem
+            await this.runVampire(this.props.problem, this.props.name, this.props.spacerUserOptions, this.props.mode);
+        }
+        else{
+            await this.poke();
+        }
     }
 
     async poke() {
@@ -139,7 +145,9 @@ class App extends Component<Props, State> {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }, body : ""
+            }, body : JSON.stringify({
+                exp_path: this.props.exp_path,
+            })
         });
 
         try {
@@ -179,7 +187,7 @@ class App extends Component<Props, State> {
         }
     }
 
-    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
+    async runVampire(problem: string, name: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
             state: "waiting",
             message: "Waiting for Spacer...",
@@ -193,6 +201,7 @@ class App extends Component<Props, State> {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                name: name,
                 file: problem,
                 spacerUserOptions: spacerUserOptions
             })

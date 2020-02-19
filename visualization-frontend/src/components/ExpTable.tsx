@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './NodeMenu.css';
-
+import {Link} from 'react-router-dom';
 
 const icons = require('../resources/icons/all.svg') as string;
 
@@ -29,7 +29,7 @@ export default class ExpTable extends React.Component<Props, State> {
         return (
                 <div>
                 {this.state.exps.map((item, index) => (
-                        <h5 key={index}> {item.name} </h5>
+                        <h5 key = {item.name}><Link to={{pathname: `/replay/${item.name}`}} >{item.name}</Link></h5>
                 ))}
                 <p>{this.state.isFetching ? 'Fetching experiments...' : ''}</p>
                 </div>
