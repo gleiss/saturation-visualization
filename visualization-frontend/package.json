@@ -19,7 +19,7 @@
         "react-scripts": "2.1.8",
         "react-sortablejs": "^1.5.1",
         "sortablejs": "1.6.1",
-        "react-bootstrap bootstrap": "^4.3.1",
+        "react-bootstrap": "^0.32.4",
         "typescript": "^3.5.3",
         "vis": "^4.21.0",
         "vis-react": "^0.4.5",
