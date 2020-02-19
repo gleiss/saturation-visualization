@@ -124,7 +124,7 @@ class App extends Component<Props, State> {
     async componentDidMount() {
         if(this.props.mode === "iterative"){
             // call Vampire on given input problem
-            await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
+            await this.runSpacer(this.props.problem, this.props.spacerUserOptions, this.props.mode);
         }
         else{
             await this.poke();
@@ -186,7 +186,7 @@ class App extends Component<Props, State> {
         }
     }
 
-    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
+    async runSpacer(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
             state: "waiting",
             message: "Waiting for Spacer...",
