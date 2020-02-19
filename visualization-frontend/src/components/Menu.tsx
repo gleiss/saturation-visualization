@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Link} from 'react-router-dom';
 import './Menu.css';
 import * as Monaco from 'monaco-editor'
+import ExpTable from './ExpTable';
 import { assert } from '../model/util';
 
 const icons = require('../resources/icons/all.svg') as string;
@@ -116,7 +117,7 @@ export class Menu extends React.Component<Props, {}> {
                   </li>
                 </ul>
               </fieldset>
-
+              <ExpTable/>
             </aside>
           </div>
         </section>
