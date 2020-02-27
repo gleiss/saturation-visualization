@@ -82,14 +82,14 @@ export default class NodeDetails extends React.Component<Props, {}> {
 
         return (
             <div >
-                <section className= { 'component-node-details details'} >
+                <section className= { 'component-node-details details-top'} >
                 <article>
                 <h2>Node <strong>{this.props.node.nodeID}, </strong>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
                 <h3>{additional_info}</h3>
                 <pre>{expr}</pre>
                 </article>
                 </section>
-                <section className= { 'component-node-details details'} >
+                <section className= { 'component-node-details details-bottom'} >
                     <article>
                         {lemma_list}
                     </article>

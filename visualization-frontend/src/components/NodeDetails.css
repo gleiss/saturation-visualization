@@ -1,19 +1,25 @@
 .component-node-details {
   margin: 0.5rem -0.5rem 0;
   padding: 0 0.5rem 0.5rem;
-  overflow: hidden;
 
   box-shadow: 1px 3px 10px 0 rgba(0, 0, 0, .1);
 
   border-radius: 2px;
   transition: all ease-in 330ms;
-  overflow: auto;
 }
 
-.component-node-details.details {
+.component-node-details.details-top {
   background: #f8f9fb;
+  overflow: auto;
+  width: 30rem;
 }
-
+.component-node-details.details-bottom {
+    position: fixed;
+    bottom: 4rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+}
 .component-node-details.overview {
   background: #fff;
 }
