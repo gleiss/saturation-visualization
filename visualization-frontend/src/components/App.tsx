@@ -35,6 +35,7 @@ type Props = {
 type State = {
     state: "loaded" | "loaded iterative" | "waiting" | "layouting" | "error",
     trees: any[],
+    runCmd: string,
     message: string,
     nodeSelection: number[],
     currentTime: number,
@@ -49,6 +50,7 @@ class App extends Component<Props, State> {
     state: State = {
         state: "waiting",
         trees: [],
+        runCmd: "Run command:",
         message: "",
         nodeSelection: [],
         currentTime: 0,
@@ -62,6 +64,7 @@ class App extends Component<Props, State> {
         const {
             state,
             trees,
+            runCmd,
             message,
             nodeSelection,
             currentTime,
@@ -78,7 +81,8 @@ class App extends Component<Props, State> {
             const hL = Object.keys(tree).length
             main = (
                     <Main
-                mode = { this.props.mode }
+                        mode = { this.props.mode }
+                    runCmd = {this.state.runCmd}
                 tree = { tree }
                 onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
                 nodeSelection = { nodeSelection }
@@ -160,6 +164,7 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
                     trees: [tree],
+                    runCmd: "Run command:" + json.run_cmd,
                     message: "Spacer is "+json.spacer_state,
                     state: state,
                     PobLemmasMap: PobLemmasMap,
