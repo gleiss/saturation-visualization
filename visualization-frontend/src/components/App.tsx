@@ -52,7 +52,7 @@ class App extends Component<Props, State> {
         message: "",
         nodeSelection: [],
         currentTime: 0,
-        layout: "SatVis",
+        layout: "PobVis",
         expr_layout: "SMT",
         PobLemmasMap: {},
         ExprMap: {},
@@ -160,7 +160,7 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
                     trees: [tree],
-                    message: "Spacer is "+json.spacerState,
+                    message: "Spacer is "+json.spacer_state,
                     state: state,
                     PobLemmasMap: PobLemmasMap,
                     ExprMap: ExprMap,
@@ -192,7 +192,7 @@ class App extends Component<Props, State> {
             message: "Waiting for Spacer...",
         });
 
-        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/replay', {
+        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/start_iterative' : 'http://localhost:5000/spacer/replay', {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -212,7 +212,7 @@ class App extends Component<Props, State> {
             if (json.status === "success") {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
-                const state = (mode == "iterative" && json.spacerState === "running") ? "loaded iterative" : "loaded";
+                const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
                 const PobLemmasMap = this.buildPobLemmasMap(tree)
                 const ExprMap = this.buildExprMap(tree)
                 const message = (mode == "iterative")? "Hit Poke to update graph": "";
