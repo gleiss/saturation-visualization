@@ -240,7 +240,6 @@ export default class Graph extends React.Component<Props, {}> {
     toVisEdge(edgeId: number, parentNodeId: number, nodeID: number, hidden: boolean) {
         return {
             id: edgeId,
-            arrows: "to",
             color: {
                 color: "#dddddd",
                 highlight: "#f8cfc1",
