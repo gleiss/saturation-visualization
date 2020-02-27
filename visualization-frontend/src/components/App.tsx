@@ -164,7 +164,7 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
                     trees: [tree],
-                    runCmd: "Run command:" + json.run_cmd,
+                    runCmd: json.run_cmd,
                     message: "Spacer is "+json.spacer_state,
                     state: state,
                     PobLemmasMap: PobLemmasMap,

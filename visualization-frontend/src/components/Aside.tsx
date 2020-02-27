@@ -64,7 +64,7 @@ export default class Aside extends React.Component<Props, {}> {
         return(
             <aside>
                 <article>
-                    <section className="graph-placeholder">{this.props.message}</section>
+                    <section className="component-node-menu">{this.props.message}</section>
                     <section className="component-node-menu" >
                         { refresh_button }
                         <button
