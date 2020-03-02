@@ -123,7 +123,6 @@ export class Menu extends React.Component<Props, {}> {
         </section>
 
         <section className="run-menu">
-          <Link to="/replay/" className="fake-button">Replay</Link>
           <Link to="/iterative/" className="fake-button">Hit and Run</Link>
         </section>
       </section>

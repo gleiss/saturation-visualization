@@ -46,9 +46,6 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
                     onChangeOrientClauses={this.changeOrientClauses.bind(this)}
                     />
                 }/>
-                <Route path="/proof/" render={() => 
-                    this.appComponent("proof", "")
-                }/>
                 <Route path="/replay/:exp_id" render={({match}) => 
                     this.appComponent("replay", match.params.exp_id)
                 }/>
