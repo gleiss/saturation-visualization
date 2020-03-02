@@ -10,15 +10,12 @@ const icons = require('../resources/icons/all.svg') as string;
 type Props = {
   problem: string,
   problemName: string,
-    inputSyntax: 'smtlib' | 'log',
-
   spacerUserOptions: string,
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean
   orientClauses: boolean,
   onChangeProblem: (problem: string) => void,
   onChangeProblemName: (problemName: string) => void,
-  onChangeInputSyntax: (syntax: 'smtlib' | 'log') => void
   onChangeSpacerUserOptions: (spacerUserOptions: string) => void,
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
@@ -146,12 +143,6 @@ export class Menu extends React.Component<Props, {}> {
         this.props.onChangeProblem(text);
         this.props.onChangeProblemName(file.name);
 
-        // guess inputSyntax from file extension:
-        if (file.name.endsWith('.smt') || file.name.endsWith('.smtlib') || file.name.endsWith('.smt2') || file.name.endsWith('.smtlib2')) {
-          this.props.onChangeInputSyntax('smtlib');
-        } else if (file.name.endsWith('.log')) {
-          this.props.onChangeInputSyntax('log');
-        }
       };
       reader.readAsText(file);
     }
@@ -175,11 +166,6 @@ export class Menu extends React.Component<Props, {}> {
   changeNonStrictForNegatedStrictInequalities(event: React.ChangeEvent<HTMLInputElement>) {
     const newValue = event.target.checked;
     this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
-  }
-
-  changeInputSyntax(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newValue = event.target.value as 'smtlib' | 'log';
-    this.props.onChangeInputSyntax(newValue);
   }
 
   changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {

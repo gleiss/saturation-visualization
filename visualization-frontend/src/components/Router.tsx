@@ -6,7 +6,6 @@ import { RouteComponentProps } from 'react-router';
 type State = {
     problem: string,
     problemName: string,
-    inputSyntax: "smtlib" | "log",
     spacerUserOptions: string,
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
@@ -18,7 +17,6 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
     state: State = {
         problem: "",
         problemName: "",
-        inputSyntax: "smtlib",
         spacerUserOptions: "fp.spacer.max_level=4 fp.spacer.dump_benchmarks=true fp.spacer.arith.solver=6",
         hideBracketsAssoc: true,
         nonStrictForNegatedStrictInequalities: true,
@@ -32,14 +30,12 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
                     <Menu 
                     problem={this.state.problem}
                     problemName={this.state.problemName}
-                    inputSyntax={this.state.inputSyntax}
                     spacerUserOptions={this.state.spacerUserOptions}
                     hideBracketsAssoc={this.state.hideBracketsAssoc}
                     nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
                     orientClauses={this.state.orientClauses}
                     onChangeProblem={this.changeProblem.bind(this)}
                     onChangeProblemName={this.changeProblemName.bind(this)}
-                    onChangeInputSyntax={this.changeInputSyntax.bind(this)}
                     onChangeSpacerUserOptions={this.changeSpacerUserOptions.bind(this)}
                     onChangeHideBracketsAssoc={this.changeHideBracketsAssoc.bind(this)}
                     onChangeNonStrictForNegatedStrictInequalities={this.changeNonStrictForNegatedStrictInequalities.bind(this)}
@@ -56,9 +52,7 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
         );
     }
 
-    appComponent(mode: "proof" | "replay" | "iterative", exp_path: string) {
-        const inputSyntax = this.state.inputSyntax === "smtlib" ? "smtlib2" : this.state.inputSyntax;
-        // const spacerUserOptions = `${this.state.spacerUserOptions} --input_syntax ${inputSyntax}`;
+    appComponent(mode: "replay" | "iterative", exp_path: string) {
         const spacerUserOptions = `${this.state.spacerUserOptions}`;
         return <AppWrapper
         name={this.state.problemName}
@@ -86,9 +80,6 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
 	  }
 	  changeNonStrictForNegatedStrictInequalities(newValue: boolean) {
 		    this.setState({nonStrictForNegatedStrictInequalities: newValue});
-	  }
-	  changeInputSyntax(inputSyntax: "smtlib" | "log") {
-		    this.setState({inputSyntax: inputSyntax});
 	  }
 	  changeOrientClauses(newValue: boolean) {
 		    this.setState({orientClauses: newValue});

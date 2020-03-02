@@ -26,8 +26,8 @@ export default class Main extends React.Component<Props, {}> {
 
     render() {
         return (
-                <main>
-                    <input type="text" value = {this.props.runCmd}></input>
+            <main>
+                    <input type="text" value = {this.props.runCmd} readOnly></input>
                     <Graph
                         tree= { this.props.tree }
                         onNodeSelectionChange={this.props.onNodeSelectionChange}

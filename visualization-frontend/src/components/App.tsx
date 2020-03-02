@@ -33,6 +33,7 @@ type Props = {
  *    "error": Some error occured. message holds a meaningful value.
  */
 type State = {
+    exp_path: string,
     state: "loaded" | "loaded iterative" | "waiting" | "layouting" | "error",
     trees: any[],
     runCmd: string,
@@ -48,6 +49,7 @@ type State = {
 class App extends Component<Props, State> {
 
     state: State = {
+        exp_path: this.props.exp_path,
         state: "waiting",
         trees: [],
         runCmd: "Run command:",
@@ -149,7 +151,7 @@ class App extends Component<Props, State> {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }, body : JSON.stringify({
-                exp_path: this.props.exp_path,
+                exp_path: this.state.exp_path,
             })
         });
 
@@ -222,6 +224,7 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 const message = (mode == "iterative")? "Hit Poke to update graph": "";
                 this.setState({
+                    exp_path: json.exp_name,
                     trees: [tree],
                     message: message,
                     state: state,

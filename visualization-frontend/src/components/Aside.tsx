@@ -29,10 +29,8 @@ export default class Aside extends React.Component<Props, {}> {
 
     render() {
         let nodeDetails;
-        let refresh_button;
         console.log(this.props.mode)
-        if (this.props.mode === "iterative") {
-            refresh_button =
+        let refresh_button =
                 <button
                     title="Poke"
                     onClick = { this.props.onPoke }
@@ -40,8 +38,7 @@ export default class Aside extends React.Component<Props, {}> {
                     <svg viewBox="0 0 24 24" className = "icon big" >
                         <use xlinkHref={ `${icons}#graph-undo` } />
                     </svg>
-                </button>
-        }
+                </button>;
 
         if (this.props.nodeSelection.length === 1  && this.props.tree!=null) {
             let node = this.props.tree[this.props.nodeSelection[0]]
