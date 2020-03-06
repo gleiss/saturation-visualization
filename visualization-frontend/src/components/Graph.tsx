@@ -109,16 +109,12 @@ export default class Graph extends React.Component<Props, {}> {
 
     // updates the network displayed by Vis.js
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
-        console.log("call Update Network")
-        if(layout=="SatVis"){
-            this.visLayout(this.props.tree, onlyUpdateStyles);
-        }else if(layout=="PobVis"){
-            console.time('pobvislayout');
-            const PobVisTree =  this.PobVisLayout()
-            console.timeEnd('pobvislayout');
-            this.visLayout(PobVisTree, onlyUpdateStyles);
+        if (layout === "SatVis"){
+            this.visLayout(this.props.tree);
+        } else if(layout === "PobVis"){
+            const PobVisTree =  PobVisLayout(this.props.tree);
+            this.visLayout(PobVisTree);
         }
-
     }
 
     visLayout(ATree, onlyUpdateStyles){
