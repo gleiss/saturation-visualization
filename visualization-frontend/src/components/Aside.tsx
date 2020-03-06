@@ -18,6 +18,7 @@ type Props = {
     onPoke: () => void,
     SatVisLayout: () => void,
     PobVisLayout: () => void,
+    MultiSelectMode: () => void,
     SMTLayout: () => void,
     JSONLayout:() => void,
     PobLemmasMap: {},
