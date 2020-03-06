@@ -294,23 +294,22 @@ class App extends Component<Props, State> {
         return (
                 <div className= "app" >
                 { main }
-
-                    <Aside
-                        message = {message}
-                        mode = { this.props.mode }
-                        tree = { tree }
-                        nodeSelection = { nodeSelection }
-                        onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
-                        onPoke = {this.poke.bind(this)}
-                        SatVisLayout = { this.setSatVisLayout.bind(this) }
-                        PobVisLayout = { this.setPobVisLayout.bind(this) }
-                        SMTLayout = { this.setSMTLayout.bind(this) }
-                        JSONLayout = { this.setJSONLayout.bind(this) }
-                        PobLemmasMap = { PobLemmasMap }
-                        ExprMap = { ExprMap }
-                        layout = { layout }
-                        expr_layout ={expr_layout}
-                    />
+                <Aside
+                    message = {message}
+                    mode = { this.props.mode }
+                    tree = { tree }
+                    nodeSelection = { nodeSelection }
+                    onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
+                    onPoke = {this.poke.bind(this)}
+                    SatVisLayout = { this.setSatVisLayout.bind(this) }
+                    PobVisLayout = { this.setPobVisLayout.bind(this) }
+                    SMTLayout = { this.setSMTLayout.bind(this) }
+                    JSONLayout = { this.setJSONLayout.bind(this) }
+                    PobLemmasMap = { PobLemmasMap }
+                    ExprMap = { ExprMap }
+                    layout = { layout }
+                    expr_layout ={expr_layout}
+                />
                 </div>
         );
 
