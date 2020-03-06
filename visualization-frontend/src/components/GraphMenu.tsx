@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import './GraphMenu.css';
+import '../styles/GraphMenu.css';
 
 const icons = require('../resources/icons/all.svg') as string;
 

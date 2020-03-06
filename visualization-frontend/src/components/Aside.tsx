@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import GraphMenu from './GraphMenu';
 import NodeCard from './NodeCard';
-import './NodeMenu.css';
+import '../styles/NodeMenu.css';
 import NodeDetails from './NodeDetails';
 import { Dag } from '../model/dag';
 import { Literal } from '../model/literal';
@@ -85,16 +85,16 @@ export default class Aside extends React.Component<Props, {}> {
                             title = "SMT"
                             onClick = { this.props.SMTLayout }
                         >
-                            <svg viewBox="0 0 24 24" className = "icon big" >
-                                <use xlinkHref={ `${icons}#node-children` } />
+                            <svg viewBox="0 0 30 30" className = "icon big" >
+                                <text x="50%" alignmentBaseline="middle" textAnchor="middle" y="50%" dominantBaseline="middle" fontWeight="light" stroke="none" fill="black" fontFamily="monospace">Raw</text>
                             </svg>
                         </button>
                         <button
                             title = "JSON"
                             onClick = { this.props.JSONLayout }
                         >
-                            <svg viewBox="0 0 24 24" className = "icon big" >
-                                <use xlinkHref={ `${icons}#node-children` } />
+                            <svg viewBox="0 0 35 35" className = "icon big" >
+                                <text x="50%" alignmentBaseline="middle" textAnchor="middle" y="50%" dominantBaseline="middle" fontWeight="light" stroke="none" fill="black" fontFamily="monospace">Sort</text>
                             </svg>
                         </button>
                     </section>

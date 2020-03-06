@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { Dag } from '../model/dag';
-import './Search.css';
+import '../styles/Search.css';
 import SatNode from '../model/sat-node';
 import { assert } from '../model/util';
 import { Clause } from '../model/unit';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import './Slider.css';
+import '../styles/Slider.css';
 
 
 const icons = require('../resources/icons/all.svg') as string;

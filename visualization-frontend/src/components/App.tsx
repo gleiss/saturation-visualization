@@ -5,7 +5,7 @@ import Main from './Main';
 import Aside from './Aside';
 import { Dag, ParsedLine } from '../model/dag';
 import SatNode from '../model/sat-node';
-import './App.css';
+import '../styles/App.css';
 import { assert } from '../model/util';
 import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
 import { findCommonConsequences } from '../model/find-node';
@@ -105,6 +105,7 @@ class App extends Component<Props, State> {
         return (
                 <div className= "app" >
                 { main }
+
                     <Aside
                         message = {message}
                         mode = { this.props.mode }
@@ -154,7 +155,6 @@ class App extends Component<Props, State> {
             })
         });
 
-
         try {
             const json = await fetchedJSON.json();
             console.log("backend response:", json)
@@ -192,7 +192,6 @@ class App extends Component<Props, State> {
             });
         }
     }
-
 
     async runSpacer(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
@@ -318,6 +317,7 @@ class App extends Component<Props, State> {
     //NETWORK///////////////////////////////
 
     updateNodeSelection(nodeSelection: number[]) {
+        console.log(nodeSelection)
         this.setState({ nodeSelection: nodeSelection });
     }
 

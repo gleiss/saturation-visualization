@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import './Menu.css';
+import '../styles/Menu.css';
 import * as Monaco from 'monaco-editor'
 import ExpTable from './ExpTable';
 import { assert } from '../model/util';

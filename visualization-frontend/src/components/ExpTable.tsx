@@ -1,5 +1,5 @@
 import * as React from 'react';
-import './NodeMenu.css';
+import '../styles/NodeMenu.css';
 import {Link} from 'react-router-dom';
 
 const icons = require('../resources/icons/all.svg') as string;

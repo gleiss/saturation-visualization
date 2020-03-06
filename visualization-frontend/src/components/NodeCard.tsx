@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Dag } from '../model/dag';
 import NodeMenu from './NodeMenu';
 import Search from './Search';
-import './NodeCard.css';
+import '../styles/NodeCard.css';
 
 type Props = {
   dag: Dag | null,

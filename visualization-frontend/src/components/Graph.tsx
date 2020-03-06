@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DataSet, Network, IdType, Node, Edge } from 'vis'
 
-import './Graph.css'
+import '../styles/Graph.css'
 import { assert } from '../model/util';
 
 import { Dag } from '../model/dag';
@@ -112,22 +112,25 @@ export default class Graph extends React.Component<Props, {}> {
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
         console.log("call Update Network")
         if(layout=="SatVis"){
-            this.visLayout(this.props.tree);
+            this.visLayout(this.props.tree, onlyUpdateStyles);
         }else if(layout=="PobVis"){
+            console.time('pobvislayout');
             const PobVisTree =  this.PobVisLayout()
-            this.visLayout(PobVisTree);
+            console.timeEnd('pobvislayout');
+            this.visLayout(PobVisTree, onlyUpdateStyles);
         }
 
     }
 
     PobVisLayout(): any{
-        let treeCloned = JSON.parse(JSON.stringify(this.props.tree)); 
+        console.time('clone the tree');
+        let treeCloned = JSON.parse(JSON.stringify(this.props.tree));
+        console.timeEnd('clone the tree');
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
             currentNodeExprID = treeCloned[this.props.nodeSelection[0]].exprID
         }
-        console.log("currentNodeExprID:", currentNodeExprID)
 
         for (const nodeID in treeCloned){
             let node = treeCloned[nodeID]
@@ -176,13 +179,13 @@ export default class Graph extends React.Component<Props, {}> {
     }
 
 
-    visLayout(ATree){
+    visLayout(ATree, onlyUpdateStyles){
+        console.time('my code')
         let find_related_nodes = this.props.nodeSelection.length>0
         let currentNodeExprID = -100
         if(find_related_nodes){
             currentNodeExprID = ATree[this.props.nodeSelection[0]].exprID
         }
-        console.log("currentNodeExprID:", currentNodeExprID)
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
         let edgeId = 0
@@ -209,12 +212,21 @@ export default class Graph extends React.Component<Props, {}> {
             visEdges.push(visEdge);
             edgeId++;
         }
+        console.timeEnd('my code');
+        if(onlyUpdateStyles){
+            console.time('updating edge and node');
+            this.networkNodes.update(visNodes);
+            this.networkEdges.update(visEdges);
+            console.timeEnd('updating edge and node');
+        }else{
+            console.time('adding edge and node');
+            this.networkNodes.clear();
+            this.networkNodes.add(visNodes);
+            this.networkEdges.clear();
+            this.networkEdges.add(visEdges);
 
-
-        this.networkNodes.clear();
-        this.networkNodes.add(visNodes);
-        this.networkEdges.clear();
-        this.networkEdges.add(visEdges);
+            console.timeEnd('adding edge and node');           
+        }
 
     }
 
@@ -254,6 +266,7 @@ export default class Graph extends React.Component<Props, {}> {
     findClosestNode(nodeId: number, direction: "u"|"d"|"l"|"r"){
         assert(this.network) 
         assert("body" in this.network!)
+        console.log(this.network!["body"]["nodes"])
         const currentNode = this.network!["body"]["nodes"][nodeId]
         let closestNode = currentNode
         let min_distance = 99999

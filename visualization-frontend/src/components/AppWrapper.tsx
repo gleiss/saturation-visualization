@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { NavigationBar } from "./NavigationBar";
 import App from "./App";
-import './AppWrapper.css';
+import '../styles/AppWrapper.css';
 
 type Props = {
 	name: string,

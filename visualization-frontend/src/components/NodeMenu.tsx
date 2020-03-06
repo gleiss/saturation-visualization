@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import './NodeMenu.css';
+import '../styles/NodeMenu.css';
 
 
 const icons = require('../resources/icons/all.svg') as string;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import './NodeDetails.css';
+import '../styles/NodeDetails.css';
 import Sortable from 'react-sortablejs';
 import { Clause } from '../model/unit';
 import { Literal } from '../model/literal';

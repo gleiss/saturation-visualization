@@ -1,5 +1,5 @@
 import * as React from 'react';
-import './NavigationBar.css';
+import '../styles/NavigationBar.css';
 
 const icons = require('../resources/icons/all.svg') as string;
 
