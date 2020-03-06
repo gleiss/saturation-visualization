@@ -13,12 +13,50 @@
   overflow: auto;
   width: 30rem;
 }
+.component-node-details.details-top-0 {
+    position: fixed;
+    top: 10rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+}
+.component-node-details.details-top-1 {
+    position: fixed;
+    top: 10rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+    left: 34rem;
+}
+.component-node-details.details-diff {
+    position: fixed;
+    bottom: 4rem;
+    left: 34rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+}
 .component-node-details.details-bottom {
     position: fixed;
     bottom: 4rem;
     background: #f8f9fb;
     overflow: auto;
     width: 30rem;
+}
+.component-node-details.details-bottom-0 {
+    position: fixed;
+    bottom: 4rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+}
+.component-node-details.details-bottom-1 {
+    position: fixed;
+    bottom: 4rem;
+    background: #f8f9fb;
+    overflow: auto;
+    width: 30rem;
+    left: 34rem;
 }
 .component-node-details.overview {
   background: #fff;
@@ -78,3 +116,19 @@ ul#id3 {
   opacity: 0.5;
 }
 
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.black {
+    color: black;
+}
+
+.component-node-details article span {
+    font-family: monospace;
+    white-space: pre-wrap;
+}

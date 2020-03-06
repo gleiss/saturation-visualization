@@ -1,13 +1,10 @@
 import * as React from 'react';
 
 import '../styles/NodeDetails.css';
-import Sortable from 'react-sortablejs';
-import { Clause } from '../model/unit';
-import { Literal } from '../model/literal';
-import SatNode from '../model/sat-node';
-
+import {toDiff} from "../helpers/diff";
+import {lemmaColours} from "../helpers/network";
 type Props = {
-    node: any,
+    nodes: any,
     PobLemmasMap: {},
     ExprMap: {},
     layout: string,
@@ -55,47 +52,125 @@ export default class NodeDetails extends React.Component<Props, {}> {
         }
         return result
     }
-
-    render() {
-        let additional_info ="type:" + this.props.node.event_type + " level:" + this.props.node.level
-        let lemma_list = new Array();
-        if(this.props.node.event_type == "EType.EXP_POB"){
-            lemma_list.push(<h2 key ="lemma-title"> Lemmas summarization </h2>)
-            if(this.props.node.exprID in this.props.PobLemmasMap){
-                let lemmas = this.props.PobLemmasMap[this.props.node.exprID]
+    getLemmaList(node) {
+        let lemma_list: JSX.Element[] = [];
+        if (node.event_type === "EType.EXP_POB"){
+            lemma_list.push(<h2 key ="lemma-title"> Lemmas summarization </h2>);
+            if (node.exprID in this.props.PobLemmasMap){
+                let lemmas = this.props.PobLemmasMap[node.exprID];
                 for (const lemma of lemmas){
-                    lemma_list.push(<h3 key={"lemma-header-"+ lemma[0]}>ExprID: {lemma[0]}, From: {lemma[1]} to {lemma[2]}</h3>)
-                    lemma_list.push(<pre key={"lemma-expr-"+lemma[0]}>{this.props.ExprMap[lemma[0]]}</pre>)
+                    let colorIndex = (lemma_list.length - 1) / 2;
+                    let lemmaStyle = {
+                        color: lemmaColours[colorIndex]
+                    };
+                    lemma_list.push(<h3 style={lemmaStyle} key={"lemma-header-"+ lemma[0]}>ExprID: {lemma[0]}, From: {lemma[1]} to {lemma[2]}</h3>);
+                    let expr = this.props.ExprMap[lemma[0]];
+                    lemma_list.push(<pre  key={"lemma-expr-"+lemma[0]}>{expr}</pre>);
                 }
             }
         }
-
-        let expr = ""
-        if(this.props.expr_layout=="SMT"){
-            expr = this.props.node.expr
-        }else{
-            /* expr = JSON.stringify(this.props.node.ast_json, null, 2); */
-            if(this.props.node.ast_json){
-                expr += this.node_to_string(this.props.node.ast_json, true);
-            }
+        return lemma_list;
+    }
+    
+    render() {
+        let node1, node2;
+        
+        if (this.props.nodes.length > 1){
+            node1 = this.props.nodes[0];
+            node2 = this.props.nodes[1];
         }
-
         return (
-            <div >
-                <section className= { 'component-node-details details-top'} >
-                <article>
-                <h2>Node <strong>{this.props.node.nodeID}, </strong>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
-                <h3>{additional_info}</h3>
-                <pre>{expr}</pre>
-                </article>
-                </section>
-                <section className= { 'component-node-details details-bottom'} >
+            <div>
+                {this.props.nodes.length > 1 && <section className='component-node-details details-diff'>
                     <article>
-                        {lemma_list}
+                        <h2>Diff (Node: <strong>{node1.nodeID}</strong> vs. Node: <strong>{node2.nodeID}</strong>)</h2>
+                        {toDiff(node1.expr, node2.expr).map((part, key) => (
+                            <span key={key} className={part.added ? "green" : part.removed ? "red" : "black"}>
+                                {part.value}
+                            </span>
+                        ))}
                     </article>
-                </section>
+                </section>}
+                {this.props.nodes.map((node, key) => {
+                    let additional_info ="type:" + node.event_type + " level:" + node.level;
+                    let lemma_list = this.getLemmaList(node);
+
+                    let expr = ""
+                    if(this.props.expr_layout=="SMT"){
+                        expr = node.expr
+                    }else{
+                        /* expr = JSON.stringify(this.props.node.ast_json, null, 2); */
+                        if(node.ast_json){
+                            expr += this.node_to_string(node.ast_json, true);
+                        }
+                    }
+                    const classNameTop = "component-node-details details-top-" + key;
+                    const classNameBottom = "component-node-details details-bottom-" + key;
+                    return (
+                        <div key = {key}>
+                            <section className={classNameTop}>
+                                <article>
+                                    <h2>Node <strong>{node.nodeID}, </strong>Expr <strong> {node.exprID} </strong>,
+                                        Parent <strong> {node.pobID}  </strong></h2>
+                                    <h3>{additional_info}</h3>
+                                    <pre className={this.props.nodes.length === 1 ? "black" : node === node1 ? "red" : "green" }>{expr}</pre>
+                                </article>
+                            </section>
+                            {lemma_list.length > 0 && <section className={classNameBottom}>
+                                <article>
+                                    {lemma_list}
+                                </article>
+                            </section>}
+                        </div>
+                    );
+                })}
             </div>
-        );
+);
+
+
+
+
+        /* let additional_info ="type:" + this.props.node.event_type + " level:" + this.props.node.level */
+        /* let lemma_list = new Array(); */
+
+        //if(this.props.node.event_type == "EType.EXP_POB"){
+        //    lemma_list.push(<h2 key ="lemma-title"> Lemmas summarization </h2>)
+        //    if(this.props.node.exprID in this.props.PobLemmasMap){
+        //        let lemmas = this.props.PobLemmasMap[this.props.node.exprID]
+        //        for (const lemma of lemmas){
+        //            lemma_list.push(<h3 key={"lemma-header-"+ lemma[0]}>ExprID: {lemma[0]}, From: {lemma[1]} to {lemma[2]}</h3>)
+        //            lemma_list.push(<pre key={"lemma-expr-"+lemma[0]}>{this.props.ExprMap[lemma[0]]}</pre>)
+        //        }
+        //    }
+        //}
+
+        //let expr = ""
+        //if(this.props.expr_layout=="SMT"){
+        //    expr = this.props.node.expr
+        //}else{
+        //    /* expr = JSON.stringify(this.props.node.ast_json, null, 2); */
+        //    if(this.props.node.ast_json){
+        //        expr += this.node_to_string(this.props.node.ast_json, true);
+        //    }
+        //}
+
+        //return (
+        //    <div >
+        //        <section className= { 'component-node-details details-top'} >
+        //        <article>
+        //        <h2>Node <strong>{this.props.node.nodeID}, </strong>Expr < strong > { this.props.node.exprID } </strong>, Parent <strong> {this.props.node.pobID}  </strong></h2 >
+        //        <h3>{additional_info}</h3>
+        //        <pre>{expr}</pre>
+        //        </article>
+        //        </section>
+        //        <section className= { 'component-node-details details-bottom'} >
+        //            <article>
+        //                {lemma_list}
+        //            </article>
+        //        </section>
+        //    </div>
+        //);
+
     }
 
 }
