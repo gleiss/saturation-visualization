@@ -26,26 +26,20 @@ export default class Graph extends React.Component<Props, {}> {
         metaPressed: false,
     }
 
-    markers = new Set<number>();
     network: Network | null = null;
     networkNodes = new DataSet<Node>([]);
     networkEdges = new DataSet<Edge>([]);
     graphContainer = React.createRef<HTMLDivElement>();
-    boundKeydownHandler = this.keydownHandler.bind(this);
     boundKeyupHandler =  this.keyupHandler.bind(this);
-    X_ordered_nodes = [];
-    Y_ordered_nodes = [];
    
     componentDidMount() {
         this.generateNetwork();
         this.updateNetwork(false, this.props.layout);
         this.network!.fit();
-        window.addEventListener("keydown", this.boundKeydownHandler, false);
         window.addEventListener("keyup", this.boundKeyupHandler, false);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("keydown", this.boundKeydownHandler, false);
         window.removeEventListener("keyup", this.boundKeyupHandler, false);
     }
 
@@ -60,8 +54,6 @@ export default class Graph extends React.Component<Props, {}> {
             </section>
         );
     }
-
-    // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     generateNetwork() {
         console.log("I am Graph. I receive:", this.props)
@@ -146,9 +138,6 @@ export default class Graph extends React.Component<Props, {}> {
         this.networkEdges.clear();
         this.networkEdges.add(visEdges);
 
-    }
-
-    keydownHandler(event) {
     }
 
     keyupHandler(event) {
