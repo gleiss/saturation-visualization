@@ -7,8 +7,9 @@ import ReactModal from 'react-modal';
 ReactModal.setAppElement('#root');
 
 type Props = {
-    mode: "proof" | "saturation" | "iterative",
+    mode: "proof" | "replay" | "iterative",
     tree: any,
+    runCmd: string,
     onNodeSelectionChange: (selection: number[]) => void,
     nodeSelection: number[],
     historyLength: number,
@@ -25,21 +26,22 @@ export default class Main extends React.Component<Props, {}> {
 
     render() {
         return (
-                <main>
-                <Graph
-            tree= { this.props.tree }
-            onNodeSelectionChange={this.props.onNodeSelectionChange}
-            nodeSelection={this.props.nodeSelection}
-            currentTime = {this.props.currentTime}
-            layout = {this.props.layout}
-            PobLemmasMap = {this.props.PobLemmasMap}
-                />
-                <Slider
-            historyLength={this.props.historyLength}
-            currentTime={this.props.currentTime}
-            onCurrentTimeChange={this.props.onCurrentTimeChange}
-            enabled={true}
-                />
+            <main>
+                    <input type="text" value = {this.props.runCmd} readOnly></input>
+                    <Graph
+                        tree= { this.props.tree }
+                        onNodeSelectionChange={this.props.onNodeSelectionChange}
+                        nodeSelection={this.props.nodeSelection}
+                        currentTime = {this.props.currentTime}
+                        layout = {this.props.layout}
+                        PobLemmasMap = {this.props.PobLemmasMap}
+                    />
+                    <Slider
+                        historyLength={this.props.historyLength}
+                        currentTime={this.props.currentTime}
+                        onCurrentTimeChange={this.props.onCurrentTimeChange}
+                        enabled={true}
+                    />
                 </main>
         );
     }

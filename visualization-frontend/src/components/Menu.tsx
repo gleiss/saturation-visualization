@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Link} from 'react-router-dom';
 import './Menu.css';
 import * as Monaco from 'monaco-editor'
+import ExpTable from './ExpTable';
 import { assert } from '../model/util';
 
 const icons = require('../resources/icons/all.svg') as string;
@@ -9,15 +10,12 @@ const icons = require('../resources/icons/all.svg') as string;
 type Props = {
   problem: string,
   problemName: string,
-    inputSyntax: 'smtlib' | 'tptp',
-
   spacerUserOptions: string,
   hideBracketsAssoc: boolean,
   nonStrictForNegatedStrictInequalities: boolean
   orientClauses: boolean,
   onChangeProblem: (problem: string) => void,
   onChangeProblemName: (problemName: string) => void,
-  onChangeInputSyntax: (syntax: 'smtlib' | 'tptp') => void
   onChangeSpacerUserOptions: (spacerUserOptions: string) => void,
   onChangeHideBracketsAssoc: (newValue: boolean) => void,
   onChangeNonStrictForNegatedStrictInequalities: (newValue: boolean) => void,
@@ -25,7 +23,8 @@ type Props = {
 }
 
 export class Menu extends React.Component<Props, {}> {
-  private isChromeOrFirefox = navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Firefox') > -1;
+  // private isChromeOrFirefox = navigator.userAgent.indexOf('Chrome') > -1 || navigator.userAgent.indexOf('Firefox') > -1;
+    private isChromeOrFirefox = true;
   private fileUpload = React.createRef<HTMLInputElement>();
   monacoDiv = React.createRef<HTMLDivElement>();
   monaco: Monaco.editor.IStandaloneCodeEditor | null = null
@@ -115,13 +114,12 @@ export class Menu extends React.Component<Props, {}> {
                   </li>
                 </ul>
               </fieldset>
-
+              <ExpTable/>
             </aside>
           </div>
         </section>
 
         <section className="run-menu">
-          <Link to="/proof/" className="fake-button">Solve</Link>
           <Link to="/iterative/" className="fake-button">Hit and Run</Link>
         </section>
       </section>
@@ -145,12 +143,6 @@ export class Menu extends React.Component<Props, {}> {
         this.props.onChangeProblem(text);
         this.props.onChangeProblemName(file.name);
 
-        // guess inputSyntax from file extension:
-        if (file.name.endsWith('.smt') || file.name.endsWith('.smtlib') || file.name.endsWith('.smt2') || file.name.endsWith('.smtlib2')) {
-          this.props.onChangeInputSyntax('smtlib');
-        } else if (file.name.endsWith('.tptp')) {
-          this.props.onChangeInputSyntax('tptp');
-        }
       };
       reader.readAsText(file);
     }
@@ -174,11 +166,6 @@ export class Menu extends React.Component<Props, {}> {
   changeNonStrictForNegatedStrictInequalities(event: React.ChangeEvent<HTMLInputElement>) {
     const newValue = event.target.checked;
     this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
-  }
-
-  changeInputSyntax(event: React.ChangeEvent<HTMLSelectElement>) {
-    const newValue = event.target.value as 'smtlib' | 'tptp';
-    this.props.onChangeInputSyntax(newValue);
   }
 
   changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {

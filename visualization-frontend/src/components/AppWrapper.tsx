@@ -5,9 +5,10 @@ import './AppWrapper.css';
 
 type Props = {
 	name: string,
-	problem: string,
+	  problem: string,
+    exp_path: string,
 	spacerUserOptions: string,
-	mode: "proof" | "saturation" | "iterative"
+	mode: "proof" | "replay" | "iterative"
 	hideBracketsAssoc: boolean,
 	nonStrictForNegatedStrictInequalities: boolean, 
 	orientClauses: boolean,
@@ -22,7 +23,9 @@ type Props = {
 					name={this.props.name}
 				/>
 				<App 
-					problem={this.props.problem}
+        name = {this.props.name}
+				problem={this.props.problem}
+        exp_path = {this.props.exp_path}
 					spacerUserOptions={this.props.spacerUserOptions}
 					mode={this.props.mode}
 					hideBracketsAssoc={this.props.hideBracketsAssoc}

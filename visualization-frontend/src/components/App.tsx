@@ -15,9 +15,11 @@ import { Literal } from '../model/literal';
 import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
 
 type Props = {
+    name: string,
+    exp_path: string,
+    mode: "proof" | "replay" | "iterative",
     problem: string,
     spacerUserOptions: string,
-    mode: "proof" | "saturation" | "iterative",
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean,
@@ -31,12 +33,15 @@ type Props = {
  *    "error": Some error occured. message holds a meaningful value.
  */
 type State = {
+    exp_path: string,
     state: "loaded" | "loaded iterative" | "waiting" | "layouting" | "error",
     trees: any[],
+    runCmd: string,
     message: string,
     nodeSelection: number[],
     currentTime: number,
     layout: string,
+    expr_layout: "SMT" | "JSON",
     PobLemmasMap: {},
     ExprMap: {}
 }
@@ -44,12 +49,15 @@ type State = {
 class App extends Component<Props, State> {
 
     state: State = {
+        exp_path: this.props.exp_path,
         state: "waiting",
         trees: [],
+        runCmd: "Run command:",
         message: "",
         nodeSelection: [],
         currentTime: 0,
-        layout: "SatVis",
+        layout: "PobVis",
+        expr_layout: "SMT",
         PobLemmasMap: {},
         ExprMap: {},
     }
@@ -58,10 +66,12 @@ class App extends Component<Props, State> {
         const {
             state,
             trees,
+            runCmd,
             message,
             nodeSelection,
             currentTime,
             layout,
+            expr_layout,
             PobLemmasMap,
             ExprMap,
         } = this.state;
@@ -73,7 +83,8 @@ class App extends Component<Props, State> {
             const hL = Object.keys(tree).length
             main = (
                     <Main
-                mode = { this.props.mode }
+                        mode = { this.props.mode }
+                    runCmd = {this.state.runCmd}
                 tree = { tree }
                 onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
                 nodeSelection = { nodeSelection }
@@ -94,30 +105,35 @@ class App extends Component<Props, State> {
         return (
                 <div className= "app" >
                 { main }
-
-                < Aside
-            message = {message}
-            mode = { this.props.mode }
-            tree = { tree }
-            nodeSelection = { nodeSelection }
-            onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
-            onPoke = {this.poke.bind(this)}
-            SatVisLayout = { this.setSatVisLayout.bind(this) }
-            PobVisLayout = { this.setPobVisLayout.bind(this) }
-            PobLemmasMap = { PobLemmasMap }
-            ExprMap = { ExprMap }
-            layout = { layout }
-                />
+                    <Aside
+                        message = {message}
+                        mode = { this.props.mode }
+                        tree = { tree }
+                        nodeSelection = { nodeSelection }
+                        onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
+                        onPoke = {this.poke.bind(this)}
+                        SatVisLayout = { this.setSatVisLayout.bind(this) }
+                        PobVisLayout = { this.setPobVisLayout.bind(this) }
+                        SMTLayout = { this.setSMTLayout.bind(this) }
+                        JSONLayout = { this.setJSONLayout.bind(this) }
+                        PobLemmasMap = { PobLemmasMap }
+                        ExprMap = { ExprMap }
+                        layout = { layout }
+                        expr_layout ={expr_layout}
+                    />
                 </div>
         );
 
     }
 
     async componentDidMount() {
-
-        // call Vampire on given input problem
-        await this.runVampire(this.props.problem, this.props.spacerUserOptions, this.props.mode);
-
+        if(this.props.mode === "iterative"){
+            // call Vampire on given input problem
+            await this.runSpacer(this.props.problem, this.props.spacerUserOptions, this.props.mode);
+        }
+        else{
+            await this.poke();
+        }
     }
 
     async poke() {
@@ -133,8 +149,11 @@ class App extends Component<Props, State> {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }, body : ""
+            }, body : JSON.stringify({
+                exp_path: this.state.exp_path,
+            })
         });
+
 
         try {
             const json = await fetchedJSON.json();
@@ -147,7 +166,8 @@ class App extends Component<Props, State> {
                 const ExprMap = this.buildExprMap(tree)
                 this.setState({
                     trees: [tree],
-                    message: "Spacer is "+json.spacerState,
+                    runCmd: json.run_cmd,
+                    message: "Spacer is "+json.spacer_state,
                     state: state,
                     PobLemmasMap: PobLemmasMap,
                     ExprMap: ExprMap,
@@ -173,13 +193,14 @@ class App extends Component<Props, State> {
         }
     }
 
-    async runVampire(problem: string, spacerUserOptions: string, mode: "proof" | "saturation" | "iterative") {
+
+    async runSpacer(problem: string, spacerUserOptions: string, mode: "proof" | "replay" | "iterative") {
         this.setState({
             state: "waiting",
             message: "Waiting for Spacer...",
         });
 
-        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/startiterative' : 'http://localhost:5000/spacer/start', {
+        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/start_iterative' : 'http://localhost:5000/spacer/replay', {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -187,6 +208,7 @@ class App extends Component<Props, State> {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                name: this.props.name,
                 file: problem,
                 spacerUserOptions: spacerUserOptions
             })
@@ -198,11 +220,12 @@ class App extends Component<Props, State> {
             if (json.status === "success") {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
-                const state = (mode == "iterative" && json.spacerState === "running") ? "loaded iterative" : "loaded";
+                const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
                 const PobLemmasMap = this.buildPobLemmasMap(tree)
                 const ExprMap = this.buildExprMap(tree)
                 const message = (mode == "iterative")? "Hit Poke to update graph": "";
                 this.setState({
+                    exp_path: json.exp_name,
                     trees: [tree],
                     message: message,
                     state: state,
@@ -323,6 +346,12 @@ class App extends Component<Props, State> {
     }
     setSatVisLayout(){
         this.setState({ layout: "SatVis" })
+    }
+    setSMTLayout(){
+        this.setState({ expr_layout: "SMT" })
+    }
+    setJSONLayout(){
+        this.setState({ expr_layout: "JSON" })
     }
 }
 
