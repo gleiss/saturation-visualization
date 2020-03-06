@@ -21,20 +21,22 @@ type Props = {
     layout: string,
     expr_layout: "SMT"|"JSON"
 };
-export default class Aside extends React.Component<Props, {}> {
+class Aside extends React.Component<Props, {}> {
+
+    createButton(title, onClick, svg) {
+        return <button
+                   title={title}
+                   onClick = { onClick }
+               >
+            <svg viewBox="0 0 24 24" className = "icon big" >
+                <use xlinkHref={ `${icons}#${svg}` } />
+            </svg>
+        </button>;
+    }
 
     render() {
         let nodeDetails;
         console.log(this.props.mode)
-        let refresh_button =
-                <button
-                    title="Poke"
-                    onClick = { this.props.onPoke }
-                >
-                    <svg viewBox="0 0 24 24" className = "icon big" >
-                        <use xlinkHref={ `${icons}#graph-undo` } />
-                    </svg>
-                </button>;
 
         if (this.props.nodeSelection.length === 1  && this.props.tree!=null) {
             let node = this.props.tree[this.props.nodeSelection[0]]
@@ -59,24 +61,10 @@ export default class Aside extends React.Component<Props, {}> {
                 <article>
                     <section className="component-node-menu">{this.props.message}</section>
                     <section className="component-node-menu" >
-                        { refresh_button }
-                        <button
-                        title = "SatVis"
-                        onClick = { this.props.SatVisLayout }
-                        >
-                        <svg viewBox="0 0 24 24" className = "icon big" >
-                            <use xlinkHref={ `${icons}#node-parents` } />
-                        </svg>
-                        </button>
-
-                        <button
-                            title = "PobVis"
-                            onClick = { this.props.PobVisLayout }
-                        >
-                            <svg viewBox="0 0 24 24" className = "icon big" >
-                                <use xlinkHref={ `${icons}#node-children` } />
-                            </svg>
-                        </button>
+                        { this.createButton("Poke", this.props.onPoke, "graph-undo") }
+                        { this.createButton("SatVis", this.props.SatVisLayout, "node-parents") }
+                        { this.createButton("PobVis", this.props.PobVisLayout, "node-children") }
+                        { this.createButton("MultiSelect", this.props.MultiSelectMode, "history-forward") }
                         <button
                             title = "SMT"
                             onClick = { this.props.SMTLayout }
@@ -101,3 +89,4 @@ export default class Aside extends React.Component<Props, {}> {
     }
 
 }
+export default Aside; 
