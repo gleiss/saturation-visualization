@@ -45,6 +45,7 @@ class Aside extends React.Component<Props, {}> {
                        PobLemmasMap = { this.props.PobLemmasMap }
                        ExprMap = { this.props.ExprMap }
                        layout = { this.props.layout }
+                       expr_layout ={this.props.expr_layout}
             />;
         } else {
             return <section className={ 'component-node-details overview' }>
