@@ -165,18 +165,4 @@ export class Menu extends React.Component<Props, {}> {
         this.props.onChangeProblem(newValue);
     }
 
-    changeHideBracketsAssoc(event: React.ChangeEvent<HTMLInputElement>) {
-        const newValue = event.target.checked;
-        this.props.onChangeHideBracketsAssoc(newValue);
-    }
-
-    changeNonStrictForNegatedStrictInequalities(event: React.ChangeEvent<HTMLInputElement>) {
-        const newValue = event.target.checked;
-        this.props.onChangeNonStrictForNegatedStrictInequalities(newValue);
-    }
-
-    changeOrientClauses(event: React.ChangeEvent<HTMLInputElement>) {
-        const newValue = event.target.checked;
-        this.props.onChangeOrientClauses(newValue);
-    }
 }
