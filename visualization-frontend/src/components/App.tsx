@@ -57,7 +57,7 @@ class App extends Component<Props, State> {
         PobLemmasMap: {},
         ExprMap: {},
         multiselect: false
-    }
+    };
 
     render() {
         const {
@@ -157,7 +157,10 @@ class App extends Component<Props, State> {
             console.log("backend response:", json)
             if (json.status === "success") {
                 // await VizWrapper.layoutDag(dag, true);
-                let tree = json.nodes_list
+                let tree = json.nodes_list;
+                for (let i = 0; i < Object.keys(tree).length; i++){
+                    tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
+                }
                 const state = "loaded";
                 const PobLemmasMap =buildPobLemmasMap(tree)
                 const ExprMap =buildExprMap(tree)
@@ -215,11 +218,14 @@ class App extends Component<Props, State> {
             console.log("backend response:", json)
             if (json.status === "success") {
                 // await VizWrapper.layoutDag(dag, true);
-                let tree = json.nodes_list
+                let tree = json.nodes_list;
+                for (let i = 0; i < Object.keys(tree).length; i++){
+                    tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
+                }
                 const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
                 const PobLemmasMap =buildPobLemmasMap(tree)
                 const ExprMap = buildExprMap(tree)
-                const message = (mode == "iterative")? "Hit Poke to update graph": "";
+                const message = "Hit Poke to update graph";
                 this.setState({
                     exp_path: json.exp_name,
                     trees: [tree],
