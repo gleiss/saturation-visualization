@@ -59,71 +59,6 @@ class App extends Component<Props, State> {
         multiselect: false
     };
 
-    render() {
-        const {
-            state,
-            trees,
-            runCmd,
-            message,
-            nodeSelection,
-            currentTime,
-            layout,
-            expr_layout,
-            PobLemmasMap,
-            ExprMap,
-        } = this.state;
-        let tree;
-        let main;
-        if (state === "loaded") {
-            assert(trees.length > 0);
-            tree = trees[trees.length - 1];
-            const hL = Object.keys(tree).length
-            main = (
-                    <Main
-                        mode = { this.props.mode }
-                    runCmd = {this.state.runCmd}
-                tree = { tree }
-                onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
-                nodeSelection = { nodeSelection }
-                historyLength = { hL }
-                currentTime = { currentTime }
-                onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
-                layout = { layout }
-                PobLemmasMap = { PobLemmasMap }
-                    />
-            );
-        } else {
-            main = (
-                    <main>
-                    <section className= "slider-placeholder" />
-                    </main>
-            );
-        }
-        return (
-                <div className= "app" >
-                { main }
-
-                    <Aside
-                        message = {message}
-                        mode = { this.props.mode }
-                        tree = { tree }
-                        nodeSelection = { nodeSelection }
-                        onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
-                        onPoke = {this.poke.bind(this)}
-                        SatVisLayout = { this.setSatVisLayout.bind(this) }
-                        PobVisLayout = { this.setPobVisLayout.bind(this) }
-                        SMTLayout = { this.setSMTLayout.bind(this) }
-                        JSONLayout = { this.setJSONLayout.bind(this) }
-                        PobLemmasMap = { PobLemmasMap }
-                        ExprMap = { ExprMap }
-                        layout = { layout }
-                        expr_layout ={expr_layout}
-                    />
-                </div>
-        );
-
-    }
-
     async componentDidMount() {
         if(this.props.mode === "iterative"){
             // call Vampire on given input problem
@@ -316,6 +251,71 @@ class App extends Component<Props, State> {
     setJSONLayout(){
         this.setState({ expr_layout: "JSON" })
     }
+    render() {
+        const {
+            state,
+            trees,
+            runCmd,
+            message,
+            nodeSelection,
+            currentTime,
+            layout,
+            expr_layout,
+            PobLemmasMap,
+            ExprMap,
+        } = this.state;
+        let tree;
+        let main;
+        if (state === "loaded") {
+            assert(trees.length > 0);
+            tree = trees[trees.length - 1];
+            const hL = Object.keys(tree).length
+            main = (
+                    <Main
+                        mode = { this.props.mode }
+                    runCmd = {this.state.runCmd}
+                tree = { tree }
+                onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
+                nodeSelection = { nodeSelection }
+                historyLength = { hL }
+                currentTime = { currentTime }
+                onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
+                layout = { layout }
+                PobLemmasMap = { PobLemmasMap }
+                    />
+            );
+        } else {
+            main = (
+                    <main>
+                    <section className= "slider-placeholder" />
+                    </main>
+            );
+        }
+        return (
+                <div className= "app" >
+                { main }
+
+                    <Aside
+                        message = {message}
+                        mode = { this.props.mode }
+                        tree = { tree }
+                        nodeSelection = { nodeSelection }
+                        onUpdateNodeSelection = { this.updateNodeSelection.bind(this) }
+                        onPoke = {this.poke.bind(this)}
+                        SatVisLayout = { this.setSatVisLayout.bind(this) }
+                        PobVisLayout = { this.setPobVisLayout.bind(this) }
+                        SMTLayout = { this.setSMTLayout.bind(this) }
+                        JSONLayout = { this.setJSONLayout.bind(this) }
+                        PobLemmasMap = { PobLemmasMap }
+                        ExprMap = { ExprMap }
+                        layout = { layout }
+                        expr_layout ={expr_layout}
+                    />
+                </div>
+        );
+
+    }
+
 }
 
 export default App;
