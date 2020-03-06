@@ -3,16 +3,10 @@ import { Component } from 'react';
 
 import Main from './Main';
 import Aside from './Aside';
-import { Dag, ParsedLine } from '../model/dag';
-import SatNode from '../model/sat-node';
 import '../styles/App.css';
 import { assert } from '../model/util';
-import { filterNonParents, filterNonConsequences, mergePreprocessing, passiveDagForSelection } from '../model/transformations';
-import { findCommonConsequences } from '../model/find-node';
-import { VizWrapper } from '../model/viz-wrapper';
-import { Clause } from '../model/unit';
-import { Literal } from '../model/literal';
-import { computeClauseRepresentation, computeParentLiterals } from '../model/clause-orientation';
+import {toReadable} from "../helpers/readable";
+import {buildExprMap, buildPobLemmasMap} from "../helpers/network";
 
 type Props = {
     name: string,
@@ -162,8 +156,8 @@ class App extends Component<Props, State> {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
                 const state = "loaded";
-                const PobLemmasMap = this.buildPobLemmasMap(tree)
-                const ExprMap = this.buildExprMap(tree)
+                const PobLemmasMap = buildPobLemmasMap(tree)
+                const ExprMap = buildExprMap(tree)
                 this.setState({
                     trees: [tree],
                     runCmd: json.run_cmd,
@@ -220,8 +214,8 @@ class App extends Component<Props, State> {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
                 const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
-                const PobLemmasMap = this.buildPobLemmasMap(tree)
-                const ExprMap = this.buildExprMap(tree)
+                const PobLemmasMap = buildPobLemmasMap(tree)
+                const ExprMap = .buildExprMap(tree)
                 const message = (mode == "iterative")? "Hit Poke to update graph": "";
                 this.setState({
                     exp_path: json.exp_name,
@@ -250,68 +244,6 @@ class App extends Component<Props, State> {
             });
         }
     }
-
-
-    //BUILD POBLEMMASMAP////////////////////
-    buildPobLemmasMap(tree: any): any{
-        // construct exprID->expr map
-        let ExprMap = new Map<number, string>();
-        for (const nodeID in tree) {
-            const node = tree[nodeID]
-            ExprMap[node.exprID] = node.expr
-        }
-
-        // construct PobExprID->a list of lemmas
-        let PobLemmasMap = {}
-        for (const nodeID in tree) {
-            let node = tree[nodeID]
-            if (node.event_type != "EType.ADD_LEM") {
-                continue
-            }
-            const lemmaExprID = node.exprID
-            const level = node.level
-            const pobID = node.pobID
-            if (!(pobID in PobLemmasMap)) {
-                PobLemmasMap[pobID] = new Array<{}>();
-            }
-
-            //traverse the list, if lemmaExprID is already in the list, update its min max
-            let existPrevLemma = false
-            for (const lemma of PobLemmasMap[pobID]) {
-                if (lemma[0] == lemmaExprID) {
-                    existPrevLemma = true
-                    let prev_min = lemma[1]
-                    let prev_max = lemma[2]
-
-                    if (level > prev_max || level == "oo") {
-                        lemma[2] = level
-                    }
-                    if (level < prev_min) {
-                        lemma[1] = level
-                    }
-                    break
-                }
-            }
-
-            if (!existPrevLemma) {
-                PobLemmasMap[node.pobID].push([lemmaExprID, level, level])
-            }
-        }
-        return PobLemmasMap
-    }
-
-    //BUILD EXPR MAP////////////////////////
-    // construct exprID->expr map
-    buildExprMap(tree: any): any{
-        let ExprMap = new Map<number, string>();
-        for (const nodeID in tree) {
-            const node = tree[nodeID]
-            ExprMap[node.exprID] = node.expr
-        }
-        return ExprMap
-
-    }
-
 
 
     //NETWORK///////////////////////////////
