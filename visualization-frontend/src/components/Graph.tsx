@@ -254,7 +254,6 @@ export default class Graph extends React.Component<Props, {}> {
     findClosestNode(nodeId: number, direction: "u"|"d"|"l"|"r"){
         assert(this.network) 
         assert("body" in this.network!)
-        console.log(this.network!["body"]["nodes"])
         const currentNode = this.network!["body"]["nodes"][nodeId]
         let closestNode = currentNode
         let min_distance = 99999
