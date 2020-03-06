@@ -104,8 +104,6 @@ export default class Graph extends React.Component<Props, {}> {
         });
 
     }
-
-
     // updates the network displayed by Vis.js
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
         if (layout === "SatVis"){
@@ -116,32 +114,32 @@ export default class Graph extends React.Component<Props, {}> {
         }
     }
 
-    visLayout(ATree, onlyUpdateStyles){
-        console.time('my code')
-        let find_related_nodes = this.props.nodeSelection.length>0
-        let currentNodeExprID = -100
-        if(find_related_nodes){
-            currentNodeExprID = ATree[this.props.nodeSelection[0]].exprID
+    visLayout(ATree){
+        let nodeHasBeenSelected = this.props.nodeSelection.length > 0;
+        let currentNodeExprID = Number.MIN_SAFE_INTEGER;
+        let InvList:string[] = [];
+        if(nodeHasBeenSelected) {
+            currentNodeExprID = ATree[this.props.nodeSelection[0]].exprID;
+            InvList = currentNodeExprID in this.props.PobLemmasMap ? this.props.PobLemmasMap[currentNodeExprID].map(exprInfo => exprInfo[0]): []
         }
         const visNodes = new Array<Node>();
         const visEdges = new Array<Edge>();
-        let edgeId = 0
+        let edgeId = 0;
 
 
         for (const nodeID in ATree){
-            let node = ATree[nodeID]
-            if(!node.to_be_vis) continue
+            let node = ATree[nodeID];
+            if(!node.to_be_vis) continue;
             let visNode;
             //Prioritize related nodes
-            if (node.exprID == currentNodeExprID){
-                visNode = toVisNode(node, "sameExprID")
-            }else{
-                if(node.nodeID > this.props.currentTime){
-                    visNode = toVisNode(node, "activated");
-                }
-                else{
-                    visNode = toVisNode(node, "passive");
-                }
+            if (node.exprID === currentNodeExprID) {
+                visNode = toVisNode(node, "sameExprID", this.props.nodeSelection)
+            } else if (InvList.length > 0 && InvList.indexOf(node.exprID) >= 0){
+                visNode = toVisNode(node, "lemma", this.props.nodeSelection, InvList.indexOf((node.exprID)) % 10);
+            } else if (node.nodeID > this.props.currentTime) {
+                visNode = toVisNode(node, "activated", this.props.nodeSelection);
+            } else {
+                visNode = toVisNode(node, "passive", this.props.nodeSelection);
             }
 
             visNodes.push(visNode);
@@ -149,21 +147,10 @@ export default class Graph extends React.Component<Props, {}> {
             visEdges.push(visEdge);
             edgeId++;
         }
-        console.timeEnd('my code');
-        if(onlyUpdateStyles){
-            console.time('updating edge and node');
-            this.networkNodes.update(visNodes);
-            this.networkEdges.update(visEdges);
-            console.timeEnd('updating edge and node');
-        }else{
-            console.time('adding edge and node');
-            this.networkNodes.clear();
-            this.networkNodes.add(visNodes);
-            this.networkEdges.clear();
-            this.networkEdges.add(visEdges);
-
-            console.timeEnd('adding edge and node');           
-        }
+        this.networkNodes.clear();
+        this.networkNodes.add(visNodes);
+        this.networkEdges.clear();
+        this.networkEdges.add(visEdges);
 
     }
 
