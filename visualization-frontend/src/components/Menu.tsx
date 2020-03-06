@@ -134,6 +134,11 @@ export class Menu extends React.Component<Props, {}> {
         }
     }
 
+    onChangeVariables(e) {
+        this.props.onChangeVariables(e.target.value);
+
+    }
+
     uploadEncoding(event: React.ChangeEvent<HTMLInputElement>) {
         if (event.target.files !== null && event.target.files.length > 0) {
             const file = event.target.files[0];
