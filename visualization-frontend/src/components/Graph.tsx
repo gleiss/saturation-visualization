@@ -156,16 +156,11 @@ export default class Graph extends React.Component<Props, {}> {
 
     keydownHandler(event) {
     }
+
     keyupHandler(event) {
-        if(this.props.nodeSelection.length==0) return
-        const selected_node = this.props.nodeSelection[0]
-        let closest_node = selected_node
-        if(event.key=="ArrowLeft"){
-            closest_node = findClosestNode(selected_node, "l")
-        }
-        if(event.key=="ArrowRight"){
-            closest_node = findClosestNode(selected_node, "r")
-        }
+        if(this.props.nodeSelection.length === 0) return;
+        const selected_node = this.props.nodeSelection[0];
+        let closest_node = findClosestNode(selected_node, event.key, this.network);
         this.props.onNodeSelectionChange([closest_node]);
     }
 }
