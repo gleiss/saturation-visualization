@@ -169,6 +169,23 @@
             "background": "#dddddd"
         }
     },
+    "lemma": {
+        "hidden": false,
+        "markedStyle": {
+            "border": "#16941c",
+            "background": "#a3f7a7"
+        },
+        "highlightStyle": {
+            "border": "#16941c",
+            "background": "#a3f7a7"
+        },
+        "shape": "star",
+        "text": "#000000",
+        "defaultStyle": {
+            "border": "#16941c",
+            "background": "#a3f7a7"
+        }
+    },
     "boundary-hidden": {
         "hidden": false,
         "markedStyle": {
