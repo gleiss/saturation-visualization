@@ -19,9 +19,6 @@ export class AppWrapper extends React.Component<Props, {}> {
     render() {
         return (
             <div id="appWrapper">
-                <NavigationBar 
-                    name={this.props.name}
-                />
                 <App 
                     name = {this.props.name}
                     problem={this.props.problem}
