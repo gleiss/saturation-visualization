@@ -34,28 +34,29 @@ class Aside extends React.Component<Props, {}> {
         </button>;
     }
 
-    render() {
-        let nodeDetails;
-        console.log(this.props.mode)
-
-        if (this.props.nodeSelection.length === 1  && this.props.tree!=null) {
-            let node = this.props.tree[this.props.nodeSelection[0]]
-            // const node = this.props.tree[this.props.nodeSelection[0]];
-            nodeDetails =
-                <NodeDetails
-                    node={ node }
-                    PobLemmasMap = { this.props.PobLemmasMap }
-                    ExprMap = { this.props.ExprMap }
-                    layout = { this.props.layout }
-                    expr_layout ={this.props.expr_layout}
-                />;
+    getNodeDetails() {
+        if (this.props.nodeSelection.length >= 1  && this.props.tree != null) {
+            let nodes: any[] = [];
+            for (let node of this.props.nodeSelection){
+                nodes.push(this.props.tree[node]);
+            }
+            return <NodeDetails
+                       nodes={nodes}
+                       PobLemmasMap = { this.props.PobLemmasMap }
+                       ExprMap = { this.props.ExprMap }
+                       layout = { this.props.layout }
+            />;
         } else {
-            nodeDetails =
-                <section className={ 'component-node-details overview' }>
-                    <small id="nodeInfo" > <strong>{`${this.props.nodeSelection.length} nodes`
-                    } </strong> selected</small >
-                </section>
+            return <section className={ 'component-node-details overview' }>
+                <small id="nodeInfo" > <strong>{`${this.props.nodeSelection.length} nodes`
+                } </strong> selected</small >
+            </section>
         }
+        
+    }
+
+    render() {
+        console.log(this.props.mode)
         return(
             <aside>
                 <article>
@@ -83,7 +84,7 @@ class Aside extends React.Component<Props, {}> {
                         </button>
                     </section>
                 </article>
-                { nodeDetails }
+                { this.getNodeDetails() }
             </aside>
         );
     }
