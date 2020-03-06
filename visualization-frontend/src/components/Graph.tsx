@@ -18,7 +18,7 @@ type Props = {
 
 type State = {
     metaPressed: boolean,
-}
+};
 
 export default class Graph extends React.Component<Props, {}> {
 
@@ -90,6 +90,7 @@ export default class Graph extends React.Component<Props, {}> {
         });
 
     }
+
     // updates the network displayed by Vis.js
     updateNetwork(onlyUpdateStyles: boolean, layout: string) {
         if (layout === "SatVis"){
