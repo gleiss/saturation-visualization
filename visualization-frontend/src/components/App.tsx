@@ -17,6 +17,7 @@ type Props = {
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean,
+    varNames: string
 };
 
 /* Invariant: the state is always in one of the following phases
@@ -37,7 +38,8 @@ type State = {
     layout: string,
     expr_layout: "SMT" | "JSON",
     PobLemmasMap: {},
-    ExprMap: {}
+    ExprMap: {},
+    multiselect: boolean
 }
 
 class App extends Component<Props, State> {
@@ -54,6 +56,7 @@ class App extends Component<Props, State> {
         expr_layout: "SMT",
         PobLemmasMap: {},
         ExprMap: {},
+        multiselect: false
     }
 
     render() {
@@ -156,8 +159,8 @@ class App extends Component<Props, State> {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
                 const state = "loaded";
-                const PobLemmasMap = buildPobLemmasMap(tree)
-                const ExprMap = buildExprMap(tree)
+                const PobLemmasMap =buildPobLemmasMap(tree)
+                const ExprMap =buildExprMap(tree)
                 this.setState({
                     trees: [tree],
                     runCmd: json.run_cmd,
@@ -214,8 +217,8 @@ class App extends Component<Props, State> {
                 // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list
                 const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
-                const PobLemmasMap = buildPobLemmasMap(tree)
-                const ExprMap = .buildExprMap(tree)
+                const PobLemmasMap =buildPobLemmasMap(tree)
+                const ExprMap = buildExprMap(tree)
                 const message = (mode == "iterative")? "Hit Poke to update graph": "";
                 this.setState({
                     exp_path: json.exp_name,
