@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { HashRouter as HashRouter, Route, Link } from "react-router-dom";
+import { HashRouter, Route} from "react-router-dom";
 import { AppWrapper } from './AppWrapper'
-import { Menu } from './Menu'
+import { Menu } from './Menu';
 import { RouteComponentProps } from 'react-router';
 type State = {
     problem: string,
@@ -10,7 +10,7 @@ type State = {
     hideBracketsAssoc: boolean,
     nonStrictForNegatedStrictInequalities: boolean,
     orientClauses: boolean
- 	  varNames: string
+    varNames: string
 }
 
 export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, State> {
@@ -22,7 +22,7 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
         hideBracketsAssoc: true,
         nonStrictForNegatedStrictInequalities: true,
         orientClauses: true,
- 		    varNames: ""
+        varNames: ""
     }
 
     render() {
@@ -66,7 +66,7 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
         hideBracketsAssoc={this.state.hideBracketsAssoc}
         nonStrictForNegatedStrictInequalities={this.state.nonStrictForNegatedStrictInequalities}
         orientClauses={this.state.orientClauses}
- 			  varNames={this.state.varNames}
+        varNames={this.state.varNames}
         />
     }
 
@@ -84,13 +84,13 @@ export class AppRouter extends React.Component<{} & RouteComponentProps<{}>, Sta
     }
     changeNonStrictForNegatedStrictInequalities(newValue: boolean) {
         this.setState({nonStrictForNegatedStrictInequalities: newValue});
-	  }
-	  changeOrientClauses(newValue: boolean) {
-		    this.setState({orientClauses: newValue});
-	  }
-	  changeVariables(newValue: string){
-		    this.setState({
-			      varNames: newValue
-	      });
+    }
+    changeOrientClauses(newValue: boolean) {
+        this.setState({orientClauses: newValue});
+    }
+    changeVariables(newValue: string){
+        this.setState({
+            varNames: newValue
+        });
     }
 }
