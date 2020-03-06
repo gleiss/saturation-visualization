@@ -57,16 +57,10 @@ export default class Graph extends React.Component<Props, {}> {
         return (
             <section className= "component-graph" ref = { this.graphContainer } >
                 <canvas/>
-                </section>
-    );
+            </section>
+        );
     }
 
-    handleKeyPress(event) {
-        console.log(event.key)
-        if(event.key === 'Enter'){
-            console.log('enter press here! ')
-        }
-    }
     // DISPLAY NETWORK ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     generateNetwork() {
