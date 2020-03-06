@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataSet, Network, IdType, Node, Edge } from 'vis'
+import { DataSet, Network, Node, Edge } from 'vis'
 
 import '../styles/Graph.css'
 import { assert } from '../model/util';
