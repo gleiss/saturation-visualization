@@ -97,8 +97,8 @@ class App extends Component<Props, State> {
                     tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
                 }
                 const state = "loaded";
-                const PobLemmasMap =buildPobLemmasMap(tree);
-                const ExprMap =buildExprMap(tree);
+                const PobLemmasMap = buildPobLemmasMap(tree);
+                const ExprMap = buildExprMap(tree);
                 this.setState({
                     trees: [tree],
                     runCmd: json.run_cmd,
@@ -158,7 +158,7 @@ class App extends Component<Props, State> {
                     tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
                 }
                 const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
-                const PobLemmasMap =buildPobLemmasMap(tree);
+                const PobLemmasMap = buildPobLemmasMap(tree);
                 const ExprMap = buildExprMap(tree);
                 const message = "Hit Poke to update graph";
                 this.setState({
@@ -262,33 +262,33 @@ class App extends Component<Props, State> {
             layout,
             expr_layout,
             PobLemmasMap,
-            ExprMap,
+            ExprMap
         } = this.state;
         let tree;
         let main;
         if (state === "loaded") {
             assert(trees.length > 0);
             tree = trees[trees.length - 1];
-            const hL = Object.keys(tree).length
+            const hL = Object.keys(tree).length;
             main = (
                     <Main
                         mode = { this.props.mode }
-                    runCmd = {this.state.runCmd}
-                tree = { tree }
-                onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
-                nodeSelection = { nodeSelection }
-                historyLength = { hL }
-                currentTime = { currentTime }
-                onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
-                layout = { layout }
-                PobLemmasMap = { PobLemmasMap }
+                        runCmd = {this.state.runCmd}
+                        tree = { tree }
+                        onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
+                        nodeSelection = { nodeSelection }
+                        historyLength = { hL }
+                        currentTime = { currentTime }
+                        onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
+                        layout = { layout }
+                        PobLemmasMap = { PobLemmasMap }
                     />
             );
         } else {
             main = (
-                    <main>
+                <main>
                     <section className= "slider-placeholder" />
-                    </main>
+                </main>
             );
         }
         return (
