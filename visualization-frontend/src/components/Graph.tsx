@@ -6,7 +6,6 @@ import { assert } from '../model/util';
 import {PobVisLayout, toVisEdge, toVisNode} from "../helpers/network";
 import {findClosestNode} from "../helpers/navigation";
 
-tconst styleTemplates = require('../resources/styleTemplates');
 
 type Props = {
     tree: any,
