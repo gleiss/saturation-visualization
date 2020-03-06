@@ -3,11 +3,10 @@ import { DataSet, Network, IdType, Node, Edge } from 'vis'
 
 import '../styles/Graph.css'
 import { assert } from '../model/util';
+import {PobVisLayout, toVisEdge, toVisNode} from "../helpers/network";
+import {findClosestNode} from "../helpers/navigation";
 
-import { Dag } from '../model/dag';
-import SatNode from '../model/sat-node';
-
-const styleTemplates = require('../resources/styleTemplates');
+tconst styleTemplates = require('../resources/styleTemplates');
 
 type Props = {
     tree: any,
@@ -122,63 +121,6 @@ export default class Graph extends React.Component<Props, {}> {
 
     }
 
-    PobVisLayout(): any{
-        console.time('clone the tree');
-        let treeCloned = JSON.parse(JSON.stringify(this.props.tree));
-        console.timeEnd('clone the tree');
-        let find_related_nodes = this.props.nodeSelection.length>0
-        let currentNodeExprID = -100
-        if(find_related_nodes){
-            currentNodeExprID = treeCloned[this.props.nodeSelection[0]].exprID
-        }
-
-        for (const nodeID in treeCloned){
-            let node = treeCloned[nodeID]
-            if(node.event_type!="EType.EXP_POB"){
-                node.to_be_vis = false
-                continue
-            }
-
-            let parent = treeCloned[node.parent]
-            let siblings = parent.children
-            let same_as_sibl = false
-            let identical_sibl
-            for(const siblID of siblings){
-
-                const sibl = treeCloned[siblID]
-                if(sibl.nodeID!=node.nodeID && sibl.exprID == node.exprID){
-                    same_as_sibl = true
-                    identical_sibl = sibl
-                    break
-                }
-
-            }
-            if(same_as_sibl){
-                // I will disappear
-                node.to_be_vis = false
-
-                // point all my children to my sibling
-                for(const childID of node.children){
-                    // console.log("b4", treeCloned[childID].parent)
-                    treeCloned[childID].parent = identical_sibl.nodeID
-                    // console.log("after", treeCloned[childID].parent)
-                    identical_sibl.children.push(childID)
-                }
-                //change my parent's children
-                let new_children = new Array<number>();
-                for (const childID of siblings){
-                    if(childID != node.nodeID){
-                        new_children.push(childID)
-                    }
-                }
-                parent.children = new_children
-            }
-        }
-
-        return treeCloned
-    }
-
-
     visLayout(ATree, onlyUpdateStyles){
         console.time('my code')
         let find_related_nodes = this.props.nodeSelection.length>0
@@ -197,18 +139,18 @@ export default class Graph extends React.Component<Props, {}> {
             let visNode;
             //Prioritize related nodes
             if (node.exprID == currentNodeExprID){
-                visNode = this.toVisNode(node, "sameExprID")
+                visNode = toVisNode(node, "sameExprID")
             }else{
                 if(node.nodeID > this.props.currentTime){
-                    visNode = this.toVisNode(node, "activated");
+                    visNode = toVisNode(node, "activated");
                 }
                 else{
-                    visNode = this.toVisNode(node, "passive");
+                    visNode = toVisNode(node, "passive");
                 }
             }
 
             visNodes.push(visNode);
-            const visEdge = this.toVisEdge(edgeId, node.parent, node.nodeID, false);
+            const visEdge = toVisEdge(edgeId, node.parent, node.nodeID, false);
             visEdges.push(visEdge);
             edgeId++;
         }
@@ -230,78 +172,6 @@ export default class Graph extends React.Component<Props, {}> {
 
     }
 
-    toVisNode(node: any, style: string ): any {
-        const styleData = styleTemplates[style];
-        const isMarked = this.props.nodeSelection.includes(node.nodeID);
-        return {
-            id: node.nodeID,
-            labelHighlightBold: false,
-            shape: "box",
-            color : {
-                border : isMarked ? styleData.markedStyle.border : styleData.defaultStyle.border,
-                background : isMarked ? styleData.markedStyle.background : styleData.defaultStyle.background,
-                highlight : {
-                    border : styleData.highlightStyle.border,
-                    background : styleData.highlightStyle.background
-                }
-            },
-        };
-
-    }
-
-    toVisEdge(edgeId: number, parentNodeId: number, nodeID: number, hidden: boolean) {
-        return {
-            id: edgeId,
-            color: {
-                color: "#dddddd",
-                highlight: "#f8cfc1",
-            },
-            from: parentNodeId,
-            to: nodeID,
-            smooth: false,
-            hidden: hidden
-        }
-    }
-
-    findClosestNode(nodeId: number, direction: "u"|"d"|"l"|"r"){
-        assert(this.network) 
-        assert("body" in this.network!)
-        console.log(this.network!["body"]["nodes"])
-        const currentNode = this.network!["body"]["nodes"][nodeId]
-        let closestNode = currentNode
-        let min_distance = 99999
-
-        if(direction=="l"){
-            for(const idx in this.network!["body"]["nodes"]){
-                const node = this.network!["body"]["nodes"][idx]
-                if (node["y"]!=currentNode["y"]) {continue}
-                if (currentNode["x"] <= node["x"]) {continue} // node is on the right of the selection
-                if( currentNode["x"] - node["x"] < min_distance){
-                    closestNode = node
-                    min_distance = currentNode["x"] - node["x"]
-                }
-            }
-            return closestNode.id
-
-        }
-        if(direction=="r"){
-            for(const idx in this.network!["body"]["nodes"]){
-                const node = this.network!["body"]["nodes"][idx]
-                if (node["y"]!=currentNode["y"]) {continue}
-                if (node["x"] <= currentNode["x"]) {continue} // node is on the left of the selection
-                if( node["x"] - currentNode["x"] < min_distance){
-                    closestNode = node
-                    min_distance = node["x"] - currentNode["x"]
-                }
-            }
-            return closestNode.id
-
-        } 
-        return -1
-
-    }
-
-
     keydownHandler(event) {
     }
     keyupHandler(event) {
@@ -309,10 +179,10 @@ export default class Graph extends React.Component<Props, {}> {
         const selected_node = this.props.nodeSelection[0]
         let closest_node = selected_node
         if(event.key=="ArrowLeft"){
-            closest_node = this.findClosestNode(selected_node, "l")
+            closest_node = findClosestNode(selected_node, "l")
         }
         if(event.key=="ArrowRight"){
-            closest_node = this.findClosestNode(selected_node, "r")
+            closest_node = findClosestNode(selected_node, "r")
         }
         this.props.onNodeSelectionChange([closest_node]);
     }
