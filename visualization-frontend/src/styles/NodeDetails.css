@@ -30,8 +30,8 @@
 }
 .component-node-details.details-diff {
     position: fixed;
-    bottom: 4rem;
-    left: 34rem;
+    top: 10rem;
+    left: 68rem;
     background: #f8f9fb;
     overflow: auto;
     width: 30rem;

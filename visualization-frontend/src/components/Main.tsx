@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { Dag } from '../model/dag';
 import Slider from './Slider';
 import Graph from './Graph';
 import ReactModal from 'react-modal';

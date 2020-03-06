@@ -42,7 +42,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
         }
         //build node
         if (n["type"] in this.type_map){
-            if(this.type_map[n["type"]]==""){
+            if(this.type_map[n["type"]]===""){
                 result = " "+ args
             }else{
                 result = "(" + this.type_map[n["type"]] + args + ")"
@@ -96,7 +96,7 @@ export default class NodeDetails extends React.Component<Props, {}> {
                     let lemma_list = this.getLemmaList(node);
 
                     let expr = ""
-                    if(this.props.expr_layout=="SMT"){
+                    if(this.props.expr_layout==="SMT"){
                         expr = node.expr
                     }else{
                         /* expr = JSON.stringify(this.props.node.ast_json, null, 2); */

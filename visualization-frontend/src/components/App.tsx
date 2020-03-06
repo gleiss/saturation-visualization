@@ -202,8 +202,6 @@ class App extends Component<Props, State> {
     updateCurrentTime(currentTime: number) {
         const trees = this.state.trees
         assert(trees.length > 0);
-        const tree = trees[trees.length - 1];
-
         this.setState({
             currentTime: currentTime
         });
@@ -264,7 +262,7 @@ class App extends Component<Props, State> {
             main = (
                 <Main
                     mode = { this.props.mode }
-                    runCmd = {this.state.runCmd}
+                    runCmd = {runCmd}
                     tree = { tree }
                     onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
                     nodeSelection = { nodeSelection }
