@@ -105,17 +105,11 @@ export class Menu extends React.Component<Props, {}> {
                         </main>
 
                         <aside>
-                            <fieldset className="options-card">
-                                <h3>Z3 Options</h3>
-                                <ul>
-                                    <li>
-                                        <label htmlFor="userOptions" className="form-label">Additional Spacer options</label>
-                                        <input id="userOptions" type="text" onChange={this.changeSpacerUserOptions.bind(this)}
-                                               value={this.props.spacerUserOptions}>
-                                        </input>
-                                    </li>
-                                </ul>
-                            </fieldset>
+                            <MenuOptions 
+                                spacerUserOptions = {this.props.spacerUserOptions}
+                                onChangeVariables = {this.onChangeVariables.bind(this)}
+                                changeSpacerUserOptions={this.props.onChangeSpacerUserOptions.bind(this)}
+                            />
                             <ExpTable/>
                         </aside>
                     </div>
