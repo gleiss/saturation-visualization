@@ -271,18 +271,18 @@ class App extends Component<Props, State> {
             tree = trees[trees.length - 1];
             const hL = Object.keys(tree).length;
             main = (
-                    <Main
-                        mode = { this.props.mode }
-                        runCmd = {this.state.runCmd}
-                        tree = { tree }
-                        onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
-                        nodeSelection = { nodeSelection }
-                        historyLength = { hL }
-                        currentTime = { currentTime }
-                        onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
-                        layout = { layout }
-                        PobLemmasMap = { PobLemmasMap }
-                    />
+                <Main
+                    mode = { this.props.mode }
+                    runCmd = {this.state.runCmd}
+                    tree = { tree }
+                    onNodeSelectionChange = { this.updateNodeSelection.bind(this) }
+                    nodeSelection = { nodeSelection }
+                    historyLength = { hL }
+                    currentTime = { currentTime }
+                    onCurrentTimeChange = { this.updateCurrentTime.bind(this) }
+                    layout = { layout }
+                    PobLemmasMap = { PobLemmasMap }
+                />
             );
         } else {
             main = (
@@ -303,6 +303,7 @@ class App extends Component<Props, State> {
                     onPoke = {this.poke.bind(this)}
                     SatVisLayout = { this.setSatVisLayout.bind(this) }
                     PobVisLayout = { this.setPobVisLayout.bind(this) }
+                    MultiSelectMode= { this.setMultiSelect.bind(this) }
                     SMTLayout = { this.setSMTLayout.bind(this) }
                     JSONLayout = { this.setJSONLayout.bind(this) }
                     PobLemmasMap = { PobLemmasMap }
