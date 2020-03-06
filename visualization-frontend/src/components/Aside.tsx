@@ -1,12 +1,7 @@
 import * as React from 'react';
 
-import GraphMenu from './GraphMenu';
-import NodeCard from './NodeCard';
 import '../styles/NodeMenu.css';
 import NodeDetails from './NodeDetails';
-import { Dag } from '../model/dag';
-import { Literal } from '../model/literal';
-import { assert } from '../model/util';
 const icons = require('../resources/icons/all.svg') as string;
 
 type Props = {
