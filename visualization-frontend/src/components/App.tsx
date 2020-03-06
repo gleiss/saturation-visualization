@@ -162,8 +162,8 @@ class App extends Component<Props, State> {
                     tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
                 }
                 const state = "loaded";
-                const PobLemmasMap =buildPobLemmasMap(tree)
-                const ExprMap =buildExprMap(tree)
+                const PobLemmasMap =buildPobLemmasMap(tree);
+                const ExprMap =buildExprMap(tree);
                 this.setState({
                     trees: [tree],
                     runCmd: json.run_cmd,
@@ -223,8 +223,8 @@ class App extends Component<Props, State> {
                     tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
                 }
                 const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
-                const PobLemmasMap =buildPobLemmasMap(tree)
-                const ExprMap = buildExprMap(tree)
+                const PobLemmasMap =buildPobLemmasMap(tree);
+                const ExprMap = buildExprMap(tree);
                 const message = "Hit Poke to update graph";
                 this.setState({
                     exp_path: json.exp_name,
@@ -254,12 +254,13 @@ class App extends Component<Props, State> {
         }
     }
 
-
-    //NETWORK///////////////////////////////
-
     updateNodeSelection(nodeSelection: number[]) {
-        console.log(nodeSelection)
-        this.setState({ nodeSelection: nodeSelection });
+        if (this.state.multiselect) {
+            let tempNodeSelection = this.state.nodeSelection.slice(this.state.nodeSelection.length-1).concat(nodeSelection);
+            this.setState({nodeSelection: tempNodeSelection});
+        } else {
+            this.setState({nodeSelection: nodeSelection});
+        }
     }
 
 
@@ -287,6 +288,27 @@ class App extends Component<Props, State> {
     }
     setSatVisLayout(){
         this.setState({ layout: "SatVis" })
+    }
+    setMultiSelect() {
+        if (this.state.multiselect) {
+            if (this.state.nodeSelection.length > 0) {
+                this.setState({
+                    nodeSelection: [this.state.nodeSelection[this.state.nodeSelection.length - 1]]
+                });
+            }
+            else {
+                this.setState({
+                    message: "Hit Poke to update graph"
+                })
+            }
+        } else {
+            this.setState({
+                message: "Select Up to 2 nodes"
+            });
+        }
+        this.setState({
+            multiselect: !this.state.multiselect
+        });
     }
     setSMTLayout(){
         this.setState({ expr_layout: "SMT" })
