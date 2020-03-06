@@ -157,7 +157,7 @@ class App extends Component<Props, State> {
                 for (let i = 0; i < Object.keys(tree).length; i++){
                     tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
                 }
-                const state = (mode == "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
+                const state = (mode === "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
                 const PobLemmasMap = buildPobLemmasMap(tree);
                 const ExprMap = buildExprMap(tree);
                 const message = "Hit Poke to update graph";
@@ -204,16 +204,7 @@ class App extends Component<Props, State> {
         assert(trees.length > 0);
         const tree = trees[trees.length - 1];
 
-        console.log(currentTime)
-        // const nodesInActiveDag = dag.computeNodesInActiveDag(currentTime);
-        // const nodeSelection = new Array<number>();
-        // for (const nodeId of this.state.nodeSelection) {
-        //     if (nodesInActiveDag.has(nodeId)) {
-        //         nodeSelection.push(nodeId);
-        //     }
-        // }
         this.setState({
-            // nodeSelection: nodeSelection,
             currentTime: currentTime
         });
     }
