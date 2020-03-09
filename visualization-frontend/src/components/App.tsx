@@ -20,13 +20,6 @@ type Props = {
     varNames: string
 };
 
-/* Invariant: the state is always in one of the following phases
- *    "loaded": A dag is loaded. Clause selection is not possible. dags, nodeSelection and currentTime hold meaningful values.
- *    "loaded selected": Same as "loaded", but clause selection is possible.
- *    "waiting": Waiting for answer from Vampire server. message holds a meaningful value.
- *    "layouting": Layouting a dag. message holds a meaningful value.
- *    "error": Some error occured. message holds a meaningful value.
- */
 type State = {
     exp_path: string,
     state: "loaded" | "loaded iterative" | "waiting" | "layouting" | "error",
@@ -39,7 +32,8 @@ type State = {
     expr_layout: "SMT" | "JSON",
     PobLemmasMap: {},
     ExprMap: {},
-    multiselect: boolean
+    multiselect: boolean,
+    varNames: string
 }
 
 class App extends Component<Props, State> {
@@ -56,12 +50,13 @@ class App extends Component<Props, State> {
         expr_layout: "SMT",
         PobLemmasMap: {},
         ExprMap: {},
-        multiselect: false
+        multiselect: false,
+        varNames: ""
     };
 
     async componentDidMount() {
         if(this.props.mode === "iterative"){
-            // call Vampire on given input problem
+            // call Spacer on given input problem
             await this.runSpacer(this.props.problem, this.props.spacerUserOptions, this.props.mode);
         }
         else{
@@ -91,10 +86,10 @@ class App extends Component<Props, State> {
             const json = await fetchedJSON.json();
             console.log("backend response:", json)
             if (json.status === "success") {
-                // await VizWrapper.layoutDag(dag, true);
                 let tree = json.nodes_list;
                 for (let i = 0; i < Object.keys(tree).length; i++){
-                    tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
+                    // NOTE: use varNames in state, not in props. The one in state is returned by the backend.
+                    tree[i].expr = toReadable(tree[i].expr, json.var_names);
                 }
                 const state = "loaded";
                 const PobLemmasMap = buildPobLemmasMap(tree);
@@ -106,6 +101,7 @@ class App extends Component<Props, State> {
                     state: state,
                     PobLemmasMap: PobLemmasMap,
                     ExprMap: ExprMap,
+                    varNames: json.var_names
                 });
                 console.log("state is set")
             } else {
@@ -144,7 +140,8 @@ class App extends Component<Props, State> {
             body: JSON.stringify({
                 name: this.props.name,
                 file: problem,
-                spacerUserOptions: spacerUserOptions
+                spacerUserOptions: spacerUserOptions,
+                varNames: this.props.varNames
             })
         });
 
@@ -152,22 +149,12 @@ class App extends Component<Props, State> {
             const json = await fetchedJSON.json();
             console.log("backend response:", json)
             if (json.status === "success") {
-                // await VizWrapper.layoutDag(dag, true);
-                let tree = json.nodes_list;
-                for (let i = 0; i < Object.keys(tree).length; i++){
-                    tree[i].expr = toReadable(tree[i].expr, this.props.varNames);
-                }
                 const state = (mode === "iterative" && json.spacer_state === "running") ? "loaded iterative" : "loaded";
-                const PobLemmasMap = buildPobLemmasMap(tree);
-                const ExprMap = buildExprMap(tree);
                 const message = "Hit Poke to update graph";
                 this.setState({
                     exp_path: json.exp_name,
-                    trees: [tree],
                     message: message,
                     state: state,
-                    PobLemmasMap: PobLemmasMap,
-                    ExprMap: ExprMap,
                 });
             } else {
                 assert(json.status === "error");
