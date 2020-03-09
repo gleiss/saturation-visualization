@@ -134,7 +134,7 @@ class App extends Component<Props, State> {
             message: "Waiting for Spacer...",
         });
 
-        const fetchedJSON = await fetch(mode === "iterative" ? 'http://localhost:5000/spacer/start_iterative' : 'http://localhost:5000/spacer/replay', {
+        const fetchedJSON = await fetch('http://localhost:5000/spacer/start_iterative', {
             method: 'POST',
             mode: 'cors',
             headers: {
