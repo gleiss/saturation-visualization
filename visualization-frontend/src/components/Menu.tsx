@@ -130,7 +130,6 @@ export class Menu extends React.Component<Props, {}> {
 
     onChangeVariables(e) {
         this.props.onChangeVariables(e.target.value);
-
     }
 
     uploadEncoding(event: React.ChangeEvent<HTMLInputElement>) {

@@ -33,7 +33,10 @@ export function findClosestNode(nodeId: number, direction, network){
         closestNode = currentNode.edges.filter(edge => edge.fromId === currentNode.id)[0].toId;
     }
     else if (direction === "ArrowUp" && currentNode.edges.length >= 1){
-        closestNode = currentNode.edges.filter(edge => edge.toId === currentNode.id)[0].fromId;
+        let closestNodes = currentNode.edges.filter(edge => edge.toId === currentNode.id);
+        if (closestNodes.length > 0){
+            closestNode = closestNodes[0].fromId;
+        }
     }
     return closestNode;
 

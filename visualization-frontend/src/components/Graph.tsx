@@ -81,8 +81,8 @@ export default class Graph extends React.Component<Props, {}> {
 
                 assert(clickEvent.nodes.length === 1);
                 const clickedNodeId = clickEvent.nodes[0];
-                console.log("clickEvent.nodes", clickEvent.nodes)
-                console.log("clickedNodeId", this.props.tree[clickedNodeId])
+                console.log("clickEvent.nodes", clickEvent.nodes);
+                console.log("clickedNodeId", this.props.tree[clickedNodeId]);
                 this.props.onNodeSelectionChange(clickEvent.nodes);
             } else {
                 this.props.onNodeSelectionChange([]);
@@ -142,7 +142,7 @@ export default class Graph extends React.Component<Props, {}> {
     }
 
     keyupHandler(event) {
-        if(this.props.nodeSelection.length === 0) return;
+        if(this.props.nodeSelection.length !== 1 ) return;
         const selected_node = this.props.nodeSelection[0];
         let closest_node = findClosestNode(selected_node, event.key, this.network);
         this.props.onNodeSelectionChange([closest_node]);

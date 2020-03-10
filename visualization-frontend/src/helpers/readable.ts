@@ -73,7 +73,7 @@ function parseResult(lst, sep) {
 
 function replaceVarNames(expr, varList) {
     if (typeof expr === "string") {
-        let newList = varList.split(",");
+        let newList = varList.split(" ");
         for (let i = 0; i < newList.length; i++) {
             let regex = new RegExp("Inv_" + i + "_n", "gi");
             expr = expr.replace(regex, newList[i]);

@@ -100,7 +100,7 @@ class MenuOptions extends React.Component<any, any> {
                         <input type="text" name="manualRun" onChange={this.changeSpacerManualUserOptions.bind(this)}/>
                         <li>
                             <label htmlFor="varOptions" className="form-label">Variable Designation</label>
-                            <p>Enter a comma separate list of your chosen variables in the order they appear (var1,var2,var3,...)</p>
+                            <p>Enter a single spacer separated list of your chosen variables in the order they appear (var1 var2 var3 ..)</p>
                             <input type="text" name="variables" onChange={this.props.onChangeVariables}/>
                         </li>
                     </ul>
