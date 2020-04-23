@@ -54,7 +54,7 @@ function computeParentLiteralsCase2(literals: Array<Literal>, parentLiterals: Ar
 //       in this case the wrongly matched literals in the parent are pairwise unifiable, so a sane user would assign to all of them the same orientation.
 //       in particular the wrong matching should not affect the orientation-heuristic in practice
 function computeParentLiteralsCase3(literals: Array<Literal>, parentLiterals: Array<Literal>, allowSubstitutions: boolean) {
-	assert(literals.length === parentLiterals.length);
+	assert(literals.length === parentLiterals.length, `case 3 error:\n${literals.toString()}\n${parentLiterals.toString()}`);
 
 	let foundRewrittenLiteral = false;
 	let i = 1;
@@ -108,10 +108,8 @@ export function computeParentLiterals(dag: Dag) {
 				node.inferenceRule === "equality factoring") {
 				assert(node.parents.length > 0);
 
-				// hack to deal with the inconsistent implementation of Vampire:
-				// backward demodulation is the only simplifying inference where the main premise does not occur as first parent
-				const hasSwitchedParents = node.inferenceRule === "backward demodulation"
-				const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
+				// we assume that the first parent is the main premise
+				const parent = dag.get(node.parents[0]);
 
 				// only compute literal matchings for clauses
 				if (parent.unit.type === "Clause") {
@@ -281,8 +279,9 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 					literal.representation = parentLiteral!.representation;
 					if (propagateSingleParent) {
 						assert(node.parents.length > 0);
-						const hasSwitchedParents = node.inferenceRule === "backward demodulation"
-						const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
+
+						// we assume that the first parent is the main premise
+						const parent = dag.get(node.parents[0]);
 
 						if (parent.unit.type === "Clause") {
 							const parentClause = parent.unit as Clause;
@@ -364,8 +363,8 @@ export function computeClauseRepresentation(dag: Dag, changedClauseId: number | 
 				}
 			}
 			if (!existsUserOrientedLiteral && propagateSingleParent) {
-				const hasSwitchedParents = node.inferenceRule === "backward demodulation"
-				const parent = dag.get(node.parents[hasSwitchedParents ? 1 : 0]);
+				// we assume that the first parent is the main premise
+				const parent = dag.get(node.parents[0]);
 				
 				if (parent.unit.type === "Clause") {
 					const parentClause = parent.unit as Clause;
