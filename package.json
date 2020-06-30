@@ -12,6 +12,8 @@
     "gh-pages": "^2.1.1",
     "github-pages": "^3.0.2",
     "monaco-editor": "0.18.1",
+    "patch-package": "^6.2.2",
+    "postinstall-postinstall": "^2.1.0",
     "react": "^16.8.5",
     "react-dom": "^16.8.5",
     "react-modal": "^3.10.1",
@@ -30,7 +32,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "yarn run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "post-install": "patch-package"
   },
   "eslintConfig": {
     "extends": "react-app"
