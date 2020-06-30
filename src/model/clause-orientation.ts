@@ -53,7 +53,10 @@ function computeParentLiteralsCase2(literals: Array<Literal>, parentLiterals: Ar
 // note: this may compute a wrong matching if a literal in the side-part of the clause matches the rewritten literal in the parent
 //       in this case the wrongly matched literals in the parent are pairwise unifiable, so a sane user would assign to all of them the same orientation.
 //       in particular the wrong matching should not affect the orientation-heuristic in practice
-function computeParentLiteralsCase3(literals: Array<Literal>, parentLiterals: Array<Literal>, allowSubstitutions: boolean) {
+// we also need to support simultanous superposition, which not only rewrites one literal and shifts that literal to the first position, but also allows other
+// literals to be rewritten. In particular, we are then not able anymore to always succeed with matching literals. In that case, we try to do an educated guess
+// of the ordering (in a way such that we compute the right literal matches at least in the case of non-simultanous superposition).
+function computeParentLiteralsCase3(literals: Array<Literal>, parentLiterals: Array<Literal>, allowSubstitutions: boolean, allowSimultanousSuperposition: boolean) {
 	assert(literals.length === parentLiterals.length, `case 3 error:\n${literals.toString()}\n${parentLiterals.toString()}`);
 
 	let foundRewrittenLiteral = false;
@@ -82,7 +85,9 @@ function computeParentLiteralsCase3(literals: Array<Literal>, parentLiterals: Ar
 	while(i < literals.length) {
 		const literal = literals[i];
 		const parentLiteral = parentLiterals[i];
-		assert(literalsMatch(literal, parentLiteral, allowSubstitutions));
+		if (!allowSimultanousSuperposition) {
+			assert(literalsMatch(literal, parentLiteral, allowSubstitutions), `case 3 error: literal ${i} doesn't match parent literal.\n${literals.toString()}\n${parentLiterals.toString()}\n`);
+		}
 		literal.setLiteralInParent(parentLiteral);
 		i = i + 1;
 	}
@@ -151,7 +156,7 @@ export function computeParentLiterals(dag: Dag) {
 						node.inferenceRule === "equality factoring") {
 						
 						const allowSubstitutions = node.inferenceRule === "equality factoring";
-						computeParentLiteralsCase3(literals, parentLiterals, allowSubstitutions);
+						computeParentLiteralsCase3(literals, parentLiterals, allowSubstitutions, false);
 					}
 				}
 			} else if (node.inferenceRule === "resolution" ||
@@ -196,7 +201,7 @@ export function computeParentLiterals(dag: Dag) {
 						// compute matchings separately for literals coming from leftLiterals resp. rightLiterals
 						// split denotes the first position in literals with a literal coming from rightLiterals
 						const split = leftLiterals.length;
-						computeParentLiteralsCase3(literals.slice(0, split), leftLiterals, true);
+						computeParentLiteralsCase3(literals.slice(0, split), leftLiterals, true, true);
 						computeParentLiteralsCase2(literals.slice(split, literals.length), rightLiterals, true, false);
 					}
 				}
